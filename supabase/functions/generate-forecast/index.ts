@@ -132,84 +132,73 @@ Return valid JSON ONLY (no markdown) with the following keys:
 }`;
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${openAIApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-5-mini-2025-08-07",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_completion_tokens: 3000,
-      }),
-    });
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${openAIApiKey}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "gpt-5-mini", // safer than a dated snapshot string
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    // Force valid JSON output
+    response_format: { type: "json_object" },
+    // Correct token parameter for chat/completions
+    max_tokens: 1400,
+    temperature: 0.7
+  }),
+});
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("OpenAI API error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Failed to generate forecast", details: errorText }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+if (!response.ok) {
+  const errorText = await response.text();
+  console.error("OpenAI API error:", response.status, errorText);
+  return new Response(JSON.stringify({ error: "Failed to generate forecast", details: errorText }), {
+    status: 500,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
 
-    const data = await response.json();
-    console.log("Full API response:", JSON.stringify(data));
-    
-    if (!data.choices || data.choices.length === 0) {
-      console.error("No choices in API response:", JSON.stringify(data));
-      return new Response(JSON.stringify({ error: "No response generated" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+const data = await response.json();
 
-    const generatedContent = data.choices[0].message?.content || "";
-    
-    if (!generatedContent || generatedContent.trim() === "") {
-      console.error("Empty content in response. Finish reason:", data.choices[0].finish_reason);
-      return new Response(JSON.stringify({ error: "Empty response from AI" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+const generatedContent = data?.choices?.[0]?.message?.content ?? "";
+if (!generatedContent.trim()) {
+  console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
+  return new Response(JSON.stringify({ error: "Empty response from AI" }), {
+    status: 500,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
 
-    console.log("Generated content:", generatedContent);
-
-    let forecast;
-    try {
-      let cleanContent = generatedContent.trim();
-      if (cleanContent.startsWith("```json")) {
-        cleanContent = cleanContent.slice(7);
-      }
-      if (cleanContent.startsWith("```")) {
-        cleanContent = cleanContent.slice(3);
-      }
-      if (cleanContent.endsWith("```")) {
-        cleanContent = cleanContent.slice(0, -3);
-      }
-      forecast = JSON.parse(cleanContent.trim());
-    } catch (parseError) {
-      console.error("Failed to parse forecast JSON:", parseError);
-      console.error("Raw content:", generatedContent);
-      return new Response(JSON.stringify({ error: "Failed to parse forecast response" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(JSON.stringify(forecast), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (error) {
-    console.error("Error in generate-forecast function:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: errorMessage }), {
+// With response_format json_object, this should be valid JSON already.
+let forecast;
+try {
+  forecast = JSON.parse(generatedContent);
+} catch (e) {
+  // Fallback extractor in case anything slips through
+  const match = generatedContent.match(/\{[\s\S]*\}/);
+  if (!match) {
+    console.error("No JSON object found in content:", generatedContent);
+    return new Response(JSON.stringify({ error: "Failed to parse forecast response", raw: generatedContent }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+  }
+  try {
+    forecast = JSON.parse(match[0]);
+  } catch (e2) {
+    console.error("Still failed to parse JSON:", e2);
+    return new Response(JSON.stringify({ error: "Failed to parse forecast response", raw: generatedContent }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+}
+
+return new Response(JSON.stringify(forecast), {
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
+
   }
 });
