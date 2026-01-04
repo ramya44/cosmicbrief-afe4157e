@@ -4,30 +4,30 @@ export interface BirthData {
   birthDate: string;
   birthTime: string;
   birthPlace: string;
+  name?: string;
+}
+
+export interface MonthEntry {
+  month: string;
+  why: string;
 }
 
 export interface FreeForecast {
-  overallTheme: string;
-  bestMonths: string[];
-  watchfulMonths: string[];
-  focusAreas: {
-    career: string;
-    relationships: string;
-    energy: string;
+  year: string;
+  summary: string;
+  comparisonToPriorYear: string;
+  sections: {
+    careerAndContribution: string;
+    moneyAndResources: string;
+    relationshipsAndBoundaries: string;
+    energyAndWellbeing: string;
   };
 }
 
 export interface PaidForecast {
-  quarterlyGuidance: {
-    q1: string;
-    q2: string;
-    q3: string;
-    q4: string;
-  };
-  timingWindows: string[];
-  energyManagement: string;
-  patternWarnings: string[];
-  closingGuidance: string;
+  strongMonths: MonthEntry[];
+  measuredAttentionMonths: MonthEntry[];
+  closingArc: string;
 }
 
 export interface ForecastState {

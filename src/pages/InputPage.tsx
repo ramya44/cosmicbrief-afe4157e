@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { StarField } from '@/components/StarField';
 import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, User } from 'lucide-react';
 
 const InputPage = () => {
   const navigate = useNavigate();
   const { setBirthData, setForecast, setIsLoading } = useForecastStore();
   
   const [formData, setFormData] = useState({
+    name: '',
     birthDate: '',
     birthTime: '',
     birthPlace: '',
@@ -86,6 +87,25 @@ const InputPage = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name (optional) */}
+            <div 
+              className="space-y-2 animate-fade-up"
+              style={{ animationDelay: '50ms', animationFillMode: 'both' }}
+            >
+              <Label htmlFor="name" className="text-cream flex items-center gap-2">
+                <User className="w-4 h-4 text-gold" />
+                Name <span className="text-muted-foreground text-xs">(optional)</span>
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Your name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+              />
+            </div>
+
             {/* Date of Birth */}
             <div 
               className="space-y-2 animate-fade-up"
