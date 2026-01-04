@@ -170,20 +170,17 @@ Return valid JSON ONLY (no markdown) with the following keys:
 }`;
 
     const payload = {
-      model: "gpt-5-mini-2025-08-07",
-      messages: [
+      model: "gpt-5-mini",
+      input: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      // Force strict JSON output
-      response_format: { type: "json_object" },
-      // GPT-5+ models require max_completion_tokens and do NOT support temperature
-      max_completion_tokens: 1400,
+      max_output_tokens: 1400,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
 
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const resp = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${openAIApiKey}`,
@@ -245,4 +242,3 @@ Return valid JSON ONLY (no markdown) with the following keys:
     });
   }
 });
-
