@@ -1,4 +1,3 @@
-````ts
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -48,10 +47,15 @@ serve(async (req) => {
     const { birthDate, birthTime, birthPlace, name } = await req.json();
 
     if (!birthDate || !birthTime || !birthPlace) {
-      return new Response(JSON.stringify({ error: "Missing required fields: birthDate, birthTime, birthPlace" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Missing required fields: birthDate, birthTime, birthPlace",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     if (!openAIApiKey) {
@@ -166,16 +170,15 @@ Return valid JSON ONLY (no markdown) with the following keys:
 }`;
 
     const payload = {
-      model: "gpt-5-mini",
+      model: "gpt-5-mini-2025-08-07",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      // Force JSON output (prevents prose or markdown wrappers)
+      // Force strict JSON output
       response_format: { type: "json_object" },
-      // Correct token parameter name for /v1/chat/completions
-      max_tokens: 1400,
-      temperature: 0.7,
+      // GPT-5+ models require max_completion_tokens and do NOT support temperature
+      max_completion_tokens: 1400,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
@@ -211,12 +214,8 @@ Return valid JSON ONLY (no markdown) with the following keys:
       });
     }
 
-    console.log("Generated content:", generatedContent);
-
     let forecast: unknown;
     try {
-      // With response_format json_object, this should parse cleanly.
-      // The extractor also handles cases where extra text sneaks in.
       forecast = extractFirstJsonObject(generatedContent);
     } catch (parseError) {
       console.error("Failed to parse forecast JSON:", parseError);
@@ -246,4 +245,4 @@ Return valid JSON ONLY (no markdown) with the following keys:
     });
   }
 });
-````
+
