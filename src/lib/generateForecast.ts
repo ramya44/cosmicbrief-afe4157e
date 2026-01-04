@@ -11,6 +11,7 @@ export const generateForecast = async (
       birthDate: birthData.birthDate,
       birthTime: birthData.birthTime,
       birthPlace: birthData.birthPlace,
+      name: birthData.name,
     },
   });
 
@@ -23,27 +24,21 @@ export const generateForecast = async (
 
   // Transform the API response to match our store types
   const free: FreeForecast = {
-    overallTheme: data.free_sections.overall_theme,
-    bestMonths: data.free_sections.best_months,
-    watchfulMonths: data.free_sections.watchful_months,
-    focusAreas: {
-      career: data.free_sections.focus_areas.career,
-      relationships: data.free_sections.focus_areas.relationships,
-      energy: data.free_sections.focus_areas.energy,
+    year: data.year,
+    summary: data.summary,
+    comparisonToPriorYear: data.comparison_to_prior_year,
+    sections: {
+      careerAndContribution: data.sections.career_and_contribution,
+      moneyAndResources: data.sections.money_and_resources,
+      relationshipsAndBoundaries: data.sections.relationships_and_boundaries,
+      energyAndWellbeing: data.sections.energy_and_wellbeing,
     },
   };
 
   const paid: PaidForecast = {
-    quarterlyGuidance: {
-      q1: data.paid_sections.quarterly_guidance.q1,
-      q2: data.paid_sections.quarterly_guidance.q2,
-      q3: data.paid_sections.quarterly_guidance.q3,
-      q4: data.paid_sections.quarterly_guidance.q4,
-    },
-    timingWindows: data.paid_sections.timing_windows,
-    energyManagement: data.paid_sections.energy_management,
-    patternWarnings: data.paid_sections.pattern_warnings,
-    closingGuidance: data.paid_sections.closing_guidance,
+    strongMonths: data.strong_months,
+    measuredAttentionMonths: data.measured_attention_months,
+    closingArc: data.closing_arc,
   };
 
   return { free, paid };
