@@ -138,26 +138,45 @@ Return valid JSON ONLY (no markdown) with the following keys:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-5-2025-08-07",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        max_completion_tokens: 3000,
+        max_tokens: 3000,
+        temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("OpenAI API error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "Failed to generate forecast" }), {
+      return new Response(JSON.stringify({ error: "Failed to generate forecast", details: errorText }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const data = await response.json();
-    const generatedContent = data.choices[0].message.content;
+    console.log("Full API response:", JSON.stringify(data));
+    
+    if (!data.choices || data.choices.length === 0) {
+      console.error("No choices in API response:", JSON.stringify(data));
+      return new Response(JSON.stringify({ error: "No response generated" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const generatedContent = data.choices[0].message?.content || "";
+    
+    if (!generatedContent || generatedContent.trim() === "") {
+      console.error("Empty content in response. Finish reason:", data.choices[0].finish_reason);
+      return new Response(JSON.stringify({ error: "Empty response from AI" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     console.log("Generated content:", generatedContent);
 
