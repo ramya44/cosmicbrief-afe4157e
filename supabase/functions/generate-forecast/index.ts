@@ -131,13 +131,12 @@ Return valid JSON ONLY (no markdown) with the following keys:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5-2025-08-07',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.8,
-        max_tokens: 3000,
+        max_completion_tokens: 3000,
       }),
     });
 
