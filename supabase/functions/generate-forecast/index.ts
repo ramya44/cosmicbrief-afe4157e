@@ -1,3 +1,4 @@
+````ts
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -8,21 +9,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function safeJsonExtract(text: string) {
-  const trimmed = text.trim();
-
-  // Remove code fences if present
-  const noFences = trimmed
+// Extract and parse the first complete top-level JSON object from a string.
+// This is resilient to extra prose before/after the JSON and to ``` fences.
+function extractFirstJsonObject(text: string) {
+  const cleaned = text
+    .trim()
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/```$/i, "")
     .trim();
 
-  // If there is extra prose around JSON, extract the first JSON object
-  const match = noFences.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error("No JSON object found in model output");
+  let depth = 0;
+  let start = -1;
 
-  return JSON.parse(match[0]);
+  for (let i = 0; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (ch === "{") {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0 && start !== -1) {
+        const candidate = cleaned.slice(start, i + 1);
+        return JSON.parse(candidate);
+      }
+    }
+  }
+
+  throw new Error("No complete JSON object found in model output");
 }
 
 serve(async (req) => {
@@ -40,9 +54,19 @@ serve(async (req) => {
       });
     }
 
+    if (!openAIApiKey) {
+      return new Response(JSON.stringify({ error: "Missing OPENAI_API_KEY env var" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Format date for display
     const dateObj = new Date(birthDate);
-    const formattedDob = `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(dateObj.getDate()).padStart(2, "0")}/${dateObj.getFullYear()}`;
+    const formattedDob = `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(dateObj.getDate()).padStart(
+      2,
+      "0",
+    )}/${dateObj.getFullYear()}`;
 
     const userName = name || "the seeker";
     const targetYear = "2026";
@@ -98,13 +122,25 @@ C) Provide 4 themed sections:
    2. Money and resources (themes only, no advice)
    3. Relationships and boundaries
    4. Energy and wellbeing (themes only, no medical advice)
+
 D) Provide:
    - Strong months in ${targetYear}: choose 4 months, name each month and give 1–2 sentences why it's supportive.
    - Measured attention months in ${targetYear}: choose 3 months, name each month and give 1–2 sentences why slowing down helps.
+
+Notes:
+- Month selection must be coherent with the narrative (don't pick random months).
+- Do not mention exact transits or pillar calculations; keep it experiential and user-facing.
+
 E) Close with a 2–3 sentence "deeper arc" that emphasizes durability and agency.
+
+IMPORTANT:
+- You are blending Jyotish and BaZi, but do not show math, charts, degrees, nakshatras, or stems/branches.
+- Never ask the user follow-up questions. Work with what you have.
+- If the birth time seems uncertain, add one gentle sentence noting that exact timing can shift emphasis slightly, but still give the full forecast.
 
 OUTPUT FORMAT:
 Return valid JSON ONLY (no markdown) with the following keys:
+
 {
   "year": "${targetYear}",
   "summary": "...",
@@ -129,12 +165,20 @@ Return valid JSON ONLY (no markdown) with the following keys:
   "closing_arc": "..."
 }`;
 
-    if (!openAIApiKey) {
-      return new Response(JSON.stringify({ error: "Missing OPENAI_API_KEY env var" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const payload = {
+      model: "gpt-5-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      // Force JSON output (prevents prose or markdown wrappers)
+      response_format: { type: "json_object" },
+      // Correct token parameter name for /v1/chat/completions
+      max_tokens: 1400,
+      temperature: 0.7,
+    };
+
+    console.log("OpenAI payload:", JSON.stringify(payload));
 
     const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -142,18 +186,7 @@ Return valid JSON ONLY (no markdown) with the following keys:
         Authorization: `Bearer ${openAIApiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model: "gpt-5-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        // Force JSON output
-        response_format: { type: "json_object" },
-        // Correct field name for chat/completions
-        max_tokens: 1400,
-        temperature: 0.7,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!resp.ok) {
@@ -166,26 +199,39 @@ Return valid JSON ONLY (no markdown) with the following keys:
     }
 
     const data = await resp.json();
-    const content = data?.choices?.[0]?.message?.content ?? "";
+    console.log("Full API response:", JSON.stringify(data));
 
-    if (!content.trim()) {
-      console.error("Empty content. Finish reason:", data?.choices?.[0]?.finish_reason);
+    const generatedContent = data?.choices?.[0]?.message?.content ?? "";
+
+    if (!generatedContent.trim()) {
+      console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
       return new Response(JSON.stringify({ error: "Empty response from AI", raw: data }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    console.log("Generated content:", generatedContent);
+
     let forecast: unknown;
     try {
-      forecast = safeJsonExtract(content);
-    } catch (e) {
-      console.error("Failed to parse JSON:", e);
-      console.error("Raw content:", content);
-      return new Response(JSON.stringify({ error: "Failed to parse forecast response", raw: content }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // With response_format json_object, this should parse cleanly.
+      // The extractor also handles cases where extra text sneaks in.
+      forecast = extractFirstJsonObject(generatedContent);
+    } catch (parseError) {
+      console.error("Failed to parse forecast JSON:", parseError);
+      console.error("Raw content:", generatedContent);
+
+      return new Response(
+        JSON.stringify({
+          error: "Failed to parse forecast response",
+          parseError: String(parseError),
+          rawContent: generatedContent,
+          finish_reason: data?.choices?.[0]?.finish_reason,
+          usage: data?.usage,
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     return new Response(JSON.stringify(forecast), {
@@ -200,3 +246,4 @@ Return valid JSON ONLY (no markdown) with the following keys:
     });
   }
 });
+````
