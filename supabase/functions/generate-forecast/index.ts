@@ -8,6 +8,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function safeJsonExtract(text: string) {
+  const trimmed = text.trim();
+
+  // Remove code fences if present
+  const noFences = trimmed
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+
+  // If there is extra prose around JSON, extract the first JSON object
+  const match = noFences.match(/\{[\s\S]*\}/);
+  if (!match) throw new Error("No JSON object found in model output");
+
+  return JSON.parse(match[0]);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -51,13 +68,9 @@ Before writing the final output, internally:
 Do not show this reasoning. Only output the final synthesized reading.
 
 Your output must:
-
 1) Focus on the requested year.
-
 2) Include a direct comparison to the prior year.
-
 3) Include "Strong months" and "Measured attention months" (watchful months), each with brief reasons.
-
 4) Be structured, skimmable, and written as if delivering a premium personalized reading.`;
 
     const userPrompt = `Generate a combined Jyotish + BaZi annual forecast for the user.
@@ -78,35 +91,20 @@ STYLE REQUIREMENTS:
 - Include gentle guidance that sounds like discernment, not instruction.
 
 CONTENT REQUIREMENTS:
-
 A) Open with a 2–4 sentence "character of the year" summary.
-
 B) Provide a "How ${targetYear} differs from ${priorYear}" section with 4–6 contrasts.
-
 C) Provide 4 themed sections:
    1. Career and contribution
    2. Money and resources (themes only, no advice)
    3. Relationships and boundaries
    4. Energy and wellbeing (themes only, no medical advice)
-
 D) Provide:
    - Strong months in ${targetYear}: choose 4 months, name each month and give 1–2 sentences why it's supportive.
    - Measured attention months in ${targetYear}: choose 3 months, name each month and give 1–2 sentences why slowing down helps.
-
-   Notes:
-   - Month selection must be coherent with the narrative (don't pick random months).
-   - Do not mention exact transits or pillar calculations; keep it experiential and user-facing.
-
 E) Close with a 2–3 sentence "deeper arc" that emphasizes durability and agency.
-
-IMPORTANT:
-- You are blending Jyotish and BaZi, but do not show math, charts, degrees, nakshatras, or stems/branches.
-- Never ask the user follow-up questions. Work with what you have.
-- If the birth time seems uncertain, add one gentle sentence noting that exact timing can shift emphasis slightly, but still give the full forecast.
 
 OUTPUT FORMAT:
 Return valid JSON ONLY (no markdown) with the following keys:
-
 {
   "year": "${targetYear}",
   "summary": "...",
@@ -131,74 +129,74 @@ Return valid JSON ONLY (no markdown) with the following keys:
   "closing_arc": "..."
 }`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${openAIApiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    model: "gpt-5-mini", // safer than a dated snapshot string
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    // Force valid JSON output
-    response_format: { type: "json_object" },
-    // Correct token parameter for chat/completions
-    max_tokens: 1400,
-    temperature: 0.7
-  }),
-});
+    if (!openAIApiKey) {
+      return new Response(JSON.stringify({ error: "Missing OPENAI_API_KEY env var" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-if (!response.ok) {
-  const errorText = await response.text();
-  console.error("OpenAI API error:", response.status, errorText);
-  return new Response(JSON.stringify({ error: "Failed to generate forecast", details: errorText }), {
-    status: 500,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openAIApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-5-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        // Force JSON output
+        response_format: { type: "json_object" },
+        // Correct field name for chat/completions
+        max_tokens: 1400,
+        temperature: 0.7,
+      }),
+    });
 
-const data = await response.json();
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      console.error("OpenAI API error:", resp.status, errorText);
+      return new Response(JSON.stringify({ error: "Failed to generate forecast", details: errorText }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-const generatedContent = data?.choices?.[0]?.message?.content ?? "";
-if (!generatedContent.trim()) {
-  console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
-  return new Response(JSON.stringify({ error: "Empty response from AI" }), {
-    status: 500,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+    const data = await resp.json();
+    const content = data?.choices?.[0]?.message?.content ?? "";
 
-// With response_format json_object, this should be valid JSON already.
-let forecast;
-try {
-  forecast = JSON.parse(generatedContent);
-} catch (e) {
-  // Fallback extractor in case anything slips through
-  const match = generatedContent.match(/\{[\s\S]*\}/);
-  if (!match) {
-    console.error("No JSON object found in content:", generatedContent);
-    return new Response(JSON.stringify({ error: "Failed to parse forecast response", raw: generatedContent }), {
+    if (!content.trim()) {
+      console.error("Empty content. Finish reason:", data?.choices?.[0]?.finish_reason);
+      return new Response(JSON.stringify({ error: "Empty response from AI", raw: data }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    let forecast: unknown;
+    try {
+      forecast = safeJsonExtract(content);
+    } catch (e) {
+      console.error("Failed to parse JSON:", e);
+      console.error("Raw content:", content);
+      return new Response(JSON.stringify({ error: "Failed to parse forecast response", raw: content }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify(forecast), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error in generate-forecast function:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  }
-  try {
-    forecast = JSON.parse(match[0]);
-  } catch (e2) {
-    console.error("Still failed to parse JSON:", e2);
-    return new Response(JSON.stringify({ error: "Failed to parse forecast response", raw: generatedContent }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-}
-
-return new Response(JSON.stringify(forecast), {
-  headers: { ...corsHeaders, "Content-Type": "application/json" },
-});
-
   }
 });
