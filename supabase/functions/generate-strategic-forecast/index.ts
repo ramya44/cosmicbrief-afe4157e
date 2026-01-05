@@ -180,7 +180,7 @@ Provide a direct comparison that explains:
 This should help the user mentally close the prior year and step into the new one.
 
 ---
-### 2. Why ${target_year} Affects You Differently Than Others”
+### 2. Why ${targetyear} Affects You Differently Than Others”
 
 In this section:
 - Explain what makes this year personally activating, stabilizing, or challenging for this user
