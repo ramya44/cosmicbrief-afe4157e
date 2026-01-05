@@ -295,7 +295,7 @@ const ResultsPage = () => {
               <div className="space-y-4">
                 {strategicForecast.key_tradeoffs.map((tradeoff, index) => (
                   <div key={index}>
-                    <h4 className="text-cream font-medium mb-1">{tradeoff.tension}</h4>
+                    <h4 className="text-cream font-medium text-lg mb-1">{tradeoff.tension}</h4>
                     <p className="text-cream/70">{stripLeadingHeaders(tradeoff.explanation)}</p>
                   </div>
                 ))}
@@ -308,7 +308,7 @@ const ResultsPage = () => {
               <div className="space-y-4">
                 {strategicForecast.counterfactual_paths.map((path, index) => (
                   <div key={index}>
-                    <h4 className="text-cream font-medium mb-1">{path.path}</h4>
+                    <h4 className="text-cream font-medium text-lg mb-1">{path.path}</h4>
                     <p className="text-cream/70">{stripLeadingHeaders(path.description)}</p>
                   </div>
                 ))}
