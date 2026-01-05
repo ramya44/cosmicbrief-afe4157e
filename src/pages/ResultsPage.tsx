@@ -278,7 +278,7 @@ const ResultsPage = () => {
                   return (
                     <div key={key} className="mb-6 last:mb-0">
                       <h4 className="font-display text-lg text-gold mb-3">{quarterLabels[index]}</h4>
-                      <div className="grid gap-2 text-sm">
+                      <div className="grid gap-2">
                         <div><span className="text-cream-muted">Focus:</span> <span className="text-cream">{quarter.focus}</span></div>
                         <div><span className="text-cream-muted">Push:</span> <span className="text-cream">{quarter.push}</span></div>
                         <div><span className="text-cream-muted">Protect:</span> <span className="text-cream">{quarter.protect}</span></div>
