@@ -46,19 +46,37 @@ export const PlaceAutocomplete = ({
 
     setIsLoading(true);
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
         {
           headers: {
             'Accept-Language': 'en',
+            'User-Agent': 'AstroForecastApp/1.0',
           },
+          signal: controller.signal,
         }
       );
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.error('Nominatim API error:', response.status);
+        setSuggestions([]);
+        return;
+      }
+      
       const data = await response.json();
       setSuggestions(data);
       setIsOpen(data.length > 0);
     } catch (error) {
-      console.error('Error fetching places:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('Location search timed out');
+      } else {
+        console.error('Error fetching places:', error);
+      }
       setSuggestions([]);
     } finally {
       setIsLoading(false);
