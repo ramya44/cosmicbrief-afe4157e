@@ -190,15 +190,15 @@ const ResultsPage = () => {
             {/* Mobile Sticky CTA */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-midnight via-midnight to-transparent">
               <div className="rounded-xl border border-gold/30 bg-midnight/90 backdrop-blur-sm p-4 overflow-hidden">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <span className="text-cream-muted line-through text-sm">$100</span>
-                  <span className="text-gold font-display text-xl">$20</span>
-                </div>
-                <Button variant="unlock" size="lg" className="w-full" onClick={handleUnlock}>
+                <Button variant="unlock" size="lg" className="w-full mb-3" onClick={handleUnlock}>
                   <Lock className="w-4 h-4 mr-2" />
                   Unlock Detailed Analysis
                   <Sparkles className="w-4 h-4 ml-2" />
                 </Button>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-cream-muted line-through text-sm">$100</span>
+                  <span className="text-gold font-display text-xl">$20</span>
+                </div>
               </div>
             </div>
           </>
