@@ -89,89 +89,75 @@ serve(async (req) => {
 
     console.log(`Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`);
 
-    const systemPrompt = `You generate fast, intuitive annual previews inspired by Indian Jyotish.
+    const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
 
-This is a free glimpse, not a full reading.
+This is a free glimpse designed to spark recognition and curiosity, not completeness.
 
-Your priorities are speed, clarity, and personal resonance.
+Your goal is to create a moment of insight that feels personal and slightly unresolved.
 
-IMPORTANT EXECUTION RULES:
+Execution rules:
 
 - Do NOT analyze deeply.
 
-- Do NOT plan or outline before writing.
+- Do NOT plan or outline.
 
-- Do NOT reason about uniqueness.
+- Write immediately.
 
-- Write immediately and keep internal reasoning minimal.
+- Keep internal reasoning minimal.
 
 - Always produce visible text.
 
-Personalization is achieved by varying tone, metaphor, and phrasing using the provided style seed.
+Personalization comes from tone, constraint, and emphasis using the provided style seed.
 
-Do not think about whether two users are different; simply follow the seed.
+Do not reason about uniqueness.
 
 Tone:
 
-Calm, grounded, quietly insightful.
+Calm, grounded, quietly authoritative.
 
-No hype. No mystical jargon. No advice.
+Not comforting. Not mystical. Not motivational.
 
 Avoid:
 
+- generic encouragement
+
 - predictions of events
 
-- technical astrology terms
+- technical astrology language`;
 
-- universal or motivational statements`;
+    const userPrompt = `Create a fast preview of the user's ${targetYear}.
 
-    const userPrompt = `Create a fast, intuitive preview of the user's ${targetYear}.
-
-INPUTS:
+Inputs:
 
 - Date of birth: ${formattedDob}
 
-- Time of birth (local): ${birthTime}
+- Time of birth: ${birthTime}
 
 - Place of birth: ${birthPlace}
 
-- Target year: ${targetYear}
-
 - Style seed: ${styleSeed}
 
-Write ONLY the following, in 70–110 words total:
+Write 90–130 words, plain text only.
+
+Structure (write in this order):
 
 1) The Shape of the Year
 
-Describe the year using a single visual metaphor or shape.
+One sentence using a concrete visual metaphor. Let birth time subtly affect tone.
 
-Let birth time subtly influence tone (e.g., steady, sensitive, assertive).
+2) The Central Tension
 
-2) One Line That Matters
+2–3 sentences describing a specific tradeoff or pressure unique to this year.
 
-One short, declarative sentence that captures what defines this year for this person.
+Frame it as: what works vs what now creates friction.
 
-It must not be universally applicable.
+3) Why This Matters
 
-3) Energy Snapshot
+2–3 sentences explaining the cost of ignoring this tension — emotionally, energetically, or relationally.
 
-In 2–3 sentences, describe:
+Do not give advice. Imply consequence.
 
-- how momentum feels
-
-- where effort flows naturally
-
-- where friction quietly appears
-
-Rules:
-
-- Choose quickly. Do not overthink.
-
-- No disclaimers, no uncertainty language.
-
-- Do not reuse metaphors or phrasing across users.
-
-Return plain text only.`;
+End with one short line that feels unresolved and invites deeper understanding.`;
 
     const payload = {
       model: "gpt-5-mini-2025-08-07",
