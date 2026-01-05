@@ -192,7 +192,7 @@ No markdown.`;
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_completion_tokens: 1200,
+      max_completion_tokens: 2000,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
