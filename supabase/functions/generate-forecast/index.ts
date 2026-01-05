@@ -78,41 +78,43 @@ serve(async (req) => {
 
     console.log(`Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}`);
 
-    const systemPrompt = `You generate fast, intuitive annual overviews inspired by Indian Jyotish.
+    const systemPrompt = `You generate fast, intuitive annual previews inspired by Indian Jyotish.
 
-Your goal is speed, clarity, and personal resonance.
+This is a free glimpse, not a full reading.
 
-This is a free preview, not a full analysis.
+Your priorities are speed, clarity, and personal resonance.
 
-Do NOT perform deep calculations or multi-step reasoning.
+Do NOT perform deep analysis.
 
-Do NOT produce long explanations.
+Do NOT plan or outline before writing.
 
-Do NOT sound generic or motivational.
+Keep internal reasoning minimal and brief.
 
-You must ensure that two people with different birth dates or birth times do not receive the same response.
+IMPORTANT OUTPUT GUARANTEE:
 
-Use the birth data to create light but real personalization.
+You must produce visible text immediately.
+
+Never use more than 25% of the available tokens for internal reasoning.
+
+If space is tight, shorten the output but always return text.
 
 Tone:
 
 Calm, grounded, quietly insightful.
 
-No hype. No mystical jargon.
+No hype. No mystical jargon. No advice.
 
 Avoid:
 
 - predictions of events
 
-- advice
-
 - technical astrology terms
 
 - universal statements that apply to everyone
 
-IMPORTANT:
+Even at this high level, the output must feel specific to the individual.
 
-Even though this is fast and high-level, it must feel specific to the individual.`;
+Two people with different birth dates or birth time must not receive the same response.`;
 
     const userPrompt = `Create a fast, intuitive preview of the user's ${targetYear}.
 
@@ -126,65 +128,39 @@ INPUTS:
 
 - Target year: ${targetYear}
 
-OUTPUT RULES:
-
-- Keep it concise and skimmable.
-
-- Prioritize distinctiveness over completeness.
-
-- This should feel like a personal glimpse, not a full reading.
-
-STRUCTURE:
+Write ONLY the following, in 70–110 words total:
 
 1) The Shape of the Year
 
 Describe the year using a single visual metaphor or shape.
 
-This must subtly differ based on birth time (e.g., steadiness, sensitivity, assertiveness).
+Let birth time subtly influence tone (e.g., steady, sensitive, assertive).
 
 2) One Line That Matters
 
-Provide one short, declarative sentence that captures the essence of the year for this person.
+One short, declarative sentence that captures what defines this year for this person.
 
 It must not be universally applicable.
 
 3) Energy Snapshot
 
-In 3–4 sentences, describe:
+In 2–3 sentences, describe:
 
 - how momentum feels
 
-- where effort flows easily
+- where effort flows naturally
 
-- where friction shows up
+- where friction quietly appears
 
-4) Timing Hints
+Rules:
 
-Name:
+- Choose quickly. Do not overthink.
 
-- 2 months that feel supportive
+- No disclaimers, no uncertainty language.
 
-- 1 month to move more carefully
+- Do not reuse metaphors or phrasing across users.
 
-Give a brief, non-technical reason for each.
-
-CONSTRAINTS:
-
-- Total length: 120–200 words
-
-- Do not repeat phrases like "this year invites" or "you may feel"
-
-- Do not include disclaimers or uncertainty language
-
-- Do not reuse the same metaphors or sentences across users
-
-OUTPUT FORMAT:
-
-Return plain text only.
-
-No JSON.
-
-No markdown.`;
+Return plain text only.`;
 
     const payload = {
       model: "gpt-5-mini-2025-08-07",
@@ -192,6 +168,7 @@ No markdown.`;
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
+      temperature: 0.7,
       max_completion_tokens: 2000,
     };
 
