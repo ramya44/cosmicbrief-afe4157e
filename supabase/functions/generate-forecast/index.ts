@@ -170,17 +170,18 @@ Return valid JSON ONLY (no markdown) with the following keys:
 }`;
 
     const payload = {
-      model: "gpt-5-mini",
-      input: [
+      model: "gpt-5-mini-2025-08-07",
+      messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_output_tokens: 3000,
+      response_format: { type: "json_object" },
+      max_completion_tokens: 8000,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
 
-    const resp = await fetch("https://api.openai.com/v1/responses", {
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${openAIApiKey}`,
