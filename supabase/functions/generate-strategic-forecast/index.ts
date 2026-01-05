@@ -180,8 +180,16 @@ Provide a direct comparison that explains:
 This should help the user mentally close the prior year and step into the new one.
 
 ---
+### 2. Why ${target_year} Affects You Differently Than Others”
 
-### 3. Life-Area Prioritization (Explicit Ranking)
+In this section:
+- Explain what makes this year personally activating, stabilizing, or challenging for this user
+- Anchor the explanation in their birth data without naming techniques or jargon
+
+
+---
+
+### 4. Life-Area Prioritization (Explicit Ranking)
 
 Rank the following areas in order of strategic importance for the year:
 
@@ -205,7 +213,7 @@ This section is critical. Be clear and decisive.
 
 ---
 
-### 4. Quarter-by-Quarter Strategic Map
+### 5. Quarter-by-Quarter Strategic Map
 
 Break the year into four quarters.
 
@@ -225,7 +233,7 @@ This should feel like a leadership or life-planning document, not a horoscope.
 
 ---
 
-### 5. Key Trade-Offs and Tensions
+### 6. Key Trade-Offs and Tensions
 
 Explicitly name 3–5 tensions the user will need to navigate, such as:
 
@@ -245,7 +253,7 @@ This is where insight depth really shows.
 
 ---
 
-### 6. Counterfactual Paths (If–Then Scenarios)
+### 7. Counterfactual Paths (If–Then Scenarios)
 
 Describe 2–3 plausible paths through the year, for example:
 
@@ -265,7 +273,7 @@ Avoid judgment. Focus on clarity.
 
 ---
 
-### 7. Personal Operating Principles for ${targetYear}
+### 8. Personal Operating Principles for ${targetYear}
 
 Provide 4–6 short, memorable principles written specifically for the user.
 
@@ -283,7 +291,7 @@ Examples of tone (do not reuse verbatim):
 
 ---
 
-### 8. The Deeper Arc: Past → Present → Future
+### 9. The Deeper Arc: Past → Present → Future
 
 Close by placing ${targetYear} in a three-year arc:
 
