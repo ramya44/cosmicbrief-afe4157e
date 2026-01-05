@@ -50,6 +50,17 @@ async function generateStyleSeed(input: string): Promise<string> {
     .join("");
 }
 
+// Deterministic selection of pivotal life element based on age and style seed
+function pickPivotalLifeElement(age: number, styleSeed: string): string {
+  const seedNum = Array.from(styleSeed).reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  let options: string[];
+  if (age < 35) options = ["career", "education", "identity"];
+  else if (age < 50) options = ["career", "relationships", "family", "health"];
+  else if (age < 60) options = ["health", "family", "relationships", "purpose"];
+  else options = ["health", "family", "relationships", "meaning", "stewardship"];
+  return options[seedNum % options.length];
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -98,8 +109,11 @@ serve(async (req) => {
     // Generate style seed from birth data
     const styleSeed = await generateStyleSeed(`${formattedDob}+${birthTime}+${birthPlace}`);
 
+    // Pick pivotal life element before sending to OpenAI
+    const pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+
     console.log(
-      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`,
+      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
