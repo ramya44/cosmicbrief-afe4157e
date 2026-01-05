@@ -383,12 +383,15 @@ End with calm confidence, not motivation.
 
 OUTPUT FORMAT:
 
-Return **valid JSON only** with the following structure:
+Return **valid JSON only** with the following structure.
+
+**CRITICAL**: Do NOT include section headers, titles, or markdown formatting within the JSON field values. Each field should contain only the content/body text, not the header. For example, "strategic_character" should NOT start with "The Strategic Character of 2026" - just include the paragraphs directly.
 
 {
   "year": "${targetYear}",
   "strategic_character": "...",
   "comparison_to_prior_year": "...",
+  "why_this_year_affects_you_differently": "...",
   "life_area_prioritization": [
     {"area": "Career and contribution", "priority": 1, "explanation": "..."},
     {"area": "Money and resources", "priority": 2, "explanation": "..."},
