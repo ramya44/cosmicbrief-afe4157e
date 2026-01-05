@@ -240,6 +240,7 @@ Return valid JSON ONLY (no markdown) with the following keys:
 
     const data = await resp.json();
     console.log("Full API response:", JSON.stringify(data));
+    console.log("Token usage:", JSON.stringify(data.usage));
 
     const generatedContent = data?.choices?.[0]?.message?.content ?? "";
 
