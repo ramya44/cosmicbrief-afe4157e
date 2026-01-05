@@ -96,7 +96,10 @@ const ResultsPage = () => {
           {birthData && (
             <p className="text-cream-muted">
               {birthData.name && <span className="text-cream">{birthData.name} · </span>}
-              {new Date(birthData.birthDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} · {birthData.birthPlace}
+              {(() => {
+                const [year, month, day] = birthData.birthDate.split('-').map(Number);
+                return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+              })()} · {birthData.birthPlace}
             </p>
           )}
         </div>
