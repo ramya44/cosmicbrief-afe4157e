@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StarField } from '@/components/StarField';
+import { PlaceAutocomplete } from '@/components/PlaceAutocomplete';
 import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
 import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, User } from 'lucide-react';
@@ -160,12 +161,10 @@ const InputPage = () => {
                 <MapPin className="w-4 h-4 text-gold" />
                 Place of Birth
               </Label>
-              <Input
-                id="birthPlace"
-                type="text"
-                placeholder="City, Country"
+              <PlaceAutocomplete
                 value={formData.birthPlace}
-                onChange={(e) => setFormData({ ...formData, birthPlace: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, birthPlace: value })}
+                placeholder="Start typing a city..."
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
               />
               {errors.birthPlace && (
