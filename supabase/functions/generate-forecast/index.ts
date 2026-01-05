@@ -111,6 +111,26 @@ Personalization comes from tone and emphasis using the provided style seed.
 
 Do not reason about uniqueness.
 
+AGE-BASED LIFE AREA SELECTION (MANDATORY):
+
+You must choose the pivotal life element based on the user's age.
+
+Use these rules strictly:
+
+- Under 35: career, education, or identity are common.
+
+- 35–50: career, relationships, family, or health.
+
+- 50–65: health, family, relationships, purpose, or legacy are more likely than career.
+
+- Over 65: health, family, meaning, emotional life, or stewardship should dominate.
+
+  Career should be chosen only if there is a clear reason; otherwise, do not select it.
+
+If the user is over 60, career must NOT be the pivotal life element unless explicitly justified.
+
+If career is chosen anyway, briefly state why it still dominates this year.
+
 Tone:
 
 Grounded, clear, confident.
