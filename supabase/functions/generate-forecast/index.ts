@@ -84,6 +84,14 @@ serve(async (req) => {
       "0",
     )}/${dateObj.getFullYear()}`;
 
+    // Calculate age
+    const today = new Date();
+    let age = today.getFullYear() - dateObj.getFullYear();
+    const monthDiff = today.getMonth() - dateObj.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateObj.getDate())) {
+      age--;
+    }
+
     const userName = name || "the seeker";
     const targetYear = "2026";
 
@@ -91,7 +99,7 @@ serve(async (req) => {
     const styleSeed = await generateStyleSeed(`${formattedDob}+${birthTime}+${birthPlace}`);
 
     console.log(
-      `Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`,
+      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -146,7 +154,7 @@ No mysticism. No motivation. No technical astrology language.`;
 
 Inputs:
 
-- Date of birth: ${formattedDob}
+- Age: ${age}
 
 - Time of birth: ${birthTime}
 
