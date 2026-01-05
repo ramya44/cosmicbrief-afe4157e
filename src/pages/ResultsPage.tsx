@@ -5,7 +5,7 @@ import { ForecastSection } from '@/components/ForecastSection';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useForecastStore } from '@/store/forecastStore';
 import { generateStrategicForecast } from '@/lib/generateStrategicForecast';
-import { ArrowLeft, Sparkles, Calendar, Heart, Zap, Briefcase, Lock, DollarSign, ArrowLeftRight, Target, TrendingUp, Scale, Compass, BookOpen } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Lock, ArrowLeftRight, Target, TrendingUp, Scale, Compass, BookOpen } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -91,7 +91,7 @@ const ResultsPage = () => {
         <div className="text-center mb-12 animate-fade-up">
           <p className="text-gold text-sm uppercase tracking-widest mb-2">Your Personalized Reading</p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
-            {freeForecast.year} Annual Forecast
+            2026 Annual Forecast
           </h1>
           {birthData && (
             <p className="text-cream-muted">
@@ -101,53 +101,12 @@ const ResultsPage = () => {
           )}
         </div>
 
-        {/* Free Sections */}
+        {/* Free Forecast - Plain Text */}
         <div className="max-w-3xl mx-auto space-y-8 mb-12">
-          {/* Summary - Character of the Year */}
-          <ForecastSection title="Character of the Year" delay={100}>
-            <p className="text-cream/90 leading-relaxed text-lg">
-              {freeForecast.summary}
+          <ForecastSection title="Your Year at a Glance" delay={100}>
+            <p className="text-cream/90 leading-relaxed text-lg whitespace-pre-line">
+              {freeForecast.forecast}
             </p>
-          </ForecastSection>
-
-          {/* Comparison to Prior Year */}
-          <ForecastSection title="How 2026 Differs from 2025" delay={200}>
-            <div className="flex items-start gap-3 mb-4">
-              <ArrowLeftRight className="w-5 h-5 text-gold mt-1 flex-shrink-0" />
-              <p className="text-cream-muted text-sm">Key contrasts between this year and last</p>
-            </div>
-            <p className="text-cream/90 leading-relaxed">
-              {freeForecast.comparisonToPriorYear}
-            </p>
-          </ForecastSection>
-
-          {/* Themed Sections */}
-          <ForecastSection title="Career and Contribution" delay={300}>
-            <div className="flex items-center gap-2 mb-3">
-              <Briefcase className="w-4 h-4 text-gold" />
-            </div>
-            <p className="text-cream/90 leading-relaxed">{freeForecast.sections.careerAndContribution}</p>
-          </ForecastSection>
-
-          <ForecastSection title="Money and Resources" delay={400}>
-            <div className="flex items-center gap-2 mb-3">
-              <DollarSign className="w-4 h-4 text-gold" />
-            </div>
-            <p className="text-cream/90 leading-relaxed">{freeForecast.sections.moneyAndResources}</p>
-          </ForecastSection>
-
-          <ForecastSection title="Relationships and Boundaries" delay={500}>
-            <div className="flex items-center gap-2 mb-3">
-              <Heart className="w-4 h-4 text-gold" />
-            </div>
-            <p className="text-cream/90 leading-relaxed">{freeForecast.sections.relationshipsAndBoundaries}</p>
-          </ForecastSection>
-
-          <ForecastSection title="Energy and Wellbeing" delay={600}>
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-gold" />
-            </div>
-            <p className="text-cream/90 leading-relaxed">{freeForecast.sections.energyAndWellbeing}</p>
           </ForecastSection>
         </div>
 

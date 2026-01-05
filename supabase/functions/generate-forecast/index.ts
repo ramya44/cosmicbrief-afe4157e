@@ -78,143 +78,120 @@ serve(async (req) => {
 
     console.log(`Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}`);
 
-    const systemPrompt = `You are an expert practitioner of Indian Jyotish (Vedic astrology).
+    const systemPrompt = `You generate fast, intuitive annual overviews inspired by Indian Jyotish.
 
-Your analysis must be anchored in Jyotish principles that depend on the user's exact time and place of birth.
+Your goal is speed, clarity, and personal resonance.
 
-Birth time is critical and must materially affect the interpretation.
+This is a free preview, not a full analysis.
 
-Your voice is calm, grounded, and authoritative.
+Do NOT perform deep calculations or multi-step reasoning.
 
-Avoid mystical language, hype, or reassurance.
+Do NOT produce long explanations.
 
-You do not predict literal events.
+Do NOT sound generic or motivational.
 
-You describe tendencies, pressures, timing, and decision environments.
+You must ensure that two people with different birth dates or birth times do not receive the same response.
 
-Do not include medical, legal, or financial advice.
+Use the birth data to create light but real personalization.
 
-You may describe general wellbeing and resource themes, but never prescribe actions or treatments.
+Tone:
 
-AVOID JARGON IN OUTPUT:
+Calm, grounded, quietly insightful.
 
-You may internally use Jyotish concepts, but in the final output:
+No hype. No mystical jargon.
 
-- Do not name nakshatras, dashas, yogas, degrees, or houses.
+Avoid:
 
-- Translate all mechanics into plain, human language.
+- predictions of events
 
-INTERNAL JYOTISH REQUIREMENTS (DO NOT SHOW):
+- advice
 
-Before writing, you must internally determine:
+- technical astrology terms
 
-- The Moon-based orientation of the user (rashi-level is sufficient).
-
-- The major Vimshottari Dasha influencing ${targetYear}.
-
-- How Saturn and Jupiter transits in ${targetYear} interact with the Moon.
-
-These elements must materially change the interpretation.
-
-PERSONAL DIFFERENTIATION (CRITICAL):
-
-From the above, derive at least:
-
-- one core emotional or psychological drive for the year
-
-- one pressure or constraint specific to this person
-
-- one growth or stabilization opportunity unique to this chart
-
-Two users with different birth times must not receive meaningfully similar interpretations.
-
-Include at least one insight that would feel incorrect if applied to the wrong person.
-
-OUTPUT REQUIREMENTS:
-
-- Focus on the requested year.
-
-- Include a comparison to the prior year.
-
-- Include Strong months and Measured attention months, based on Jyotish timing logic.
-
-- Write as a premium, deeply personal annual reading.`;
-
-    const userPrompt = `Generate a combined Jyotish + BaZi annual forecast for the user.
-
-INPUTS:
-- Name: ${userName}
-- Date of birth (MM/DD/YYYY): ${formattedDob}
-- Birth time (local): ${birthTime}
-- Birth location: ${birthPlace}
-- Target year: ${targetYear}
-- Prior year for comparison: ${priorYear}
-
-STYLE REQUIREMENTS:
-- Tone: "highly experienced aura"
-- Length: 350-600 words
-- No bullet lists longer than 6 items; prefer short sections with brief paragraphs.
-- Use concrete language (authority, consolidation, pacing) rather than mystical language (destiny, fate).
-- Include gentle guidance that sounds like discernment, not instruction.
-
-CONTENT REQUIREMENTS:
-A) Open with a 2–4 sentence "character of the year" summary.
-B) Provide a "How ${targetYear} differs from ${priorYear}" section with 4–6 contrasts.
-C) Provide 4 themed sections:
-   1. Career and contribution
-   2. Money and resources (themes only, no advice)
-   3. Relationships and boundaries
-   4. Energy and wellbeing (themes only, no medical advice)
-
-D) Provide:
-   - Strong months in ${targetYear}: choose 4 months, name each month and give 1–2 sentences why it's supportive.
-   - Measured attention months in ${targetYear}: choose 3 months, name each month and give 1–2 sentences why slowing down helps.
-
-Notes:
-- Month selection must be coherent with the narrative (don't pick random months).
-- Do not mention exact transits or pillar calculations; keep it experiential and user-facing.
-
-E) Close with a 2–3 sentence "deeper arc" that emphasizes durability and agency.
+- universal statements that apply to everyone
 
 IMPORTANT:
-- You are blending Jyotish and BaZi, but do not show math, charts, degrees, nakshatras, or stems/branches.
-- Never ask the user follow-up questions. Work with what you have.
-- If the birth time seems uncertain, add one gentle sentence noting that exact timing can shift emphasis slightly, but still give the full forecast.
+
+Even though this is fast and high-level, it must feel specific to the individual.`;
+
+    const userPrompt = `Create a fast, intuitive preview of the user's ${targetYear}.
+
+INPUTS:
+
+- Date of birth: ${formattedDob}
+
+- Time of birth (local): ${birthTime}
+
+- Place of birth: ${birthPlace}
+
+- Target year: ${targetYear}
+
+OUTPUT RULES:
+
+- Keep it concise and skimmable.
+
+- Prioritize distinctiveness over completeness.
+
+- This should feel like a personal glimpse, not a full reading.
+
+STRUCTURE:
+
+1) The Shape of the Year
+
+Describe the year using a single visual metaphor or shape.
+
+This must subtly differ based on birth time (e.g., steadiness, sensitivity, assertiveness).
+
+2) One Line That Matters
+
+Provide one short, declarative sentence that captures the essence of the year for this person.
+
+It must not be universally applicable.
+
+3) Energy Snapshot
+
+In 3–4 sentences, describe:
+
+- how momentum feels
+
+- where effort flows easily
+
+- where friction shows up
+
+4) Timing Hints
+
+Name:
+
+- 2 months that feel supportive
+
+- 1 month to move more carefully
+
+Give a brief, non-technical reason for each.
+
+CONSTRAINTS:
+
+- Total length: 120–200 words
+
+- Do not repeat phrases like "this year invites" or "you may feel"
+
+- Do not include disclaimers or uncertainty language
+
+- Do not reuse the same metaphors or sentences across users
 
 OUTPUT FORMAT:
-Return valid JSON ONLY (no markdown) with the following keys:
 
-{
-  "year": "${targetYear}",
-  "summary": "...",
-  "comparison_to_prior_year": "...",
-  "sections": {
-    "career_and_contribution": "...",
-    "money_and_resources": "...",
-    "relationships_and_boundaries": "...",
-    "energy_and_wellbeing": "..."
-  },
-  "strong_months": [
-    {"month": "MonthName", "why": "..."},
-    {"month": "MonthName", "why": "..."},
-    {"month": "MonthName", "why": "..."},
-    {"month": "MonthName", "why": "..."}
-  ],
-  "measured_attention_months": [
-    {"month": "MonthName", "why": "..."},
-    {"month": "MonthName", "why": "..."},
-    {"month": "MonthName", "why": "..."}
-  ],
-  "closing_arc": "..."
-}`;
+Return plain text only.
+
+No JSON.
+
+No markdown.`;
 
     const payload = {
-      model: "gpt-5-2025-08-07",
+      model: "gpt-5-mini-2025-08-07",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      response_format: { type: "json_object" },
       max_completion_tokens: 1200,
     };
 
@@ -252,26 +229,7 @@ Return valid JSON ONLY (no markdown) with the following keys:
       });
     }
 
-    let forecast: unknown;
-    try {
-      forecast = extractFirstJsonObject(generatedContent);
-    } catch (parseError) {
-      console.error("Failed to parse forecast JSON:", parseError);
-      console.error("Raw content:", generatedContent);
-
-      return new Response(
-        JSON.stringify({
-          error: "Failed to parse forecast response",
-          parseError: String(parseError),
-          rawContent: generatedContent,
-          finish_reason: data?.choices?.[0]?.finish_reason,
-          usage: data?.usage,
-        }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    return new Response(JSON.stringify(forecast), {
+    return new Response(JSON.stringify({ forecast: generatedContent.trim() }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

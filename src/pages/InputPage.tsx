@@ -47,8 +47,8 @@ const InputPage = () => {
     navigate('/results');
 
     try {
-      const { free, paid } = await generateForecast(formData);
-      setForecast(free, paid);
+      const forecast = await generateForecast(formData);
+      setForecast(forecast, {});
     } catch (error) {
       console.error('Error generating forecast:', error);
     } finally {

@@ -13,21 +13,12 @@ export interface MonthEntry {
 }
 
 export interface FreeForecast {
-  year: string;
-  summary: string;
-  comparisonToPriorYear: string;
-  sections: {
-    careerAndContribution: string;
-    moneyAndResources: string;
-    relationshipsAndBoundaries: string;
-    energyAndWellbeing: string;
-  };
+  forecast: string;
 }
 
 export interface PaidForecast {
-  strongMonths: MonthEntry[];
-  measuredAttentionMonths: MonthEntry[];
-  closingArc: string;
+  // Reserved for future paid features in free tier
+  // Currently unused since strategic forecast is the premium offering
 }
 
 // Strategic Year Map types
