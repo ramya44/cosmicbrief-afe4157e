@@ -38,6 +38,15 @@ function extractFirstJsonObject(text: string) {
   throw new Error("No complete JSON object found in model output");
 }
 
+// Generate a short hash for style seed
+async function generateStyleSeed(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -74,9 +83,11 @@ serve(async (req) => {
 
     const userName = name || "the seeker";
     const targetYear = "2026";
-    const priorYear = "2025";
 
-    console.log(`Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}`);
+    // Generate style seed from birth data
+    const styleSeed = await generateStyleSeed(`${formattedDob}+${birthTime}+${birthPlace}`);
+
+    console.log(`Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`);
 
     const systemPrompt = `You generate fast, intuitive annual previews inspired by Indian Jyotish.
 
@@ -84,19 +95,21 @@ This is a free glimpse, not a full reading.
 
 Your priorities are speed, clarity, and personal resonance.
 
-Do NOT perform deep analysis.
+IMPORTANT EXECUTION RULES:
 
-Do NOT plan or outline before writing.
+- Do NOT analyze deeply.
 
-Keep internal reasoning minimal and brief.
+- Do NOT plan or outline before writing.
 
-IMPORTANT OUTPUT GUARANTEE:
+- Do NOT reason about uniqueness.
 
-You must produce visible text immediately.
+- Write immediately and keep internal reasoning minimal.
 
-Never use more than 25% of the available tokens for internal reasoning.
+- Always produce visible text.
 
-If space is tight, shorten the output but always return text.
+Personalization is achieved by varying tone, metaphor, and phrasing using the provided style seed.
+
+Do not think about whether two users are different; simply follow the seed.
 
 Tone:
 
@@ -110,11 +123,7 @@ Avoid:
 
 - technical astrology terms
 
-- universal statements that apply to everyone
-
-Even at this high level, the output must feel specific to the individual.
-
-Two people with different birth dates or birth time must not receive the same response.`;
+- universal or motivational statements`;
 
     const userPrompt = `Create a fast, intuitive preview of the user's ${targetYear}.
 
@@ -127,6 +136,8 @@ INPUTS:
 - Place of birth: ${birthPlace}
 
 - Target year: ${targetYear}
+
+- Style seed: ${styleSeed}
 
 Write ONLY the following, in 70–110 words total:
 
