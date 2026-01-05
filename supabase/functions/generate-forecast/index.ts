@@ -163,7 +163,7 @@ Name ONE life area that stands out this year (career, relationships, family, hea
 
 Write 2–3 sentences describing how attention naturally gathers there.
 
-3) Central Tension
+3) Quiet Undercurrent
 
 Describe the tension that sits inside this life area this year.
 
