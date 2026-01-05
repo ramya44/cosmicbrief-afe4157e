@@ -4,9 +4,9 @@ import { StarField } from '@/components/StarField';
 import { ForecastSection } from '@/components/ForecastSection';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useForecastStore } from '@/store/forecastStore';
-import { generateStrategicForecast } from '@/lib/generateStrategicForecast';
+import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Sparkles, Calendar, Lock, ArrowLeftRight, Target, TrendingUp, Scale, Compass, BookOpen } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 const ResultsPage = () => {
@@ -34,21 +34,27 @@ const ResultsPage = () => {
     return <LoadingSpinner />;
   }
 
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const handleUnlock = async () => {
-    if (!birthData) return;
+    if (!birthData || isRedirecting) return;
     
-    setIsPaid(true);
-    setIsStrategicLoading(true);
+    setIsRedirecting(true);
     
     try {
-      const strategic = await generateStrategicForecast(birthData);
-      setStrategicForecast(strategic);
-      toast.success('Your Strategic Year Map is ready!');
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { birthData },
+      });
+
+      if (error) throw error;
+      if (!data?.url) throw new Error('No checkout URL returned');
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
     } catch (error) {
-      console.error('Failed to generate strategic forecast:', error);
-      toast.error('Failed to generate strategic forecast. Please try again.');
-    } finally {
-      setIsStrategicLoading(false);
+      console.error('Failed to create checkout session:', error);
+      toast.error('Failed to start checkout. Please try again.');
+      setIsRedirecting(false);
     }
   };
 
