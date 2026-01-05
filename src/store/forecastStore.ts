@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface BirthData {
   birthDate: string;
@@ -84,27 +85,40 @@ export interface ForecastState {
   reset: () => void;
 }
 
-export const useForecastStore = create<ForecastState>((set) => ({
-  birthData: null,
-  freeForecast: null,
-  paidForecast: null,
-  strategicForecast: null,
-  isPaid: false,
-  isLoading: false,
-  isStrategicLoading: false,
-  setBirthData: (data) => set({ birthData: data }),
-  setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
-  setStrategicForecast: (forecast) => set({ strategicForecast: forecast }),
-  setIsPaid: (paid) => set({ isPaid: paid }),
-  setIsLoading: (loading) => set({ isLoading: loading }),
-  setIsStrategicLoading: (loading) => set({ isStrategicLoading: loading }),
-  reset: () => set({ 
-    birthData: null, 
-    freeForecast: null, 
-    paidForecast: null, 
-    strategicForecast: null,
-    isPaid: false, 
-    isLoading: false,
-    isStrategicLoading: false 
-  }),
-}));
+export const useForecastStore = create<ForecastState>()(
+  persist(
+    (set) => ({
+      birthData: null,
+      freeForecast: null,
+      paidForecast: null,
+      strategicForecast: null,
+      isPaid: false,
+      isLoading: false,
+      isStrategicLoading: false,
+      setBirthData: (data) => set({ birthData: data }),
+      setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
+      setStrategicForecast: (forecast) => set({ strategicForecast: forecast }),
+      setIsPaid: (paid) => set({ isPaid: paid }),
+      setIsLoading: (loading) => set({ isLoading: loading }),
+      setIsStrategicLoading: (loading) => set({ isStrategicLoading: loading }),
+      reset: () => set({ 
+        birthData: null, 
+        freeForecast: null, 
+        paidForecast: null, 
+        strategicForecast: null,
+        isPaid: false, 
+        isLoading: false,
+        isStrategicLoading: false 
+      }),
+    }),
+    {
+      name: 'forecast-storage',
+      partialize: (state) => ({ 
+        birthData: state.birthData,
+        freeForecast: state.freeForecast,
+        isPaid: state.isPaid,
+        strategicForecast: state.strategicForecast,
+      }),
+    }
+  )
+);

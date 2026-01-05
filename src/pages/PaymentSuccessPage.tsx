@@ -5,6 +5,7 @@ import { useForecastStore } from '@/store/forecastStore';
 import { generateStrategicForecast } from '@/lib/generateStrategicForecast';
 import { Compass, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const PaymentSuccessPage = () => {
   
   const { 
     birthData, 
+    setBirthData,
     setIsPaid, 
     setStrategicForecast, 
     setIsStrategicLoading 
@@ -29,11 +31,35 @@ const PaymentSuccessPage = () => {
         return;
       }
 
-      if (!birthData) {
-        setStatus('error');
-        toast.error('Birth data not found. Please start over.');
-        setTimeout(() => navigate('/input'), 2000);
-        return;
+      let currentBirthData = birthData;
+
+      // If birthData is not in store, try to retrieve it from Stripe session
+      if (!currentBirthData) {
+        try {
+          console.log('Birth data not in store, verifying payment session...');
+          const { data, error } = await supabase.functions.invoke('verify-payment', {
+            body: { sessionId },
+          });
+
+          if (error) {
+            console.error('Verify payment error:', error);
+            throw new Error(error.message);
+          }
+
+          if (data?.success && data?.birthData) {
+            currentBirthData = data.birthData;
+            setBirthData(data.birthData);
+            console.log('Birth data restored from Stripe session:', data.birthData);
+          } else {
+            throw new Error('Could not retrieve birth data');
+          }
+        } catch (error) {
+          console.error('Failed to verify payment:', error);
+          setStatus('error');
+          toast.error('Could not verify payment. Please try again.');
+          setTimeout(() => navigate('/input'), 2000);
+          return;
+        }
       }
 
       // Payment successful - proceed to generate forecast
@@ -42,7 +68,7 @@ const PaymentSuccessPage = () => {
       setIsStrategicLoading(true);
 
       try {
-        const strategic = await generateStrategicForecast(birthData);
+        const strategic = await generateStrategicForecast(currentBirthData);
         setStrategicForecast(strategic);
         setStatus('complete');
         toast.success('Your Strategic Year Map is ready!');
@@ -60,7 +86,7 @@ const PaymentSuccessPage = () => {
     };
 
     processPayment();
-  }, [searchParams, birthData, navigate, setIsPaid, setStrategicForecast, setIsStrategicLoading]);
+  }, [searchParams, birthData, navigate, setBirthData, setIsPaid, setStrategicForecast, setIsStrategicLoading]);
 
   return (
     <div className="relative min-h-screen bg-celestial flex items-center justify-center">
