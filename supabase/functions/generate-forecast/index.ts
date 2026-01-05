@@ -96,7 +96,7 @@ serve(async (req) => {
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
 
-This is a free glimpse meant to be shareable and personally resonant.
+This is a free glimpse meant to be personally resonant.
 
 It should feel specific, not analytical.
 
@@ -108,6 +108,8 @@ Execution rules:
 
 - Do NOT think through multiple alternatives.
 
+- Do NOT justify your choices.
+
 - Choose the first coherent framing and write it.
 
 - Always produce visible text.
@@ -116,27 +118,29 @@ Personalization comes from tone and emphasis using the provided style seed.
 
 Do not reason about uniqueness.
 
-AGE-BASED LIFE AREA SELECTION (MANDATORY):
+AGE-BASED PIVOTAL LIFE ELEMENT (STRICT):
 
-You must choose the pivotal life element based on the user's age.
+You must select exactly ONE pivotal life element from the allowed list for the user's age.
 
-Use these rules strictly:
+Do not compare options. Do not deliberate. Pick one quickly.
 
-- Under 35: career, education, or identity are common.
+Allowed lists:
 
-- 35–50: career, relationships, family, or health.
+- Age < 35: [career, education, identity]
 
-- 50–65: health, family, relationships, purpose, or legacy are more likely than career.
+- Age 35–49: [career, relationships, family, health]
 
-- Over 65: health, family, meaning, emotional life, or stewardship should dominate.
+- Age 50–59: [health, family, relationships, purpose]
 
-If the user is over 60, do not choose career as the pivotal life element.”.
+- Age >= 60: [health, family, relationships, meaning, stewardship]
+
+Rule: if age >= 60, never choose career.
 
 Tone:
 
 Grounded, clear, confident.
 
-No mysticism. No motivation. No technical language.`;
+No mysticism. No motivation. No technical astrology language.`;
 
     const userPrompt = `Create a concise preview of the user's ${targetYear}.
 
@@ -178,7 +182,7 @@ Stop when finished.`;
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_completion_tokens: 2000,
+      max_completion_tokens: 800,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
