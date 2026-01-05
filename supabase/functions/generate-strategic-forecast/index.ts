@@ -229,7 +229,9 @@ OUTPUT REQUIREMENTS:
 
 STRUCTURE (REQUIRED):
 
-### 1. The Strategic Character of ${targetYear}
+**CRITICAL**: The section labels below are for YOUR reference only. Do NOT include any headers, section titles, numbers, or markdown formatting in your JSON output values. Each JSON field should contain ONLY the prose content - no titles like "The Strategic Character of 2026" or "How 2026 Differs from 2025".
+
+**Section: strategic_character**
 
 A 3–5 paragraph opening that clearly defines:
 
@@ -243,7 +245,7 @@ This section should immediately distinguish the year from generic "good/bad year
 
 ---
 
-### 2. How ${targetYear} Differs from ${priorYear}
+**Section: comparison_to_prior_year**
 
 Provide a direct comparison that explains:
 
@@ -256,16 +258,16 @@ Provide a direct comparison that explains:
 This should help the user mentally close the prior year and step into the new one.
 
 ---
-### 2. Why ${targetYear} Affects You Differently Than Others”
+
+**Section: why_this_year_affects_you_differently**
 
 In this section:
 - Explain what makes this year personally activating, stabilizing, or challenging for this user
 - Anchor the explanation in their birth data without naming techniques or jargon
 
-
 ---
 
-### 4. Life-Area Prioritization (Explicit Ranking)
+**Section: life_area_prioritization**
 
 Rank the following areas in order of strategic importance for the year:
 
@@ -289,7 +291,7 @@ This section is critical. Be clear and decisive.
 
 ---
 
-### 5. Quarter-by-Quarter Strategic Map
+**Section: quarterly_map**
 
 Break the year into four quarters.
 
@@ -309,7 +311,7 @@ This should feel like a leadership or life-planning document, not a horoscope.
 
 ---
 
-### 6. Key Trade-Offs and Tensions
+**Section: key_tradeoffs**
 
 Explicitly name 3–5 tensions the user will need to navigate, such as:
 
@@ -329,7 +331,7 @@ This is where insight depth really shows.
 
 ---
 
-### 7. Counterfactual Paths (If–Then Scenarios)
+**Section: counterfactual_paths**
 
 Describe 2–3 plausible paths through the year, for example:
 
@@ -349,7 +351,7 @@ Avoid judgment. Focus on clarity.
 
 ---
 
-### 8. Personal Operating Principles for ${targetYear}
+**Section: operating_principles**
 
 Provide 4–6 short, memorable principles written specifically for the user.
 
@@ -367,7 +369,7 @@ Examples of tone (do not reuse verbatim):
 
 ---
 
-### 9. The Deeper Arc: Past → Present → Future
+**Section: deeper_arc**
 
 Close by placing ${targetYear} in a three-year arc:
 
