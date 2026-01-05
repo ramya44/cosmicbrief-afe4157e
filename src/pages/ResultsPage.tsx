@@ -104,12 +104,60 @@ const ResultsPage = () => {
           )}
         </div>
 
-        {/* Free Forecast - Plain Text */}
+        {/* Free Forecast - Formatted Sections */}
         <div className="max-w-3xl mx-auto space-y-8 mb-12">
           <ForecastSection title="Your Year at a Glance" delay={100}>
-            <p className="text-cream/90 leading-relaxed text-lg whitespace-pre-line">
-              {freeForecast.forecast}
-            </p>
+            {(() => {
+              const text = freeForecast.forecast;
+              // Parse sections from the forecast text
+              const sections: { header: string; content: string }[] = [];
+              const sectionHeaders = ['Defining Arc', 'Pivotal Life Element', 'Quiet Undercurrent'];
+              
+              let remaining = text;
+              sectionHeaders.forEach((header, index) => {
+                const headerPattern = new RegExp(`${header}\\s*\\n`, 'i');
+                const nextHeader = sectionHeaders[index + 1];
+                const nextPattern = nextHeader ? new RegExp(`\\n\\s*${nextHeader}`, 'i') : null;
+                
+                const headerMatch = remaining.match(headerPattern);
+                if (headerMatch) {
+                  const startIndex = (headerMatch.index ?? 0) + headerMatch[0].length;
+                  let endIndex = remaining.length;
+                  
+                  if (nextPattern) {
+                    const nextMatch = remaining.match(nextPattern);
+                    if (nextMatch && nextMatch.index !== undefined) {
+                      endIndex = nextMatch.index;
+                    }
+                  }
+                  
+                  const content = remaining.slice(startIndex, endIndex).trim();
+                  if (content) {
+                    sections.push({ header, content });
+                  }
+                }
+              });
+
+              // If parsing didn't work, show as plain text
+              if (sections.length === 0) {
+                return (
+                  <p className="text-cream/90 leading-relaxed text-lg whitespace-pre-line">
+                    {text}
+                  </p>
+                );
+              }
+
+              return (
+                <div className="space-y-6">
+                  {sections.map((section, index) => (
+                    <div key={index}>
+                      <h3 className="font-display text-xl text-gold mb-2">{section.header}</h3>
+                      <p className="text-cream/90 leading-relaxed">{section.content}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </ForecastSection>
         </div>
 
