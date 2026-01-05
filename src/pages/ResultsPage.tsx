@@ -293,9 +293,9 @@ const ResultsPage = () => {
             <ForecastSection title="Key Trade-Offs and Tensions" delay={500} icon={<Scale className="w-5 h-5 text-gold" />}>
               <div className="space-y-4">
                 {strategicForecast.key_tradeoffs.map((tradeoff, index) => (
-                  <div key={index} className="border-l-2 border-gold/30 pl-4">
-                    <h4 className="font-display text-cream mb-1">{tradeoff.tension}</h4>
-                    <p className="text-cream/70 text-sm">{tradeoff.explanation}</p>
+                  <div key={index}>
+                    <h4 className="text-cream font-medium mb-1">{tradeoff.tension}</h4>
+                    <p className="text-cream/70">{tradeoff.explanation}</p>
                   </div>
                 ))}
               </div>
@@ -306,9 +306,9 @@ const ResultsPage = () => {
               <p className="text-cream-muted text-sm mb-4">Plausible paths through the year</p>
               <div className="space-y-4">
                 {strategicForecast.counterfactual_paths.map((path, index) => (
-                  <div key={index} className="border border-border/30 rounded-lg p-4 bg-midnight/30">
-                    <h4 className="font-display text-gold mb-2">{path.path}</h4>
-                    <p className="text-cream/80 text-sm">{path.description}</p>
+                  <div key={index}>
+                    <h4 className="text-cream font-medium mb-1">{path.path}</h4>
+                    <p className="text-cream/70">{path.description}</p>
                   </div>
                 ))}
               </div>
@@ -320,16 +320,16 @@ const ResultsPage = () => {
               <div className="space-y-4">
                 {strategicForecast.operating_principles.map((principle, index) => (
                   <div key={index} className="border-l-2 border-gold/50 pl-4">
-                    <h4 className="font-display text-cream text-lg italic">"{principle.principle}"</h4>
-                    <p className="text-cream/70 text-sm mt-1">{principle.meaning}</p>
+                    <h4 className="text-cream font-medium italic">"{principle.principle}"</h4>
+                    <p className="text-cream/70 mt-1">{principle.meaning}</p>
                   </div>
                 ))}
               </div>
             </ForecastSection>
 
             {/* Deeper Arc */}
-            <ForecastSection title="The Deeper Arc" delay={800} icon={<Sparkles className="w-5 h-5 text-gold" />}>
-              <p className="text-cream/90 leading-relaxed text-lg italic whitespace-pre-line">
+            <ForecastSection title="The Deeper Arc: Your Past, Present, and Future" delay={800} icon={<Sparkles className="w-5 h-5 text-gold" />}>
+              <p className="text-cream/90 leading-relaxed whitespace-pre-line">
                 {strategicForecast.deeper_arc}
               </p>
             </ForecastSection>
