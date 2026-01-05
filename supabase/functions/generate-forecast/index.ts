@@ -113,7 +113,7 @@ INPUTS:
 
 STYLE REQUIREMENTS:
 - Tone: "highly experienced aura"
-- Length: 550–850 words
+- Length: 350-600 words
 - No bullet lists longer than 6 items; prefer short sections with brief paragraphs.
 - Use concrete language (authority, consolidation, pacing) rather than mystical language (destiny, fate).
 - Include gentle guidance that sounds like discernment, not instruction.
@@ -175,7 +175,7 @@ Return valid JSON ONLY (no markdown) with the following keys:
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_output_tokens: 1400,
+      max_output_tokens: 3000,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
