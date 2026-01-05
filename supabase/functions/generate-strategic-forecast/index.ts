@@ -423,7 +423,7 @@ Return **valid JSON only** with the following structure:
         { role: "user", content: userPrompt },
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 16000,
+      max_completion_tokens: 4500,
     };
 
     console.log("OpenAI strategic payload:", JSON.stringify(payload));
