@@ -8,6 +8,7 @@ interface ForecastSectionProps {
   locked?: boolean;
   className?: string;
   delay?: number;
+  icon?: ReactNode;
 }
 
 export const ForecastSection = ({
@@ -16,6 +17,7 @@ export const ForecastSection = ({
   locked = false,
   className,
   delay = 0,
+  icon,
 }: ForecastSectionProps) => {
   return (
     <div
@@ -26,7 +28,10 @@ export const ForecastSection = ({
       )}
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
-      <h3 className="font-display text-xl md:text-2xl text-gold mb-4">{title}</h3>
+      <div className="flex items-center gap-3 mb-4">
+        {icon}
+        <h3 className="font-display text-xl md:text-2xl text-gold">{title}</h3>
+      </div>
       
       <div className={cn(locked && 'blur-lock select-none')}>
         {children}

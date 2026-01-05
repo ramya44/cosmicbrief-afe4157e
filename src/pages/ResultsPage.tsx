@@ -232,43 +232,33 @@ const ResultsPage = () => {
           <div className="max-w-3xl mx-auto space-y-8 mb-16">
             {/* Strategic Title */}
             <div className="text-center py-8 border-t border-b border-gold/30">
-              <p className="text-gold text-sm uppercase tracking-widest mb-2">Premium Strategic Analysis</p>
               <h2 className="font-display text-3xl md:text-4xl text-cream">
                 Strategic Year Map
               </h2>
             </div>
 
             {/* Strategic Character */}
-            <ForecastSection title="The Strategic Character of 2026" delay={100}>
-              <div className="flex items-center gap-2 mb-3">
-                <Target className="w-4 h-4 text-gold" />
-              </div>
+            <ForecastSection title="The Strategic Character of 2026" delay={100} icon={<Target className="w-5 h-5 text-gold" />}>
               <p className="text-cream/90 leading-relaxed whitespace-pre-line">
                 {strategicForecast.strategic_character}
               </p>
             </ForecastSection>
 
             {/* Comparison */}
-            <ForecastSection title="How 2026 Differs from 2025" delay={200}>
-              <div className="flex items-center gap-2 mb-3">
-                <ArrowLeftRight className="w-4 h-4 text-gold" />
-              </div>
+            <ForecastSection title="How 2026 Differs from 2025" delay={200} icon={<ArrowLeftRight className="w-5 h-5 text-gold" />}>
               <p className="text-cream/90 leading-relaxed whitespace-pre-line">
                 {strategicForecast.comparison_to_prior_year}
               </p>
             </ForecastSection>
 
             {/* Life Area Prioritization */}
-            <ForecastSection title="Life-Area Prioritization" delay={300}>
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-4 h-4 text-gold" />
-                <span className="text-cream-muted text-sm">Ranked by strategic importance</span>
-              </div>
+            <ForecastSection title="Life-Area Prioritization" delay={300} icon={<TrendingUp className="w-5 h-5 text-gold" />}>
+              <p className="text-cream-muted text-sm mb-4">Ranked by strategic importance</p>
               <div className="space-y-4">
                 {strategicForecast.life_area_prioritization
                   .sort((a, b) => a.priority - b.priority)
                   .map((item, index) => (
-                    <div key={index} className="border-l-2 border-gold/30 pl-4">
+                    <div key={index}>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-gold font-display text-lg">#{item.priority}</span>
                         <span className="text-cream font-medium">{item.area}</span>
@@ -280,10 +270,7 @@ const ResultsPage = () => {
             </ForecastSection>
 
             {/* Quarterly Map */}
-            <ForecastSection title="Quarter-by-Quarter Strategic Map" delay={400}>
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar className="w-4 h-4 text-gold" />
-              </div>
+            <ForecastSection title="Quarter-by-Quarter Strategic Map" delay={400} icon={<Calendar className="w-5 h-5 text-gold" />}>
               <div className="space-y-6">
                 {quarterKeys.map((key, index) => {
                   const quarter = strategicForecast.quarterly_map[key];
@@ -303,10 +290,7 @@ const ResultsPage = () => {
             </ForecastSection>
 
             {/* Key Trade-offs */}
-            <ForecastSection title="Key Trade-Offs and Tensions" delay={500}>
-              <div className="flex items-center gap-2 mb-4">
-                <Scale className="w-4 h-4 text-gold" />
-              </div>
+            <ForecastSection title="Key Trade-Offs and Tensions" delay={500} icon={<Scale className="w-5 h-5 text-gold" />}>
               <div className="space-y-4">
                 {strategicForecast.key_tradeoffs.map((tradeoff, index) => (
                   <div key={index} className="border-l-2 border-gold/30 pl-4">
@@ -318,11 +302,8 @@ const ResultsPage = () => {
             </ForecastSection>
 
             {/* Counterfactual Paths */}
-            <ForecastSection title="If–Then Scenarios" delay={600}>
-              <div className="flex items-center gap-2 mb-4">
-                <Compass className="w-4 h-4 text-gold" />
-                <span className="text-cream-muted text-sm">Plausible paths through the year</span>
-              </div>
+            <ForecastSection title="If–Then Scenarios" delay={600} icon={<Compass className="w-5 h-5 text-gold" />}>
+              <p className="text-cream-muted text-sm mb-4">Plausible paths through the year</p>
               <div className="space-y-4">
                 {strategicForecast.counterfactual_paths.map((path, index) => (
                   <div key={index} className="border border-border/30 rounded-lg p-4 bg-midnight/30">
@@ -334,11 +315,8 @@ const ResultsPage = () => {
             </ForecastSection>
 
             {/* Operating Principles */}
-            <ForecastSection title="Personal Operating Principles for 2026" delay={700}>
-              <div className="flex items-center gap-2 mb-4">
-                <BookOpen className="w-4 h-4 text-gold" />
-                <span className="text-cream-muted text-sm">Your personal constitution for the year</span>
-              </div>
+            <ForecastSection title="Personal Operating Principles for 2026" delay={700} icon={<BookOpen className="w-5 h-5 text-gold" />}>
+              <p className="text-cream-muted text-sm mb-4">Your personal constitution for the year</p>
               <div className="space-y-4">
                 {strategicForecast.operating_principles.map((principle, index) => (
                   <div key={index} className="border-l-2 border-gold/50 pl-4">
@@ -350,7 +328,7 @@ const ResultsPage = () => {
             </ForecastSection>
 
             {/* Deeper Arc */}
-            <ForecastSection title="The Deeper Arc" delay={800}>
+            <ForecastSection title="The Deeper Arc" delay={800} icon={<Sparkles className="w-5 h-5 text-gold" />}>
               <p className="text-cream/90 leading-relaxed text-lg italic whitespace-pre-line">
                 {strategicForecast.deeper_arc}
               </p>
