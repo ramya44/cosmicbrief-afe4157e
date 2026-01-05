@@ -1,0 +1,408 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Extract and parse the first complete top-level JSON object from a string.
+function extractFirstJsonObject(text: string) {
+  const cleaned = text
+    .trim()
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/```$/i, "")
+    .trim();
+
+  let depth = 0;
+  let start = -1;
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (ch === "{") {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0 && start !== -1) {
+        const candidate = cleaned.slice(start, i + 1);
+        return JSON.parse(candidate);
+      }
+    }
+  }
+
+  throw new Error("No complete JSON object found in model output");
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { birthDate, birthTime, birthPlace, name } = await req.json();
+
+    if (!birthDate || !birthTime || !birthPlace) {
+      return new Response(
+        JSON.stringify({
+          error: "Missing required fields: birthDate, birthTime, birthPlace",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    if (!openAIApiKey) {
+      return new Response(JSON.stringify({ error: "Missing OPENAI_API_KEY env var" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Format date for display
+    const dateObj = new Date(birthDate);
+    const formattedDob = `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(dateObj.getDate()).padStart(
+      2,
+      "0",
+    )}/${dateObj.getFullYear()}`;
+
+    const userName = name || "the seeker";
+    const targetYear = "2026";
+    const priorYear = "2025";
+
+    console.log(`Generating strategic forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}`);
+
+    const systemPrompt = `You are an expert annual-forecast reader blending Indian Jyotish and Chinese BaZi.
+
+Your voice is calm, authoritative, precise, and deeply experienced.
+
+You speak with judgment, not hype. You do not hedge excessively or sound mystical.
+
+You do not predict literal events. You describe patterns, priorities, tensions, and likely outcomes.
+
+This is a premium "Strategic Year Map," purchased by the user.
+
+Assume the reader expects depth, specificity, and insight they can return to throughout the year.
+
+Before writing the final output, internally:
+
+1) Derive the annual themes using Jyotish.
+
+2) Derive the annual themes using BaZi.
+
+3) Identify reinforcement, tension, and trade-offs between the two.
+
+4) Integrate them into a single strategic narrative.
+
+Do not reveal this reasoning.
+
+Avoid:
+
+- Fear-based language
+
+- Absolutes or guarantees
+
+- Mystical jargon without explanation
+
+- Advice that sounds like therapy, medicine, or financial instruction
+
+Use concrete language: prioritization, trade-offs, timing, leverage, pacing, consolidation.`;
+
+    const userPrompt = `Generate a **Strategic Year Map** for the user for the specified year.
+
+This is not a general forecast.
+
+This is a strategic, decision-oriented interpretation of the year.
+
+---
+
+INPUTS:
+
+- Name (optional): ${userName}
+
+- Date of birth (MM/DD/YYYY): ${formattedDob}
+
+- Birth time (local): ${birthTime}
+
+- Birth location: ${birthPlace}
+
+- Target year: ${targetYear}
+
+- Prior year: ${priorYear}
+
+---
+
+OUTPUT REQUIREMENTS:
+
+- Length: 900–1,200 words
+
+- Tone: experienced, composed, confident
+
+- Write as if speaking to an intelligent adult who wants clarity, not reassurance
+
+- Be specific and opinionated, while avoiding certainty
+
+- Do not ask follow-up questions
+
+---
+
+STRUCTURE (REQUIRED):
+
+### 1. The Strategic Character of ${targetYear}
+
+A 3–5 paragraph opening that clearly defines:
+
+- What kind of year this is
+
+- What it is *for*
+
+- What it is *not for*
+
+This section should immediately distinguish the year from generic "good/bad year" thinking.
+
+---
+
+### 2. How ${targetYear} Differs from ${priorYear}
+
+Provide a direct comparison that explains:
+
+- What stopped working
+
+- What now works better
+
+- Where effort vs judgment shifts
+
+This should help the user mentally close the prior year and step into the new one.
+
+---
+
+### 3. Life-Area Prioritization (Explicit Ranking)
+
+Rank the following areas in order of strategic importance for the year:
+
+1. Career / contribution
+
+2. Money / resources
+
+3. Relationships / boundaries
+
+4. Health / energy
+
+5. Personal growth / identity
+
+For each:
+
+- Explain why it sits where it does
+
+- Describe what "over-investing" or "under-investing" looks like this year
+
+This section is critical. Be clear and decisive.
+
+---
+
+### 4. Quarter-by-Quarter Strategic Map
+
+Break the year into four quarters.
+
+For **each quarter**, include:
+
+- Primary focus
+
+- What to push
+
+- What to protect
+
+- What to avoid
+
+Use grounded, real-world framing.
+
+This should feel like a leadership or life-planning document, not a horoscope.
+
+---
+
+### 5. Key Trade-Offs and Tensions
+
+Explicitly name 3–5 tensions the user will need to navigate, such as:
+
+- Growth vs sustainability
+
+- Visibility vs privacy
+
+- Expansion vs consolidation
+
+For each tension:
+
+- Explain how it shows up for *this* person
+
+- What happens if they lean too far in either direction
+
+This is where insight depth really shows.
+
+---
+
+### 6. Counterfactual Paths (If–Then Scenarios)
+
+Describe 2–3 plausible paths through the year, for example:
+
+- If the user prioritizes acceleration…
+
+- If the user prioritizes consolidation…
+
+Explain:
+
+- Short-term experience
+
+- Medium-term consequences
+
+- What each path sets up for the following year
+
+Avoid judgment. Focus on clarity.
+
+---
+
+### 7. Personal Operating Principles for ${targetYear}
+
+Provide 4–6 short, memorable principles written specifically for the user.
+
+These should function like a personal constitution for the year.
+
+Each principle should be followed by 1–2 sentences of explanation.
+
+Examples of tone (do not reuse verbatim):
+
+- "Clarity beats speed."
+
+- "Structure replaces effort."
+
+- "Fewer decisions, made earlier."
+
+---
+
+### 8. The Deeper Arc: Past → Present → Future
+
+Close by placing ${targetYear} in a three-year arc:
+
+- Why ${priorYear} felt the way it did
+
+- Why ${targetYear} is pivotal
+
+- What it prepares the ground for in the following year
+
+End with calm confidence, not motivation.
+
+---
+
+OUTPUT FORMAT:
+
+Return **valid JSON only** with the following structure:
+
+{
+  "year": "${targetYear}",
+  "strategic_character": "...",
+  "comparison_to_prior_year": "...",
+  "life_area_prioritization": [
+    {"area": "Career and contribution", "priority": 1, "explanation": "..."},
+    {"area": "Money and resources", "priority": 2, "explanation": "..."},
+    {"area": "Relationships and boundaries", "priority": 3, "explanation": "..."},
+    {"area": "Health and energy", "priority": 4, "explanation": "..."},
+    {"area": "Personal growth and identity", "priority": 5, "explanation": "..."}
+  ],
+  "quarterly_map": {
+    "Q1": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."},
+    "Q2": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."},
+    "Q3": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."},
+    "Q4": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."}
+  },
+  "key_tradeoffs": [
+    {"tension": "...", "explanation": "..."},
+    {"tension": "...", "explanation": "..."}
+  ],
+  "counterfactual_paths": [
+    {"path": "...", "description": "..."},
+    {"path": "...", "description": "..."}
+  ],
+  "operating_principles": [
+    {"principle": "...", "meaning": "..."}
+  ],
+  "deeper_arc": "..."
+}`;
+
+    const payload = {
+      model: "gpt-5-mini-2025-08-07",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 16000,
+    };
+
+    console.log("OpenAI strategic payload:", JSON.stringify(payload));
+
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${openAIApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      console.error("OpenAI API error:", resp.status, errorText);
+      return new Response(JSON.stringify({ error: "Failed to generate strategic forecast", details: errorText }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const data = await resp.json();
+    console.log("Full API response:", JSON.stringify(data));
+
+    const generatedContent = data?.choices?.[0]?.message?.content ?? "";
+
+    if (!generatedContent.trim()) {
+      console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
+      return new Response(JSON.stringify({ error: "Empty response from AI", raw: data }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    let forecast: unknown;
+    try {
+      forecast = extractFirstJsonObject(generatedContent);
+    } catch (parseError) {
+      console.error("Failed to parse strategic forecast JSON:", parseError);
+      console.error("Raw content:", generatedContent);
+
+      return new Response(
+        JSON.stringify({
+          error: "Failed to parse strategic forecast response",
+          parseError: String(parseError),
+          rawContent: generatedContent,
+          finish_reason: data?.choices?.[0]?.finish_reason,
+          usage: data?.usage,
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    return new Response(JSON.stringify(forecast), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error in generate-strategic-forecast function:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
