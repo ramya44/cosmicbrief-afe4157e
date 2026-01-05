@@ -80,7 +80,7 @@ const ResultsPage = () => {
               className="hidden md:flex"
             >
               <Lock className="w-4 h-4 mr-1" />
-              Unlock Strategic Year Map
+              Unlock Detailed Analysis
             </Button>
           )}
         </div>
@@ -112,23 +112,35 @@ const ResultsPage = () => {
 
         {/* Unlock CTA - Only show if not paid */}
         {!isPaid && (
-          <div className="max-w-3xl mx-auto mb-12 animate-fade-up" style={{ animationDelay: '700ms', animationFillMode: 'both' }}>
-            <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 to-transparent p-6 md:p-10 text-center glow-gold overflow-hidden">
-              <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-7 h-7 text-gold" />
+          <>
+            {/* Desktop CTA */}
+            <div className="hidden md:block max-w-3xl mx-auto mb-12 animate-fade-up" style={{ animationDelay: '700ms', animationFillMode: 'both' }}>
+              <div className="rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/10 to-transparent p-6 md:p-10 text-center glow-gold overflow-hidden">
+                <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-7 h-7 text-gold" />
+                </div>
+                <h2 className="font-display text-2xl md:text-3xl text-cream mb-3">
+                  Unlock Your Detailed Analysis
+                </h2>
+                <p className="text-cream-muted mb-6 max-w-md mx-auto text-sm md:text-base">
+                  Get a decision-oriented strategic interpretation: quarterly maps, life-area priorities, key trade-offs, and personal operating principles.
+                </p>
+                <Button variant="unlock" size="lg" className="md:text-lg md:px-8 md:py-6" onClick={handleUnlock}>
+                  Unlock Detailed Analysis
+                  <Sparkles className="w-5 h-5 ml-1" />
+                </Button>
               </div>
-              <h2 className="font-display text-2xl md:text-3xl text-cream mb-3">
-                Unlock Your Strategic Year Map
-              </h2>
-              <p className="text-cream-muted mb-6 max-w-md mx-auto text-sm md:text-base">
-                Get a decision-oriented strategic interpretation: quarterly maps, life-area priorities, key trade-offs, and personal operating principles.
-              </p>
-              <Button variant="unlock" size="lg" className="md:text-lg md:px-8 md:py-6" onClick={handleUnlock}>
-                Unlock Strategic Year Map
-                <Sparkles className="w-5 h-5 ml-1" />
+            </div>
+
+            {/* Mobile Sticky CTA */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-midnight via-midnight to-transparent">
+              <Button variant="unlock" size="lg" className="w-full" onClick={handleUnlock}>
+                <Lock className="w-4 h-4 mr-2" />
+                Unlock Detailed Analysis
+                <Sparkles className="w-4 h-4 ml-2" />
               </Button>
             </div>
-          </div>
+          </>
         )}
 
         {/* Strategic Loading State */}
