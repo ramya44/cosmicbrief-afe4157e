@@ -25,6 +25,8 @@ const ResultsPage = () => {
     setIsStrategicLoading
   } = useForecastStore();
 
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   useEffect(() => {
     if (!birthData && !isLoading) {
       navigate('/input');
@@ -34,8 +36,6 @@ const ResultsPage = () => {
   if (isLoading || !freeForecast) {
     return <LoadingSpinner />;
   }
-
-  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const handleUnlock = async () => {
     if (!birthData || isRedirecting) return;
