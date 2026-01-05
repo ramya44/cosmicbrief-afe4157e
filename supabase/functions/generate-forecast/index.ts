@@ -179,7 +179,6 @@ Stop when finished.`;
         { role: "user", content: userPrompt },
       ],
       max_completion_tokens: 2000,
-      reasoning: { effort: "low" },
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
