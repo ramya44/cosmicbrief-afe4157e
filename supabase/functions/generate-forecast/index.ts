@@ -50,6 +50,17 @@ async function generateStyleSeed(input: string): Promise<string> {
     .join("");
 }
 
+// Deterministic selection of pivotal life element based on age and style seed
+function pickPivotalLifeElement(age: number, styleSeed: string): string {
+  const seedNum = Array.from(styleSeed).reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  let options: string[];
+  if (age < 35) options = ["career", "education", "identity"];
+  else if (age < 50) options = ["career", "relationships", "family", "health"];
+  else if (age < 60) options = ["health", "family", "relationships", "purpose"];
+  else options = ["health", "family", "relationships", "meaning", "stewardship"]; // no career
+  return options[seedNum % options.length];
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -97,9 +108,12 @@ serve(async (req) => {
 
     // Generate style seed from birth data
     const styleSeed = await generateStyleSeed(`${formattedDob}+${birthTime}+${birthPlace}`);
+    
+    // Pick pivotal life element deterministically
+    const pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
 
     console.log(
-      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`,
+      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}, pivotal: ${pivotalLifeElement}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -126,24 +140,6 @@ Personalization comes from tone and emphasis using the provided style seed.
 
 Do not reason about uniqueness.
 
-AGE-BASED PIVOTAL LIFE ELEMENT (STRICT):
-
-You must select exactly ONE pivotal life element from the allowed list for the user's age.
-
-Do not compare options. Do not deliberate. Pick one quickly.
-
-Allowed lists:
-
-- Age < 35: [career, education, identity]
-
-- Age 35–49: [career, relationships, family, health]
-
-- Age 50–59: [health, family, relationships, purpose]
-
-- Age >= 60: [health, family, relationships, meaning, stewardship]
-
-Rule: if age >= 60, never choose career.
-
 Tone:
 
 Grounded, clear, confident.
@@ -162,6 +158,8 @@ Inputs:
 
 - Style seed: ${styleSeed}
 
+- Pivotal life element: ${pivotalLifeElement}
+
 Write 90–110 words, plain text only.
 
 Structure (write in this order):
@@ -172,7 +170,7 @@ One short, shareable statement that captures the theme of the year.
 
 2) Pivotal Life Element
 
-Name ONE life area that stands out this year (career, relationships, family, health, learning, etc.).
+The life area that stands out this year is: ${pivotalLifeElement}.
 
 Write 2–3 sentences describing how attention naturally gathers there.
 
