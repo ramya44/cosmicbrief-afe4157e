@@ -5,6 +5,7 @@ import { ForecastSection } from '@/components/ForecastSection';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
+import { stripLeadingHeaders } from '@/lib/utils';
 import { ArrowLeft, Sparkles, Calendar, Lock, ArrowLeftRight, Target, TrendingUp, Scale, Compass, BookOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -240,14 +241,14 @@ const ResultsPage = () => {
             {/* Strategic Character */}
             <ForecastSection title="The Strategic Character of 2026" delay={100} icon={<Target className="w-5 h-5 text-gold" />}>
               <p className="text-cream/90 leading-relaxed whitespace-pre-line">
-                {strategicForecast.strategic_character}
+                {stripLeadingHeaders(strategicForecast.strategic_character)}
               </p>
             </ForecastSection>
 
             {/* Comparison */}
             <ForecastSection title="How 2026 Differs from 2025" delay={200} icon={<ArrowLeftRight className="w-5 h-5 text-gold" />}>
               <p className="text-cream/90 leading-relaxed whitespace-pre-line">
-                {strategicForecast.comparison_to_prior_year}
+                {stripLeadingHeaders(strategicForecast.comparison_to_prior_year)}
               </p>
             </ForecastSection>
 
@@ -263,7 +264,7 @@ const ResultsPage = () => {
                         <span className="text-gold font-display text-lg">#{item.priority}</span>
                         <span className="text-cream font-medium">{item.area}</span>
                       </div>
-                      <p className="text-cream/70 text-sm">{item.explanation}</p>
+                      <p className="text-cream/70 text-sm">{stripLeadingHeaders(item.explanation)}</p>
                     </div>
                   ))}
               </div>
@@ -295,7 +296,7 @@ const ResultsPage = () => {
                 {strategicForecast.key_tradeoffs.map((tradeoff, index) => (
                   <div key={index}>
                     <h4 className="text-cream font-medium mb-1">{tradeoff.tension}</h4>
-                    <p className="text-cream/70">{tradeoff.explanation}</p>
+                    <p className="text-cream/70">{stripLeadingHeaders(tradeoff.explanation)}</p>
                   </div>
                 ))}
               </div>
@@ -308,7 +309,7 @@ const ResultsPage = () => {
                 {strategicForecast.counterfactual_paths.map((path, index) => (
                   <div key={index}>
                     <h4 className="text-cream font-medium mb-1">{path.path}</h4>
-                    <p className="text-cream/70">{path.description}</p>
+                    <p className="text-cream/70">{stripLeadingHeaders(path.description)}</p>
                   </div>
                 ))}
               </div>
@@ -321,7 +322,7 @@ const ResultsPage = () => {
                 {strategicForecast.operating_principles.map((principle, index) => (
                   <div key={index} className="border-l-2 border-gold/50 pl-4">
                     <h4 className="text-cream font-medium italic">"{principle.principle}"</h4>
-                    <p className="text-cream/70 mt-1">{principle.meaning}</p>
+                    <p className="text-cream/70 mt-1">{stripLeadingHeaders(principle.meaning)}</p>
                   </div>
                 ))}
               </div>
@@ -330,7 +331,7 @@ const ResultsPage = () => {
             {/* Deeper Arc */}
             <ForecastSection title="The Deeper Arc: Your Past, Present, and Future" delay={800} icon={<Sparkles className="w-5 h-5 text-gold" />}>
               <p className="text-cream/90 leading-relaxed whitespace-pre-line">
-                {strategicForecast.deeper_arc}
+                {stripLeadingHeaders(strategicForecast.deeper_arc)}
               </p>
             </ForecastSection>
           </div>
