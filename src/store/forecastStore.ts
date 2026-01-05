@@ -6,6 +6,7 @@ export interface BirthData {
   birthTime: string;
   birthPlace: string;
   name?: string;
+  email?: string;
 }
 
 export interface MonthEntry {

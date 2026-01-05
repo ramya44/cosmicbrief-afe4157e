@@ -34,6 +34,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     logStep("Session retrieved", { 
       status: session.payment_status,
+      customerEmail: session.customer_details?.email,
       metadata: session.metadata 
     });
 
@@ -41,12 +42,13 @@ serve(async (req) => {
       throw new Error("Payment not completed");
     }
 
-    // Extract birth data from metadata
+    // Extract birth data from metadata and email from customer details
     const birthData = {
       birthDate: session.metadata?.birthDate || "",
       birthTime: session.metadata?.birthTime || "",
       birthPlace: session.metadata?.birthPlace || "",
       name: session.metadata?.name || "",
+      email: session.customer_details?.email || "",
     };
 
     logStep("Birth data extracted", birthData);
