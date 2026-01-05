@@ -21,11 +21,23 @@ const InputPage = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const today = new Date().toISOString().split('T')[0];
+  const minDate = '1900-01-01';
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.birthDate) {
       newErrors.birthDate = 'Please enter your birth date';
+    } else {
+      const selectedDate = new Date(formData.birthDate);
+      const min = new Date(minDate);
+      const max = new Date(today);
+      if (selectedDate < min) {
+        newErrors.birthDate = 'Date cannot be before 1900';
+      } else if (selectedDate > max) {
+        newErrors.birthDate = 'Date cannot be in the future';
+      }
     }
     if (!formData.birthTime) {
       newErrors.birthTime = 'Please enter your birth time';
@@ -119,6 +131,8 @@ const InputPage = () => {
               <Input
                 id="birthDate"
                 type="date"
+                min={minDate}
+                max={today}
                 value={formData.birthDate}
                 onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
