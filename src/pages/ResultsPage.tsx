@@ -320,9 +320,9 @@ const ResultsPage = () => {
               <p className="text-cream-muted text-sm mb-4">Your personal constitution for the year</p>
               <div className="space-y-4">
                 {strategicForecast.operating_principles.map((principle, index) => (
-                  <div key={index} className="border-l-2 border-gold/50 pl-4">
-                    <h4 className="text-cream font-medium italic">"{principle.principle}"</h4>
-                    <p className="text-cream/70 mt-1">{stripLeadingHeaders(principle.meaning)}</p>
+                  <div key={index}>
+                    <h4 className="text-cream font-medium text-lg italic mb-1">"{principle.principle}"</h4>
+                    <p className="text-cream/70">{stripLeadingHeaders(principle.meaning)}</p>
                   </div>
                 ))}
               </div>
