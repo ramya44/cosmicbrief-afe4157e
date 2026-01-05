@@ -1,1 +1,7 @@
 project_id = "kfqnrdnwnmzawajybytr"
+
+[functions.generate-forecast]
+verify_jwt = false
+
+[functions.generate-strategic-forecast]
+verify_jwt = false
