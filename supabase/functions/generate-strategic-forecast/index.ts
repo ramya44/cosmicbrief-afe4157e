@@ -141,6 +141,32 @@ These tensions must be specific enough that they would not plausibly apply to a 
 
 Include at least one insight that would feel incorrect, irrelevant, or premature if applied to the wrong person.
 
+LIFE-AREA PRIORITIZATION (CRITICAL):
+
+Before writing, you must determine which life area is most emphasized by Jyotish timing for the target year.
+
+This must be derived from birth-time-sensitive factors and must not default to career.
+
+Possible dominant areas include:
+
+- Career / contribution
+
+- Health / energy regulation
+
+- Relationships / emotional boundaries
+
+- Money / resource stabilization
+
+- Inner orientation / psychological integration
+
+Career must NOT be ranked first unless the Jyotish logic clearly supports it.
+
+For some users, career should be secondary or lower priority.
+
+The final prioritization must reflect where attention yields the greatest alignment this year,
+
+not where effort is culturally rewarded.
+
 QUALITY GATE (DO NOT SKIP):
 
 Before finalizing the output, silently check the following:
