@@ -44,7 +44,10 @@ async function generateStyleSeed(input: string): Promise<string> {
   const data = encoder.encode(input);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+  return hashArray
+    .slice(0, 4)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 serve(async (req) => {
@@ -87,7 +90,9 @@ serve(async (req) => {
     // Generate style seed from birth data
     const styleSeed = await generateStyleSeed(`${formattedDob}+${birthTime}+${birthPlace}`);
 
-    console.log(`Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`);
+    console.log(
+      `Generating forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}`,
+    );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
 
@@ -125,11 +130,7 @@ Use these rules strictly:
 
 - Over 65: health, family, meaning, emotional life, or stewardship should dominate.
 
-  Career should be chosen only if there is a clear reason; otherwise, do not select it.
-
-If the user is over 60, career must NOT be the pivotal life element unless explicitly justified.
-
-If career is chosen anyway, briefly state why it still dominates this year.
+If the user is over 60, do not choose career as the pivotal life element.”.
 
 Tone:
 
