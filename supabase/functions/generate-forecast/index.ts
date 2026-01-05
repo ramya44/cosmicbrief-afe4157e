@@ -191,12 +191,13 @@ Stop when finished.
 `.trim();
 
     const payload = {
-      model: "o4-mini-2025-04-16",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_completion_tokens: 800,
+      max_tokens: 400,
+      temperature: 0.8,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
