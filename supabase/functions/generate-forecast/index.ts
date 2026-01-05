@@ -91,41 +91,39 @@ serve(async (req) => {
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
 
-This is a free glimpse designed to spark recognition and curiosity, not completeness.
+This is a free glimpse meant to be shareable and emotionally resonant.
 
-Your goal is to create a moment of insight that feels personal and slightly unresolved.
+It should feel personal, distinct, and meaningful — not analytical.
 
 Execution rules:
 
-- Do NOT analyze deeply.
-
-- Do NOT plan or outline.
-
 - Write immediately.
+
+- Do NOT analyze deeply or plan.
 
 - Keep internal reasoning minimal.
 
 - Always produce visible text.
 
-Personalization comes from tone, constraint, and emphasis using the provided style seed.
+Personalization comes from tone, emphasis, and focus using the provided style seed.
 
 Do not reason about uniqueness.
 
 Tone:
 
-Calm, grounded, quietly authoritative.
+Grounded, clear, quietly confident.
 
-Not comforting. Not mystical. Not motivational.
+Not mystical. Not motivational. Not generic.
 
 Avoid:
 
-- generic encouragement
+- technical astrology language
 
-- predictions of events
+- predictions of specific events
 
-- technical astrology language`;
+- random metaphors or abstract imagery`;
 
-    const userPrompt = `Create a fast preview of the user's ${targetYear}.
+    const userPrompt = `Create a concise preview of the user's ${targetYear}.
 
 Inputs:
 
@@ -137,27 +135,37 @@ Inputs:
 
 - Style seed: ${styleSeed}
 
-Write 90–130 words, plain text only.
+Write 90–120 words total, plain text only.
 
-Structure (write in this order):
+Structure (write in this exact order):
 
-1) The Shape of the Year
+1) The Defining Arc of the Year
 
-One sentence using a concrete visual metaphor. Let birth time subtly affect tone.
+One short, fortune-cookie-style statement that captures the main arc of the year.
 
-2) The Central Tension
+It should feel specific enough that people would want to share it.
 
-2–3 sentences describing a specific tradeoff or pressure unique to this year.
+2) The Pivotal Life Element
 
-Frame it as: what works vs what now creates friction.
+Name ONE life area that will matter most this year (e.g., career, relationships, family, health, learning).
 
-3) Why This Matters
+Use age and life stage to guide this choice.
 
-2–3 sentences explaining the cost of ignoring this tension — emotionally, energetically, or relationally.
+Write 2–3 sentences about why this area is pivotal now.
+
+3) The Central Tension
+
+Describe the main tension or tradeoff that shows up around this life element.
+
+What is being asked, strained, or rebalanced?
+
+4) Why This Matters
+
+2–3 sentences explaining what quietly goes wrong if this tension is ignored.
 
 Do not give advice. Imply consequence.
 
-End with one short line that feels unresolved and invites deeper understanding.`;
+Write clearly and directly. Stop when finished.`;
 
     const payload = {
       model: "gpt-5-mini-2025-08-07",
