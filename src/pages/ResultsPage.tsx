@@ -173,9 +173,13 @@ const ResultsPage = () => {
                 <h2 className="font-display text-2xl md:text-3xl text-cream mb-3">
                   Unlock Your Detailed Analysis
                 </h2>
-                <p className="text-cream-muted mb-6 max-w-md mx-auto text-sm md:text-base">
+                <p className="text-cream-muted mb-4 max-w-md mx-auto text-sm md:text-base">
                   Get a decision-oriented strategic interpretation: quarterly maps, life-area priorities, key trade-offs, and personal operating principles.
                 </p>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <span className="text-cream-muted line-through text-lg">$100</span>
+                  <span className="text-gold font-display text-3xl">$20</span>
+                </div>
                 <Button variant="unlock" size="lg" className="md:text-lg md:px-8 md:py-6" onClick={handleUnlock}>
                   Unlock Detailed Analysis
                   <Sparkles className="w-5 h-5 ml-1" />
@@ -185,6 +189,10 @@ const ResultsPage = () => {
 
             {/* Mobile Sticky CTA */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-midnight via-midnight to-transparent">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="text-cream-muted line-through text-sm">$100</span>
+                <span className="text-gold font-display text-xl">$20</span>
+              </div>
               <Button variant="unlock" size="lg" className="w-full" onClick={handleUnlock}>
                 <Lock className="w-4 h-4 mr-2" />
                 Unlock Detailed Analysis
