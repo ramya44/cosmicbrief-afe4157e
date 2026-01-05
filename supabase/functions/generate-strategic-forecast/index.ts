@@ -225,6 +225,14 @@ OUTPUT REQUIREMENTS:
 
 - Do not ask follow-up questions
 
+- **Output body text only.**
+
+- **Do NOT include titles, headers, section names, numbers, or repeated labels.**
+
+- **Do NOT restate the year or section heading.**
+
+- **Assume the UI already provides all headings.**
+
 ---
 
 STRUCTURE (REQUIRED):
