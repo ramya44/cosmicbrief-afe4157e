@@ -275,7 +275,7 @@ const ResultsPage = () => {
                 {quarterKeys.map((key, index) => {
                   const quarter = strategicForecast.quarterly_map[key];
                   return (
-                    <div key={key} className="border border-border/30 rounded-lg p-4 bg-midnight/30">
+                    <div key={key} className="mb-6 last:mb-0">
                       <h4 className="font-display text-lg text-gold mb-3">{quarterLabels[index]}</h4>
                       <div className="grid gap-2 text-sm">
                         <div><span className="text-cream-muted">Focus:</span> <span className="text-cream">{quarter.focus}</span></div>
