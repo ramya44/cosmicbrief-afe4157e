@@ -333,22 +333,6 @@ For each:
 
 ---
 
-Section: counterfactual_paths
-
-Describe 2–3 plausible ways the year could be lived.
-
-For each path, explain:
-
-- The short-term experience
-
-- The medium-term consequence
-
-- What it sets up for the following year
-
-Avoid judgment. Focus on clarity.
-
----
-
 Section: operating_principles
 
 Provide 4–6 short, memorable principles written specifically for this user.
@@ -401,9 +385,6 @@ Do NOT include headers, titles, or markdown inside the JSON values.
   ],
   "key_tradeoffs": [
     {"tension": "...", "explanation": "..."}
-  ],
-  "counterfactual_paths": [
-    {"path": "...", "description": "..."}
   ],
   "operating_principles": [
     {"principle": "...", "meaning": "..."}

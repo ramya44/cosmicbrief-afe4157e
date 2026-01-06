@@ -44,10 +44,6 @@ export interface Tradeoff {
   explanation: string;
 }
 
-export interface CounterfactualPath {
-  path: string;
-  description: string;
-}
 
 export interface OperatingPrinciple {
   principle: string;
@@ -62,7 +58,6 @@ export interface StrategicForecast {
   life_area_prioritization: LifeAreaPriority[];
   seasonal_map: SeasonMap[];
   key_tradeoffs: Tradeoff[];
-  counterfactual_paths: CounterfactualPath[];
   operating_principles: OperatingPrinciple[];
   deeper_arc: string;
 }
