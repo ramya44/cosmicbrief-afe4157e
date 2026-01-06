@@ -119,6 +119,7 @@ const PaymentSuccessPage = () => {
             modelUsed: result.modelUsed,
             generationStatus: 'complete',
             retryCount: result.totalAttempts,
+            tokenUsage: result.tokenUsage,
           },
         });
 

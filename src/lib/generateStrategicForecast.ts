@@ -1,10 +1,17 @@
 import { StrategicForecast, BirthData } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface TokenUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
 export interface StrategicForecastResult {
   forecast: StrategicForecast;
   modelUsed: string;
   totalAttempts: number;
+  tokenUsage?: TokenUsage;
 }
 
 export const generateStrategicForecast = async (
@@ -36,6 +43,7 @@ export const generateStrategicForecast = async (
       forecast: data.forecast as StrategicForecast,
       modelUsed: data.modelUsed || 'unknown',
       totalAttempts: data.totalAttempts || 1,
+      tokenUsage: data.tokenUsage || undefined,
     };
   }
 

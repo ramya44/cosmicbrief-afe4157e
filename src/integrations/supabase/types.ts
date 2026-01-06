@@ -60,6 +60,7 @@ export type Database = {
           birth_place: string
           birth_time: string
           birth_time_utc: string | null
+          completion_tokens: number | null
           created_at: string | null
           customer_email: string
           customer_name: string | null
@@ -68,9 +69,11 @@ export type Database = {
           generation_status: string | null
           id: string
           model_used: string | null
+          prompt_tokens: number | null
           retry_count: number | null
           strategic_forecast: Json
           stripe_session_id: string
+          total_tokens: number | null
         }
         Insert: {
           amount_paid?: number | null
@@ -78,6 +81,7 @@ export type Database = {
           birth_place: string
           birth_time: string
           birth_time_utc?: string | null
+          completion_tokens?: number | null
           created_at?: string | null
           customer_email: string
           customer_name?: string | null
@@ -86,9 +90,11 @@ export type Database = {
           generation_status?: string | null
           id?: string
           model_used?: string | null
+          prompt_tokens?: number | null
           retry_count?: number | null
           strategic_forecast: Json
           stripe_session_id: string
+          total_tokens?: number | null
         }
         Update: {
           amount_paid?: number | null
@@ -96,6 +102,7 @@ export type Database = {
           birth_place?: string
           birth_time?: string
           birth_time_utc?: string | null
+          completion_tokens?: number | null
           created_at?: string | null
           customer_email?: string
           customer_name?: string | null
@@ -104,9 +111,11 @@ export type Database = {
           generation_status?: string | null
           id?: string
           model_used?: string | null
+          prompt_tokens?: number | null
           retry_count?: number | null
           strategic_forecast?: Json
           stripe_session_id?: string
+          total_tokens?: number | null
         }
         Relationships: []
       }
