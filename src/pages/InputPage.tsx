@@ -8,7 +8,7 @@ import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplet
 import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, User } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, User, Check, X } from 'lucide-react';
 
 const InputPage = () => {
   const navigate = useNavigate();
@@ -46,6 +46,8 @@ const InputPage = () => {
     }
     if (!formData.birthPlace.trim()) {
       newErrors.birthPlace = 'Please enter your birth place';
+    } else if (!placeCoords) {
+      newErrors.birthPlace = 'Please select a location from the dropdown to confirm coordinates';
     }
     
     setErrors(newErrors);
@@ -99,6 +101,17 @@ const InputPage = () => {
 
   const handlePlaceSelect = (place: PlaceSelection) => {
     setPlaceCoords({ lat: place.lat, lon: place.lon });
+  };
+
+  const handlePlaceChange = (value: string) => {
+    setFormData({ ...formData, birthPlace: value });
+    // Clear coordinates when user types (they need to re-select)
+    setPlaceCoords(null);
+  };
+
+  const clearSelectedPlace = () => {
+    setFormData({ ...formData, birthPlace: '' });
+    setPlaceCoords(null);
   };
 
   return (
@@ -207,13 +220,34 @@ const InputPage = () => {
                 <MapPin className="w-4 h-4 text-gold" />
                 Place of Birth
               </Label>
-              <PlaceAutocomplete
-                value={formData.birthPlace}
-                onChange={(value) => setFormData({ ...formData, birthPlace: value })}
-                onPlaceSelect={handlePlaceSelect}
-                placeholder="Start typing a city..."
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
-              />
+              {placeCoords ? (
+                // Show confirmed location
+                <div className="flex items-center gap-2 p-3 bg-secondary/50 border border-gold/30 rounded-md">
+                  <Check className="w-4 h-4 text-gold flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-cream truncate">{formData.birthPlace}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {placeCoords.lat.toFixed(4)}°, {placeCoords.lon.toFixed(4)}°
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearSelectedPlace}
+                    className="p-1 hover:bg-accent/50 rounded transition-colors"
+                    aria-label="Clear location"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground hover:text-cream" />
+                  </button>
+                </div>
+              ) : (
+                <PlaceAutocomplete
+                  value={formData.birthPlace}
+                  onChange={handlePlaceChange}
+                  onPlaceSelect={handlePlaceSelect}
+                  placeholder="Start typing a city..."
+                  className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                />
+              )}
               {errors.birthPlace && (
                 <p className="text-sm text-destructive">{errors.birthPlace}</p>
               )}
