@@ -149,7 +149,7 @@ const ResultsPage = () => {
               // If parsing didn't work, show as plain text
               if (sections.length === 0) {
                 return (
-                  <p className="text-cream/90 leading-relaxed text-lg whitespace-pre-line">
+                  <p className="text-cream/70 leading-relaxed text-lg whitespace-pre-line">
                     {text}
                   </p>
                 );
@@ -160,7 +160,7 @@ const ResultsPage = () => {
                   {sections.map((section, index) => (
                     <div key={index}>
                       <h4 className="text-cream font-medium text-lg mb-1">{section.header}</h4>
-                      <p className="text-cream/90 leading-relaxed">{section.content}</p>
+                      <p className="text-cream/70 leading-relaxed">{section.content}</p>
                     </div>
                   ))}
                 </div>
