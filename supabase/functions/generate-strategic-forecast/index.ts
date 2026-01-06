@@ -8,6 +8,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const PRIMARY_MODEL = "gpt-5-2025-08-07";
+const FALLBACK_MODEL = "gpt-5-mini-2025-08-07";
+const MAX_RETRIES = 3;
+const INITIAL_BACKOFF_MS = 1000;
+
+// Retry-able HTTP status codes
+const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
+
 // Extract and parse the first complete top-level JSON object from a string.
 function extractFirstJsonObject(text: string) {
   const cleaned = text
@@ -35,6 +43,64 @@ function extractFirstJsonObject(text: string) {
   }
 
   throw new Error("No complete JSON object found in model output");
+}
+
+// Sleep with jitter for exponential backoff
+function sleep(ms: number): Promise<void> {
+  const jitter = Math.random() * 300;
+  return new Promise((resolve) => setTimeout(resolve, ms + jitter));
+}
+
+// Fetch with retry logic
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  modelName: string,
+  maxRetries: number = MAX_RETRIES
+): Promise<{ response: Response; attempts: number }> {
+  let lastError: Error | null = null;
+  let attempts = 0;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    attempts = attempt;
+    const backoffMs = INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1);
+    
+    try {
+      console.log(`[${modelName}] Attempt ${attempt}/${maxRetries}...`);
+      const startTime = Date.now();
+      
+      const response = await fetch(url, options);
+      const elapsed = Date.now() - startTime;
+      
+      console.log(`[${modelName}] Attempt ${attempt} completed in ${elapsed}ms with status ${response.status}`);
+
+      // If successful or non-retryable error, return
+      if (response.ok || !RETRYABLE_STATUS_CODES.includes(response.status)) {
+        return { response, attempts };
+      }
+
+      // Retryable error
+      const errorText = await response.text();
+      console.warn(`[${modelName}] Retryable error ${response.status}: ${errorText.slice(0, 500)}`);
+      lastError = new Error(`HTTP ${response.status}: ${errorText.slice(0, 200)}`);
+
+      if (attempt < maxRetries) {
+        console.log(`[${modelName}] Waiting ${backoffMs}ms before retry...`);
+        await sleep(backoffMs);
+      }
+    } catch (networkError) {
+      // Network-level error (fetch failed, timeout, etc.)
+      console.error(`[${modelName}] Network error on attempt ${attempt}:`, networkError);
+      lastError = networkError instanceof Error ? networkError : new Error(String(networkError));
+
+      if (attempt < maxRetries) {
+        console.log(`[${modelName}] Waiting ${backoffMs}ms before retry...`);
+        await sleep(backoffMs);
+      }
+    }
+  }
+
+  throw lastError || new Error("All retry attempts failed");
 }
 
 serve(async (req) => {
@@ -146,7 +212,7 @@ REQUIRED SECTIONS (do not label in output):
 
 1) Strategic character  
 Establish what kind of year this is, what it is for, and what it is not for.
-Move the reader out of “good vs bad year” thinking.
+Move the reader out of "good vs bad year" thinking.
 
 2) Comparison to prior year  
 Explain what stopped working, what now works differently, and how pacing or judgment shifts.
@@ -184,9 +250,9 @@ Describe exactly one inevitable internal crossroads.
 Focus on timing, pressure, and readiness — not events.
 
 Structure:
-- Begin with “There will come a time this year when…”
-- Then “In that moment, it will be tempting to…”
-- End with “Remember this:”
+- Begin with "There will come a time this year when…"
+- Then "In that moment, it will be tempting to…"
+- End with "Remember this:"
 
 One paragraph, 4–6 sentences.
 No dates, no advice, no generic temptations.
@@ -233,19 +299,17 @@ Return valid JSON only using this schema:
 }
 `;
 
-    const payload = {
-      model: "gpt-5-2025-08-07",
+    const createPayload = (model: string) => ({
+      model,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
       response_format: { type: "json_object" },
       max_completion_tokens: 8000,
-    };
+    });
 
-    console.log("OpenAI strategic payload:", JSON.stringify(payload));
-
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const fetchOptions = (payload: object) => ({
       method: "POST",
       headers: {
         Authorization: `Bearer ${openAIApiKey}`,
@@ -254,24 +318,97 @@ Return valid JSON only using this schema:
       body: JSON.stringify(payload),
     });
 
-    if (!resp.ok) {
-      const errorText = await resp.text();
-      console.error("OpenAI API error:", resp.status, errorText);
-      return new Response(JSON.stringify({ error: "Failed to generate strategic forecast", details: errorText }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let modelUsed = PRIMARY_MODEL;
+    let totalAttempts = 0;
+    let resp: Response;
+    let usedFallback = false;
+
+    // Try primary model with retries
+    try {
+      console.log(`Starting generation with primary model: ${PRIMARY_MODEL}`);
+      const payload = createPayload(PRIMARY_MODEL);
+      console.log("OpenAI strategic payload:", JSON.stringify(payload));
+      
+      const result = await fetchWithRetry(
+        "https://api.openai.com/v1/chat/completions",
+        fetchOptions(payload),
+        PRIMARY_MODEL
+      );
+      resp = result.response;
+      totalAttempts = result.attempts;
+      
+      if (!resp.ok) {
+        throw new Error(`Primary model failed with status ${resp.status}`);
+      }
+    } catch (primaryError) {
+      console.error(`Primary model ${PRIMARY_MODEL} failed after retries:`, primaryError);
+      
+      // Try fallback model once
+      console.log(`Attempting fallback model: ${FALLBACK_MODEL}`);
+      modelUsed = FALLBACK_MODEL;
+      usedFallback = true;
+      
+      try {
+        const fallbackPayload = createPayload(FALLBACK_MODEL);
+        const fallbackResult = await fetchWithRetry(
+          "https://api.openai.com/v1/chat/completions",
+          fetchOptions(fallbackPayload),
+          FALLBACK_MODEL,
+          1 // Only one attempt for fallback
+        );
+        resp = fallbackResult.response;
+        totalAttempts += fallbackResult.attempts;
+        
+        if (!resp.ok) {
+          const errorText = await resp.text();
+          console.error("Fallback model also failed:", resp.status, errorText);
+          return new Response(
+            JSON.stringify({ 
+              error: "All generation attempts failed", 
+              details: errorText.slice(0, 500),
+              totalAttempts,
+              primaryModel: PRIMARY_MODEL,
+              fallbackModel: FALLBACK_MODEL,
+            }), 
+            {
+              status: 500,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            }
+          );
+        }
+      } catch (fallbackError) {
+        console.error("Fallback model network error:", fallbackError);
+        return new Response(
+          JSON.stringify({ 
+            error: "All generation attempts failed",
+            details: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+            totalAttempts,
+            primaryModel: PRIMARY_MODEL,
+            fallbackModel: FALLBACK_MODEL,
+          }), 
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
     }
 
+    console.log(`Generation succeeded with model: ${modelUsed} after ${totalAttempts} total attempts${usedFallback ? ' (used fallback)' : ''}`);
+
     const data = await resp.json();
-    console.log("Full API response:", JSON.stringify(data));
     console.log("Token usage:", JSON.stringify(data.usage));
 
     const generatedContent = data?.choices?.[0]?.message?.content ?? "";
 
     if (!generatedContent.trim()) {
       console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
-      return new Response(JSON.stringify({ error: "Empty response from AI", raw: data }), {
+      return new Response(JSON.stringify({ 
+        error: "Empty response from AI", 
+        raw: data,
+        modelUsed,
+        totalAttempts,
+      }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -291,12 +428,19 @@ Return valid JSON only using this schema:
           rawContent: generatedContent,
           finish_reason: data?.choices?.[0]?.finish_reason,
           usage: data?.usage,
+          modelUsed,
+          totalAttempts,
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    return new Response(JSON.stringify(forecast), {
+    // Return forecast with metadata
+    return new Response(JSON.stringify({
+      forecast,
+      modelUsed,
+      totalAttempts,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

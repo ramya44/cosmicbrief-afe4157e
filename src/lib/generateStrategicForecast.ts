@@ -1,10 +1,16 @@
 import { StrategicForecast, BirthData } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface StrategicForecastResult {
+  forecast: StrategicForecast;
+  modelUsed: string;
+  totalAttempts: number;
+}
+
 export const generateStrategicForecast = async (
   birthData: BirthData,
   pivotalTheme?: string
-): Promise<StrategicForecast> => {
+): Promise<StrategicForecastResult> => {
   console.log('Calling OpenAI to generate strategic forecast...');
   
   const { data, error } = await supabase.functions.invoke('generate-strategic-forecast', {
@@ -24,5 +30,19 @@ export const generateStrategicForecast = async (
 
   console.log('Received strategic forecast data:', data);
 
-  return data as StrategicForecast;
+  // Handle new response structure with metadata
+  if (data.forecast) {
+    return {
+      forecast: data.forecast as StrategicForecast,
+      modelUsed: data.modelUsed || 'unknown',
+      totalAttempts: data.totalAttempts || 1,
+    };
+  }
+
+  // Fallback for backwards compatibility (if response is just the forecast)
+  return {
+    forecast: data as StrategicForecast,
+    modelUsed: 'unknown',
+    totalAttempts: 1,
+  };
 };
