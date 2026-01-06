@@ -83,7 +83,7 @@ serve(async (req) => {
   }
 
   try {
-    const { birthDate, birthTime, birthPlace, name } = await req.json();
+    const { birthDate, birthTime, birthPlace, name, birthTimeUtc } = await req.json();
 
     if (!birthDate || !birthTime || !birthPlace) {
       return new Response(
@@ -293,7 +293,40 @@ Stop when finished.
       });
     }
 
-    return new Response(JSON.stringify({ forecast: generatedContent.trim(), pivotalTheme: pivotalLifeElement }), {
+    const forecastText = generatedContent.trim();
+
+    // Save to free_forecasts table (non-blocking failure)
+    let freeForecastId: string | undefined;
+    try {
+      const { data: saveData, error: saveError } = await supabase
+        .from("free_forecasts")
+        .insert({
+          birth_date: birthDate,
+          birth_time: birthTime,
+          birth_place: birthPlace,
+          birth_time_utc: birthTimeUtc || null,
+          customer_name: name || null,
+          forecast_text: forecastText,
+          pivotal_theme: pivotalLifeElement,
+        })
+        .select("id")
+        .single();
+
+      if (saveError) {
+        console.error("Error saving free forecast:", saveError);
+      } else {
+        freeForecastId = saveData?.id;
+        console.log("Free forecast saved with ID:", freeForecastId);
+      }
+    } catch (saveErr) {
+      console.error("Failed to save free forecast:", saveErr);
+    }
+
+    return new Response(JSON.stringify({ 
+      forecast: forecastText, 
+      pivotalTheme: pivotalLifeElement,
+      freeForecastId,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
