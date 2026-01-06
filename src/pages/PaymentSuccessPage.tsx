@@ -35,6 +35,7 @@ const PaymentSuccessPage = () => {
 
       let currentBirthData = birthData;
       let currentFreeForecast = freeForecast?.forecast;
+      let currentPivotalTheme = freeForecast?.pivotalTheme;
       let stripeSessionId = sessionId;
 
       // If birthData is not in store, try to retrieve it from Stripe session
@@ -79,7 +80,7 @@ const PaymentSuccessPage = () => {
       setIsStrategicLoading(true);
 
       try {
-        const strategic = await generateStrategicForecast(currentBirthData);
+        const strategic = await generateStrategicForecast(currentBirthData, currentPivotalTheme);
         setStrategicForecast(strategic);
         
         // Save both forecasts to database

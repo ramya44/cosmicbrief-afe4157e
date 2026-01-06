@@ -22,5 +22,5 @@ export const generateForecast = async (
 
   console.log('Received forecast data:', data);
 
-  return { forecast: data.forecast };
+  return { forecast: data.forecast, pivotalTheme: data.pivotalTheme };
 };
