@@ -201,7 +201,7 @@ const ResultsPage = () => {
                 { title: "The Character of 2026", icon: <Target className="w-5 h-5 text-gold" />, lines: 3 },
                 { title: "How 2026 Differs from 2025", icon: <ArrowLeftRight className="w-5 h-5 text-gold" />, lines: 3 },
                 { title: "Life-Area Prioritization", icon: <TrendingUp className="w-5 h-5 text-gold" />, lines: 4 },
-                { title: "Seasonal Map", icon: <Calendar className="w-5 h-5 text-gold" />, lines: 5 },
+                { title: "The Year in Phases", icon: <Calendar className="w-5 h-5 text-gold" />, lines: 5 },
                 { title: "Key Trade-Offs and Tensions", icon: <Scale className="w-5 h-5 text-gold" />, lines: 3 },
                 { title: "Personal Operating Principles", icon: <BookOpen className="w-5 h-5 text-gold" />, lines: 3 },
                 { title: "The Deeper Arc", icon: <Sparkles className="w-5 h-5 text-gold" />, lines: 4 },
@@ -319,8 +319,8 @@ const ResultsPage = () => {
               </div>
             </ForecastSection>
 
-            {/* Seasonal Map */}
-            <ForecastSection title="Seasonal Map" delay={400} icon={<Calendar className="w-5 h-5 text-gold" />}>
+            {/* The Year in Phases */}
+            <ForecastSection title="The Year in Phases" delay={400} icon={<Calendar className="w-5 h-5 text-gold" />}>
               <div className="space-y-6">
                 {strategicForecast.seasonal_map.map((season, index) => (
                   <div key={index} className="mb-6 last:mb-0">
