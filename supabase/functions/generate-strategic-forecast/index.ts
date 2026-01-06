@@ -43,7 +43,7 @@ serve(async (req) => {
   }
 
   try {
-    const { birthDate, birthTime, birthPlace, name } = await req.json();
+    const { birthDate, birthTime, birthPlace, name, pivotalTheme } = await req.json();
 
     if (!birthDate || !birthTime || !birthPlace) {
       return new Response(
@@ -75,7 +75,7 @@ serve(async (req) => {
     const targetYear = "2026";
     const priorYear = "2025";
 
-    console.log(`Generating strategic forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}`);
+    console.log(`Generating strategic forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}, pivotalTheme: ${pivotalTheme || 'not specified'}`);
 
     const systemPrompt = `You are an expert practitioner of Indian Jyotish (Vedic astrology).
 
@@ -159,7 +159,7 @@ Possible dominant areas include:
 
 - Inner orientation / psychological integration
 
-Career must NOT be ranked first unless the Jyotish logic clearly supports it.
+${pivotalTheme ? `MANDATORY CONSTRAINT: The life area "${pivotalTheme}" MUST be ranked as priority #1 in the life_area_prioritization output. This was identified as the user's pivotal theme from their free forecast and must remain consistent.` : 'Career must NOT be ranked first unless the Jyotish logic clearly supports it.'}
 
 For some users, career should be secondary or lower priority.
 

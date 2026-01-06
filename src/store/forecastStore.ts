@@ -16,6 +16,7 @@ export interface MonthEntry {
 
 export interface FreeForecast {
   forecast: string;
+  pivotalTheme?: string;
 }
 
 export interface PaidForecast {

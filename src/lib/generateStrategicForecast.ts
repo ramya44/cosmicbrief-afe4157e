@@ -2,7 +2,8 @@ import { StrategicForecast, BirthData } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 
 export const generateStrategicForecast = async (
-  birthData: BirthData
+  birthData: BirthData,
+  pivotalTheme?: string
 ): Promise<StrategicForecast> => {
   console.log('Calling OpenAI to generate strategic forecast...');
   
@@ -12,6 +13,7 @@ export const generateStrategicForecast = async (
       birthTime: birthData.birthTime,
       birthPlace: birthData.birthPlace,
       name: birthData.name,
+      pivotalTheme,
     },
   });
 

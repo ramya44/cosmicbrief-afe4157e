@@ -236,7 +236,7 @@ Stop when finished.
       });
     }
 
-    return new Response(JSON.stringify({ forecast: generatedContent.trim() }), {
+    return new Response(JSON.stringify({ forecast: generatedContent.trim(), pivotalTheme: pivotalLifeElement }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
