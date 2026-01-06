@@ -80,7 +80,7 @@ export interface ForecastState {
   setBirthData: (data: BirthData) => void;
   setFreeForecast: (forecast: FreeForecast) => void;
   setForecast: (free: FreeForecast, paid: PaidForecast) => void;
-  setStrategicForecast: (forecast: StrategicForecast) => void;
+  setStrategicForecast: (forecast: StrategicForecast | null) => void;
   setIsPaid: (paid: boolean) => void;
   setIsLoading: (loading: boolean) => void;
   setIsStrategicLoading: (loading: boolean) => void;
