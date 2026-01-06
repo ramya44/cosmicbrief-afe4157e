@@ -182,7 +182,7 @@ const ResultsPage = () => {
                   Unlock Your Detailed Analysis
                 </h2>
                 <p className="text-cream-muted mb-4 max-w-md mx-auto text-sm md:text-base">
-                  Get a decision-oriented strategic interpretation: quarterly maps, life-area priorities, key trade-offs, and personal operating principles.
+                  A decision-oriented interpretation with timing, areas to prioritize, key trade-offs, and personal operating principles.
                 </p>
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <span className="text-cream-muted line-through text-lg">$100</span>
