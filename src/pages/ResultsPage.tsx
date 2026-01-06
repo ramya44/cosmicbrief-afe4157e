@@ -118,7 +118,7 @@ const ResultsPage = () => {
               const text = freeForecast.forecast;
               // Parse sections from the forecast text using more flexible regex
               const sections: { header: string; content: string }[] = [];
-              const sectionHeaders = ['Defining Arc', 'Pivotal Life Element', 'Quiet Undercurrent'];
+              const sectionHeaders = ['Your Defining Arc', 'Your Pivotal Life Theme', 'The Quiet Undercurrent'];
               
               sectionHeaders.forEach((header, index) => {
                 // Match header with optional markdown formatting (**, ##, etc.) and colon
