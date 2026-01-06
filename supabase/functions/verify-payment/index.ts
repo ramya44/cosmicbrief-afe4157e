@@ -51,11 +51,15 @@ serve(async (req) => {
       email: session.customer_details?.email || "",
     };
 
-    logStep("Birth data extracted", birthData);
+    const freeForecast = session.metadata?.freeForecast || "";
+
+    logStep("Data extracted", { birthData, hasFreeForecast: !!freeForecast });
 
     return new Response(JSON.stringify({ 
       success: true,
-      birthData 
+      birthData,
+      freeForecast,
+      sessionId: session.id,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

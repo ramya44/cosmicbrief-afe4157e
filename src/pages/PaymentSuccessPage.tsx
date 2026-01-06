@@ -10,11 +10,13 @@ import { supabase } from '@/integrations/supabase/client';
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'verifying' | 'generating' | 'complete' | 'error'>('verifying');
+  const [status, setStatus] = useState<'verifying' | 'generating' | 'saving' | 'complete' | 'error'>('verifying');
   
   const { 
     birthData, 
+    freeForecast,
     setBirthData,
+    setFreeForecast,
     setIsPaid, 
     setStrategicForecast, 
     setIsStrategicLoading 
@@ -32,6 +34,8 @@ const PaymentSuccessPage = () => {
       }
 
       let currentBirthData = birthData;
+      let currentFreeForecast = freeForecast?.forecast;
+      let stripeSessionId = sessionId;
 
       // If birthData is not in store, try to retrieve it from Stripe session
       if (!currentBirthData) {
@@ -50,6 +54,13 @@ const PaymentSuccessPage = () => {
             currentBirthData = data.birthData;
             setBirthData(data.birthData);
             console.log('Birth data restored from Stripe session:', data.birthData);
+            
+            // Also restore free forecast from Stripe metadata
+            if (data.freeForecast) {
+              currentFreeForecast = data.freeForecast;
+              setFreeForecast({ forecast: data.freeForecast });
+              console.log('Free forecast restored from Stripe session');
+            }
           } else {
             throw new Error('Could not retrieve birth data');
           }
@@ -70,6 +81,31 @@ const PaymentSuccessPage = () => {
       try {
         const strategic = await generateStrategicForecast(currentBirthData);
         setStrategicForecast(strategic);
+        
+        // Save both forecasts to database
+        setStatus('saving');
+        console.log('Saving forecasts to database...');
+        
+        const { error: saveError } = await supabase.functions.invoke('save-forecast', {
+          body: {
+            stripeSessionId,
+            customerEmail: currentBirthData.email,
+            customerName: currentBirthData.name,
+            birthDate: currentBirthData.birthDate,
+            birthTime: currentBirthData.birthTime,
+            birthPlace: currentBirthData.birthPlace,
+            freeForecast: currentFreeForecast,
+            strategicForecast: strategic,
+          },
+        });
+
+        if (saveError) {
+          console.error('Failed to save forecast to database:', saveError);
+          // Don't fail the whole flow, just log it
+        } else {
+          console.log('Forecasts saved to database successfully');
+        }
+        
         setStatus('complete');
         toast.success('Your Strategic Year Map is ready!');
         
@@ -86,7 +122,7 @@ const PaymentSuccessPage = () => {
     };
 
     processPayment();
-  }, [searchParams, birthData, navigate, setBirthData, setIsPaid, setStrategicForecast, setIsStrategicLoading]);
+  }, [searchParams, birthData, freeForecast, navigate, setBirthData, setFreeForecast, setIsPaid, setStrategicForecast, setIsStrategicLoading]);
 
   return (
     <div className="relative min-h-screen bg-celestial flex items-center justify-center">

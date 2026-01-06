@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      paid_forecasts: {
+        Row: {
+          amount_paid: number | null
+          birth_date: string
+          birth_place: string
+          birth_time: string
+          created_at: string | null
+          customer_email: string
+          customer_name: string | null
+          free_forecast: string
+          id: string
+          strategic_forecast: Json
+          stripe_session_id: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          birth_date: string
+          birth_place: string
+          birth_time: string
+          created_at?: string | null
+          customer_email: string
+          customer_name?: string | null
+          free_forecast: string
+          id?: string
+          strategic_forecast: Json
+          stripe_session_id: string
+        }
+        Update: {
+          amount_paid?: number | null
+          birth_date?: string
+          birth_place?: string
+          birth_time?: string
+          created_at?: string | null
+          customer_email?: string
+          customer_name?: string | null
+          free_forecast?: string
+          id?: string
+          strategic_forecast?: Json
+          stripe_session_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
