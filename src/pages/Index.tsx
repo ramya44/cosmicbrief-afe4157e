@@ -64,7 +64,7 @@ const Index = () => {
             className="mt-16 text-sm text-muted-foreground animate-fade-up"
             style={{ animationDelay: '500ms', animationFillMode: 'both' }}
           >
-            No zodiac signs. No mystical jargon. Just patterns and timing.
+            No zodiac signs. This forecast uses the position of the stars at your birth, based on ancient techniques refined over centuries.
           </p>
         </div>
       </div>
