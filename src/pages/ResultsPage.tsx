@@ -316,18 +316,6 @@ const ResultsPage = () => {
               </div>
             </ForecastSection>
 
-            {/* Counterfactual Paths */}
-            <ForecastSection title="If–Then Scenarios" delay={600} icon={<Compass className="w-5 h-5 text-gold" />}>
-              <p className="text-cream-muted text-sm mb-4">Plausible paths through the year</p>
-              <div className="space-y-4">
-                {strategicForecast.counterfactual_paths.map((path, index) => (
-                  <div key={index}>
-                    <h4 className="text-cream font-medium text-lg mb-1">{path.path}</h4>
-                    <p className="text-cream/70">{stripLeadingHeaders(path.description)}</p>
-                  </div>
-                ))}
-              </div>
-            </ForecastSection>
 
             {/* Operating Principles */}
             <ForecastSection title="Personal Operating Principles for 2026" delay={700} icon={<BookOpen className="w-5 h-5 text-gold" />}>
