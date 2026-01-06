@@ -58,6 +58,7 @@ export interface StrategicForecast {
   life_area_prioritization: LifeAreaPriority[];
   seasonal_map: SeasonMap[];
   key_tradeoffs: Tradeoff[];
+  crossroads_moment?: string;
   operating_principles: OperatingPrinciple[];
   deeper_arc: string;
 }

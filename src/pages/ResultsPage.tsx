@@ -316,6 +316,14 @@ const ResultsPage = () => {
               </div>
             </ForecastSection>
 
+            {/* Crossroads Moment - Only show if not empty */}
+            {strategicForecast.crossroads_moment && strategicForecast.crossroads_moment.trim() !== '' && (
+              <ForecastSection title="When This Year Puts You at a Crossroads" delay={600} icon={<Compass className="w-5 h-5 text-gold" />}>
+                <p className="text-cream/90 leading-relaxed">
+                  {stripLeadingHeaders(strategicForecast.crossroads_moment)}
+                </p>
+              </ForecastSection>
+            )}
 
             {/* Operating Principles */}
             <ForecastSection title="Personal Operating Principles for 2026" delay={700} icon={<BookOpen className="w-5 h-5 text-gold" />}>

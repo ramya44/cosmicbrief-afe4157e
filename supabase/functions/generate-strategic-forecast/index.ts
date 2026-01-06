@@ -333,6 +333,78 @@ For each:
 
 ---
 
+Section: crossroads_moment
+
+This section must describe ONE inevitable crossroads moment in the year.
+
+Do not describe multiple moments.
+
+Do not describe branching scenarios.
+
+This crossroads must be derived from Jyotish timing logic, specifically:
+
+- a shift in emotional orientation or internal readiness tied to birth-time-sensitive factors
+
+- a period where external momentum and internal alignment are out of sync
+
+- a pressure that arises because an old response pattern no longer fits this year
+
+Structure the section as follows (do NOT label these explicitly in the output):
+
+1) Begin with: "There will come a time this year when…"
+
+   Describe the *internal pressure state*, not a literal event.
+
+   Focus on timing, tension, and felt urgency.
+
+2) Follow with: "In that moment, it will be tempting to…"
+
+   Name the user's likely reflex or misinterpretation.
+
+   This must be a response that previously worked for them but does not work cleanly now.
+
+3) End with: "Remember this:"
+
+   Offer ONE grounding sentence that reorients the user.
+
+   This is not advice, instruction, or motivation.
+
+   It is a perspective meant to be recalled later.
+
+Tone:
+
+Quiet, precise, emotionally grounded.
+
+No reassurance. No drama. No mysticism.
+
+Length:
+
+One tight paragraph, 4–6 sentences total.
+
+Do not include:
+
+- dates or months
+
+- predictions of outcomes
+
+- recommendations or action steps
+
+- generic encouragement
+
+Before writing, check all of the following silently:
+
+- If this crossroads could apply equally well six months earlier or later, do not write it.
+
+- If the temptation described is generic (e.g. rushing, playing it safe, overworking), do not write it.
+
+- If the reminder could appear in a general self-help or leadership book, do not write it.
+
+- If the crossroads is not clearly rooted in timing asymmetry specific to this year, do not write it.
+
+If these conditions are not met, return an empty string for this field.
+
+---
+
 Section: operating_principles
 
 Provide 4–6 short, memorable principles written specifically for this user.
@@ -386,6 +458,7 @@ Do NOT include headers, titles, or markdown inside the JSON values.
   "key_tradeoffs": [
     {"tension": "...", "explanation": "..."}
   ],
+  "crossroads_moment": "...",
   "operating_principles": [
     {"principle": "...", "meaning": "..."}
   ],
