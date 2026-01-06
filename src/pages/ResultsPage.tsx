@@ -116,29 +116,31 @@ const ResultsPage = () => {
           <ForecastSection title="Your Year at a Glance" delay={100}>
             {(() => {
               const text = freeForecast.forecast;
-              // Parse sections from the forecast text
+              // Parse sections from the forecast text using more flexible regex
               const sections: { header: string; content: string }[] = [];
               const sectionHeaders = ['Defining Arc', 'Pivotal Life Element', 'Quiet Undercurrent'];
               
-              let remaining = text;
               sectionHeaders.forEach((header, index) => {
-                const headerPattern = new RegExp(`${header}\\s*\\n`, 'i');
+                // Match header with optional markdown formatting (**, ##, etc.) and colon
+                const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${header}(?:\\*\\*)?:?\\s*\\n?`, 'i');
                 const nextHeader = sectionHeaders[index + 1];
-                const nextPattern = nextHeader ? new RegExp(`\\n\\s*${nextHeader}`, 'i') : null;
+                const nextPattern = nextHeader 
+                  ? new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${nextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i') 
+                  : null;
                 
-                const headerMatch = remaining.match(headerPattern);
-                if (headerMatch) {
-                  const startIndex = (headerMatch.index ?? 0) + headerMatch[0].length;
-                  let endIndex = remaining.length;
+                const headerMatch = text.match(headerPattern);
+                if (headerMatch && headerMatch.index !== undefined) {
+                  const startIndex = headerMatch.index + headerMatch[0].length;
+                  let endIndex = text.length;
                   
                   if (nextPattern) {
-                    const nextMatch = remaining.match(nextPattern);
+                    const nextMatch = text.slice(startIndex).match(nextPattern);
                     if (nextMatch && nextMatch.index !== undefined) {
-                      endIndex = nextMatch.index;
+                      endIndex = startIndex + nextMatch.index;
                     }
                   }
                   
-                  const content = remaining.slice(startIndex, endIndex).trim();
+                  const content = text.slice(startIndex, endIndex).trim();
                   if (content) {
                     sections.push({ header, content });
                   }
