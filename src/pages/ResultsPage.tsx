@@ -160,7 +160,7 @@ const ResultsPage = () => {
                 <div className="space-y-6">
                   {sections.map((section, index) => (
                     <div key={index}>
-                      <h3 className="font-display text-xl text-gold mb-2">{section.header}</h3>
+                      <h4 className="text-cream font-medium text-lg mb-1">{section.header}</h4>
                       <p className="text-cream/90 leading-relaxed">{section.content}</p>
                     </div>
                   ))}
