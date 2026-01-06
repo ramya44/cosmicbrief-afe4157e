@@ -78,6 +78,7 @@ export interface ForecastState {
   isLoading: boolean;
   isStrategicLoading: boolean;
   setBirthData: (data: BirthData) => void;
+  setFreeForecast: (forecast: FreeForecast) => void;
   setForecast: (free: FreeForecast, paid: PaidForecast) => void;
   setStrategicForecast: (forecast: StrategicForecast) => void;
   setIsPaid: (paid: boolean) => void;
@@ -97,6 +98,7 @@ export const useForecastStore = create<ForecastState>()(
       isLoading: false,
       isStrategicLoading: false,
       setBirthData: (data) => set({ birthData: data }),
+      setFreeForecast: (forecast) => set({ freeForecast: forecast }),
       setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
       setStrategicForecast: (forecast) => set({ strategicForecast: forecast }),
       setIsPaid: (paid) => set({ isPaid: paid }),

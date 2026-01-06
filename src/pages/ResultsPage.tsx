@@ -44,7 +44,7 @@ const ResultsPage = () => {
     
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { birthData },
+        body: { birthData, freeForecast: freeForecast?.forecast },
       });
 
       if (error) throw error;

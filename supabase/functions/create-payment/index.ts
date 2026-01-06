@@ -24,9 +24,10 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
     logStep("Stripe key verified");
 
-    const { birthData } = await req.json();
+    const { birthData, freeForecast } = await req.json();
     if (!birthData) throw new Error("Birth data is required");
-    logStep("Received birth data", { birthDate: birthData.birthDate, birthPlace: birthData.birthPlace });
+    if (!freeForecast) throw new Error("Free forecast is required");
+    logStep("Received birth data and forecast", { birthDate: birthData.birthDate, birthPlace: birthData.birthPlace });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -49,6 +50,7 @@ serve(async (req) => {
         birthTime: birthData.birthTime,
         birthPlace: birthData.birthPlace,
         name: birthData.name || "",
+        freeForecast: freeForecast,
       },
     });
 
