@@ -7,6 +7,11 @@ export interface BirthData {
   birthPlace: string;
   name?: string;
   email?: string;
+  // Location coordinates from geocoding
+  lat?: number;
+  lon?: number;
+  // UTC-converted birth datetime (ISO string)
+  birthDateTimeUtc?: string;
 }
 
 export interface MonthEntry {

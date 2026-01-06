@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StarField } from '@/components/StarField';
-import { PlaceAutocomplete } from '@/components/PlaceAutocomplete';
+import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplete';
 import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
+import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, User } from 'lucide-react';
 
 const InputPage = () => {
@@ -19,6 +20,7 @@ const InputPage = () => {
     birthTime: '',
     birthPlace: '',
   });
+  const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const today = new Date().toISOString().split('T')[0];
@@ -59,18 +61,44 @@ const InputPage = () => {
     setIsPaid(false);
     setStrategicForecast(null);
     
-    setBirthData(formData);
+    // Convert birth time to UTC if we have coordinates
+    let birthDateTimeUtc: string | undefined;
+    if (placeCoords) {
+      try {
+        birthDateTimeUtc = await convertBirthTimeToUtc(
+          formData.birthDate,
+          formData.birthTime,
+          placeCoords.lat,
+          placeCoords.lon
+        );
+      } catch (error) {
+        console.error('Error converting to UTC:', error);
+      }
+    }
+    
+    const fullBirthData = {
+      ...formData,
+      lat: placeCoords?.lat,
+      lon: placeCoords?.lon,
+      birthDateTimeUtc,
+    };
+    
+    setBirthData(fullBirthData);
     setIsLoading(true);
     navigate('/results');
 
     try {
-      const forecast = await generateForecast(formData);
+      const forecast = await generateForecast(fullBirthData);
       setForecast(forecast, {});
     } catch (error) {
       console.error('Error generating forecast:', error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePlaceSelect = (place: PlaceSelection) => {
+    setPlaceCoords({ lat: place.lat, lon: place.lon });
   };
 
   return (
@@ -182,6 +210,7 @@ const InputPage = () => {
               <PlaceAutocomplete
                 value={formData.birthPlace}
                 onChange={(value) => setFormData({ ...formData, birthPlace: value })}
+                onPlaceSelect={handlePlaceSelect}
                 placeholder="Start typing a city..."
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
               />
