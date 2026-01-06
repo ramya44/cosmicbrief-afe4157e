@@ -32,7 +32,8 @@ serve(async (req) => {
     const { 
       birthDate, 
       birthTime, 
-      birthPlace, 
+      birthPlace,
+      birthTimeUtc,
       customerName,
       forecastText, 
       pivotalTheme 
@@ -41,6 +42,7 @@ serve(async (req) => {
     logStep("Received data", { 
       birthDate, 
       birthPlace,
+      birthTimeUtc,
       hasForecastText: !!forecastText,
       pivotalTheme 
     });
@@ -57,6 +59,7 @@ serve(async (req) => {
         birth_date: birthDate,
         birth_time: birthTime,
         birth_place: birthPlace,
+        birth_time_utc: birthTimeUtc || null,
         customer_name: customerName || null,
         forecast_text: forecastText,
         pivotal_theme: pivotalTheme || null,

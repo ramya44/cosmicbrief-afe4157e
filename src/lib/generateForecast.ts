@@ -30,6 +30,7 @@ export const generateForecast = async (
         birthDate: birthData.birthDate,
         birthTime: birthData.birthTime,
         birthPlace: birthData.birthPlace,
+        birthTimeUtc: birthData.birthDateTimeUtc,
         customerName: birthData.name,
         forecastText: data.forecast,
         pivotalTheme: data.pivotalTheme,
