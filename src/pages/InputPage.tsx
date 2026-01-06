@@ -212,7 +212,7 @@ const InputPage = () => {
             className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
-            Your information is used only to generate your personalized forecast
+            Your information is used only to generate your personalized forecast. We never sell information, ever.
           </p>
         </div>
       </div>
