@@ -175,17 +175,19 @@ Inputs:
 
 Write 90–110 words, plain text only.
 
-Structure (write in this order):
+Structure (write exactly in this format with headers):
 
-1) Defining Arc
+Your Defining Arc
 One short, shareable statement that captures the theme of the year.
 
-2) Pivotal Life Element
+Your Pivotal Life Theme
 Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" this year.
 
-3) Quiet Undercurrent
+The Quiet Undercurrent
 Write 1–2 sentences describing what needs balancing inside "${pivotalLifeElement}" this year.
 Use gentle phrasing like "balancing", "recalibration", or "two pulls". Do not explain consequences. Do not give advice.
+
+Include the exact headers "Your Defining Arc", "Your Pivotal Life Theme", and "The Quiet Undercurrent" on their own lines before each section.
 
 Stop when finished.
 `.trim();
