@@ -49,13 +49,13 @@ export const PlaceAutocomplete = ({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       
+      // Nominatim requires proper headers - browsers may strip User-Agent
+      // Using mode: 'cors' explicitly and minimal headers for browser compatibility
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
         {
-          headers: {
-            'Accept-Language': 'en',
-            'User-Agent': 'AstroForecastApp/1.0',
-          },
+          method: 'GET',
+          mode: 'cors',
           signal: controller.signal,
         }
       );
