@@ -34,6 +34,11 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://lovable.dev";
     logStep("Creating checkout session", { origin });
 
+    // Truncate free forecast to fit Stripe's 500 char metadata limit
+    const truncatedForecast = freeForecast.length > 500 
+      ? freeForecast.substring(0, 497) + "..." 
+      : freeForecast;
+
     // Create a one-time payment session
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -50,7 +55,7 @@ serve(async (req) => {
         birthTime: birthData.birthTime,
         birthPlace: birthData.birthPlace,
         name: birthData.name || "",
-        freeForecast: freeForecast,
+        freeForecast: truncatedForecast,
       },
     });
 
