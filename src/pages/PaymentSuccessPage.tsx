@@ -209,7 +209,7 @@ const PaymentSuccessPage = () => {
                 Generating Your Strategic Year Map...
               </h2>
               <p className="text-cream-muted">
-                This deeper analysis takes a moment. Please wait while we craft your personalized strategic guidance.
+                This deeper analysis takes a moment. We're preparing your personalized guidance. You'll receive an email with a link to your full report.
               </p>
             </>
           )}
