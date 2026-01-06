@@ -235,22 +235,26 @@ const ResultsPage = () => {
             {/* Strategic Title */}
             <div className="text-center py-8 border-t border-b border-gold/30">
               <h2 className="font-display text-3xl md:text-4xl text-cream">
-                Strategic Year Map
+                Strategic Plan for 2026
               </h2>
             </div>
 
             {/* Strategic Character */}
-            <ForecastSection title="The Strategic Character of 2026" delay={100} icon={<Target className="w-5 h-5 text-gold" />}>
-              <p className="text-cream/90 leading-relaxed whitespace-pre-line">
-                {stripLeadingHeaders(strategicForecast.strategic_character)}
-              </p>
+            <ForecastSection title="The Character of 2026" delay={100} icon={<Target className="w-5 h-5 text-gold" />}>
+              <div className="text-cream/90 leading-relaxed space-y-4">
+                {stripLeadingHeaders(strategicForecast.strategic_character).split('\n\n').map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </div>
             </ForecastSection>
 
             {/* Comparison */}
             <ForecastSection title="How 2026 Differs from 2025" delay={200} icon={<ArrowLeftRight className="w-5 h-5 text-gold" />}>
-              <p className="text-cream/90 leading-relaxed whitespace-pre-line">
-                {stripLeadingHeaders(strategicForecast.comparison_to_prior_year)}
-              </p>
+              <div className="text-cream/90 leading-relaxed space-y-4">
+                {stripLeadingHeaders(strategicForecast.comparison_to_prior_year).split('\n\n').map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
+              </div>
             </ForecastSection>
 
             {/* Life Area Prioritization */}
@@ -277,11 +281,23 @@ const ResultsPage = () => {
                 {strategicForecast.seasonal_map.map((season, index) => (
                   <div key={index} className="mb-6 last:mb-0">
                     <h4 className="font-display text-lg text-gold mb-3">{seasonLabels[index]}</h4>
-                    <div className="grid gap-2">
-                      <div><span className="text-cream-muted">What matters:</span> <span className="text-cream">{season.what_matters}</span></div>
-                      <div><span className="text-cream-muted">Lean into:</span> <span className="text-cream">{season.lean_into}</span></div>
-                      <div><span className="text-cream-muted">Protect:</span> <span className="text-cream">{season.protect}</span></div>
-                      <div><span className="text-cream-muted">Watch for:</span> <span className="text-cream">{season.watch_for}</span></div>
+                    <div className="space-y-4">
+                      <div>
+                        <h5 className="text-cream font-medium text-lg mb-1">What matters</h5>
+                        <p className="text-cream/70">{season.what_matters}</p>
+                      </div>
+                      <div>
+                        <h5 className="text-cream font-medium text-lg mb-1">Lean into</h5>
+                        <p className="text-cream/70">{season.lean_into}</p>
+                      </div>
+                      <div>
+                        <h5 className="text-cream font-medium text-lg mb-1">Protect</h5>
+                        <p className="text-cream/70">{season.protect}</p>
+                      </div>
+                      <div>
+                        <h5 className="text-cream font-medium text-lg mb-1">Watch for</h5>
+                        <p className="text-cream/70">{season.watch_for}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
