@@ -185,11 +185,11 @@ OUTPUT REQUIREMENTS:
 
 - Write as a premium, deeply personal Strategic Year Map.`;
 
-    const userPrompt = `Generate a **Strategic Year Map** for the user for the specified year.
+    const userPrompt = `Generate a Strategic Year Map for the user for the specified year.
 
 This is not a general forecast.
 
-This is a strategic, decision-oriented interpretation of the year.
+This is a personal, decision-oriented interpretation of how the year unfolds for this individual.
 
 ---
 
@@ -217,63 +217,65 @@ OUTPUT REQUIREMENTS:
 
 - Write as if speaking to an intelligent adult who wants clarity, not reassurance
 
-- Be specific and opinionated, while avoiding certainty
+- Be specific and opinionated while avoiding certainty
 
 - Do not ask follow-up questions
 
-- **Output body text only.**
+- Output body text only
 
-- **Do NOT include titles, headers, section names, numbers, or repeated labels.**
+- Do NOT include titles, headers, section names, numbers, or repeated labels
 
-- **Do NOT restate the year or section heading.**
+- Do NOT restate the year or section headings
 
-- **Assume the UI already provides all headings.**
+- Assume the UI provides all headings
 
 ---
 
 STRUCTURE (REQUIRED):
 
-**CRITICAL**: The section labels below are for YOUR reference only. Do NOT include any headers, section titles, numbers, or markdown formatting in your JSON output values. Each JSON field should contain ONLY the prose content - no titles like "The Strategic Character of 2026" or "How 2026 Differs from 2025".
+The section labels below are for reference only. Do NOT include them in the output text.
 
-**Section: strategic_character**
+---
 
-A 3–5 paragraph opening that clearly defines:
+Section: strategic_character
+
+A 3–5 paragraph opening that establishes:
 
 - What kind of year this is
 
-- What it is *for*
+- What it is for
 
-- What it is *not for*
+- What it is not for
 
-This section should immediately distinguish the year from generic "good/bad year" thinking.
-
----
-
-**Section: comparison_to_prior_year**
-
-Provide a direct comparison that explains:
-
-- What stopped working
-
-- What now works better
-
-- Where effort vs judgment shifts
-
-This should help the user mentally close the prior year and step into the new one.
+This should immediately move the reader out of generic good or bad year thinking.
 
 ---
 
-**Section: why_this_year_affects_you_differently**
+Section: comparison_to_prior_year
 
-In this section:
-- Explain what makes this year personally activating, stabilizing, or challenging for this user
-- Anchor the explanation in their birth data without naming techniques or jargon
+Explain:
+
+- What stopped working last year
+
+- What now works differently
+
+- How effort, judgment, or pacing shifts
+
+Help the reader mentally close the prior year.
 
 ---
 
-**Section: life_area_prioritization**
+Section: why_this_year_affects_you_differently
 
-Rank the following areas in order of strategic importance for the year:
+Explain why this year lands differently for this person.
+
+Anchor the explanation in their birth data without naming techniques or systems.
+
+---
+
+Section: life_area_prioritization
+
+Rank the following areas in order of importance for the year:
 
 1. Career / contribution
 
@@ -287,111 +289,97 @@ Rank the following areas in order of strategic importance for the year:
 
 For each:
 
-- Explain why it sits where it does
+- Explain why it ranks where it does
 
-- Describe what "over-investing" or "under-investing" looks like this year
+- Describe what over-investing or under-investing looks like this year
 
-This section is critical. Be clear and decisive.
-
----
-
-**Section: quarterly_map**
-
-Break the year into four quarters.
-
-For **each quarter**, include:
-
-- Primary focus
-
-- What to push
-
-- What to protect
-
-- What to avoid
-
-Use grounded, real-world framing.
-
-This should feel like a leadership or life-planning document, not a horoscope.
+Be decisive.
 
 ---
 
-**Section: key_tradeoffs**
+Section: seasonal_map
 
-Explicitly name 3–5 tensions the user will need to navigate, such as:
+Break the year into four human seasons rather than quarters.
 
-- Growth vs sustainability
+Do not reference months, quarters, or business cycles.
 
-- Visibility vs privacy
+Each season should feel like a phase of lived experience, defined by energy, attention, and emotional load.
 
-- Expansion vs consolidation
+For each season, include:
 
-For each tension:
+- What matters: The underlying personal or emotional priority of this phase
 
-- Explain how it shows up for *this* person
+- What to lean into: The kinds of commitments, behaviors, or conversations that align with the season
 
-- What happens if they lean too far in either direction
+- What to protect: Time, energy, boundaries, or conditions that support steadiness
 
-This is where insight depth really shows.
+- What to watch for: Subtle missteps, pressures, or patterns that undermine this phase
+
+Avoid business language, execution framing, or operational metaphors.
+
+This should feel like guidance for navigating life, not managing work.
 
 ---
 
-**Section: counterfactual_paths**
+Section: key_tradeoffs
 
-Describe 2–3 plausible paths through the year, for example:
+Name 3–5 tensions the user will need to navigate.
 
-- If the user prioritizes acceleration…
+For each:
 
-- If the user prioritizes consolidation…
+- Explain how it shows up specifically for this person
 
-Explain:
+- Describe the cost of leaning too far in either direction
 
-- Short-term experience
+---
 
-- Medium-term consequences
+Section: counterfactual_paths
 
-- What each path sets up for the following year
+Describe 2–3 plausible ways the year could be lived.
+
+For each path, explain:
+
+- The short-term experience
+
+- The medium-term consequence
+
+- What it sets up for the following year
 
 Avoid judgment. Focus on clarity.
 
 ---
 
-**Section: operating_principles**
+Section: operating_principles
 
-Provide 4–6 short, memorable principles written specifically for the user.
+Provide 4–6 short, memorable principles written specifically for this user.
 
-These should function like a personal constitution for the year.
+Each principle should be followed by 1–2 sentences explaining its meaning in practice.
 
-Each principle should be followed by 1–2 sentences of explanation.
-
-Examples of tone (do not reuse verbatim):
-
-- "Clarity beats speed."
-
-- "Structure replaces effort."
-
-- "Fewer decisions, made earlier."
+These should feel personal, not generic.
 
 ---
 
-**Section: deeper_arc**
+Section: deeper_arc
 
-Close by placing ${targetYear} in a three-year arc:
+Place the target year within a three-year arc.
 
-- Why ${priorYear} felt the way it did
+Explain:
 
-- Why ${targetYear} is pivotal
+- Why the prior year felt the way it did
 
-- What it prepares the ground for in the following year
+- Why this year is pivotal
 
-End with calm confidence, not motivation.
+- What it prepares for next year
+
+End with grounded confidence, not motivation.
 
 ---
 
 OUTPUT FORMAT:
 
-Return **valid JSON only** with the following structure.
+Return valid JSON only.
 
-**CRITICAL**: Do NOT include section headers, titles, or markdown formatting within the JSON field values. Each field should contain only the content/body text, not the header. For example, "strategic_character" should NOT start with "The Strategic Character of 2026" - just include the paragraphs directly.
+Do NOT include headers, titles, or markdown inside the JSON values.
 
 {
   "year": "${targetYear}",
@@ -405,18 +393,16 @@ Return **valid JSON only** with the following structure.
     {"area": "Health and energy", "priority": 4, "explanation": "..."},
     {"area": "Personal growth and identity", "priority": 5, "explanation": "..."}
   ],
-  "quarterly_map": {
-    "Q1": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."},
-    "Q2": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."},
-    "Q3": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."},
-    "Q4": {"focus": "...", "push": "...", "protect": "...", "avoid": "..."}
-  },
+  "seasonal_map": [
+    {"what_matters": "...", "lean_into": "...", "protect": "...", "watch_for": "..."},
+    {"what_matters": "...", "lean_into": "...", "protect": "...", "watch_for": "..."},
+    {"what_matters": "...", "lean_into": "...", "protect": "...", "watch_for": "..."},
+    {"what_matters": "...", "lean_into": "...", "protect": "...", "watch_for": "..."}
+  ],
   "key_tradeoffs": [
-    {"tension": "...", "explanation": "..."},
     {"tension": "...", "explanation": "..."}
   ],
   "counterfactual_paths": [
-    {"path": "...", "description": "..."},
     {"path": "...", "description": "..."}
   ],
   "operating_principles": [

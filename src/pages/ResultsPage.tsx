@@ -59,8 +59,7 @@ const ResultsPage = () => {
     }
   };
 
-  const quarterLabels = ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'];
-  const quarterKeys = ['Q1', 'Q2', 'Q3', 'Q4'] as const;
+  const seasonLabels = ['Early Year', 'Mid-Year', 'Late Year', 'Year End'];
 
   return (
     <div className="relative min-h-screen bg-celestial">
@@ -272,23 +271,20 @@ const ResultsPage = () => {
               </div>
             </ForecastSection>
 
-            {/* Quarterly Map */}
-            <ForecastSection title="Quarter-by-Quarter Strategic Map" delay={400} icon={<Calendar className="w-5 h-5 text-gold" />}>
+            {/* Seasonal Map */}
+            <ForecastSection title="Seasonal Map" delay={400} icon={<Calendar className="w-5 h-5 text-gold" />}>
               <div className="space-y-6">
-                {quarterKeys.map((key, index) => {
-                  const quarter = strategicForecast.quarterly_map[key];
-                  return (
-                    <div key={key} className="mb-6 last:mb-0">
-                      <h4 className="font-display text-lg text-gold mb-3">{quarterLabels[index]}</h4>
-                      <div className="grid gap-2">
-                        <div><span className="text-cream-muted">Focus:</span> <span className="text-cream">{quarter.focus}</span></div>
-                        <div><span className="text-cream-muted">Push:</span> <span className="text-cream">{quarter.push}</span></div>
-                        <div><span className="text-cream-muted">Protect:</span> <span className="text-cream">{quarter.protect}</span></div>
-                        <div><span className="text-cream-muted">Avoid:</span> <span className="text-cream">{quarter.avoid}</span></div>
-                      </div>
+                {strategicForecast.seasonal_map.map((season, index) => (
+                  <div key={index} className="mb-6 last:mb-0">
+                    <h4 className="font-display text-lg text-gold mb-3">{seasonLabels[index]}</h4>
+                    <div className="grid gap-2">
+                      <div><span className="text-cream-muted">What matters:</span> <span className="text-cream">{season.what_matters}</span></div>
+                      <div><span className="text-cream-muted">Lean into:</span> <span className="text-cream">{season.lean_into}</span></div>
+                      <div><span className="text-cream-muted">Protect:</span> <span className="text-cream">{season.protect}</span></div>
+                      <div><span className="text-cream-muted">Watch for:</span> <span className="text-cream">{season.watch_for}</span></div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </ForecastSection>
 
