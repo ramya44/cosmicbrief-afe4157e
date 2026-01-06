@@ -37,41 +37,53 @@ const PaymentSuccessPage = () => {
       let currentFreeForecast = freeForecast?.forecast;
       let currentPivotalTheme = freeForecast?.pivotalTheme;
       let stripeSessionId = sessionId;
+      let customerEmail: string | undefined;
 
-      // If birthData is not in store, try to retrieve it from Stripe session
-      if (!currentBirthData) {
-        try {
-          console.log('Birth data not in store, verifying payment session...');
-          const { data, error } = await supabase.functions.invoke('verify-payment', {
-            body: { sessionId },
-          });
+      // Always verify payment to get customer email from Stripe
+      try {
+        console.log('Verifying payment session...');
+        const { data, error } = await supabase.functions.invoke('verify-payment', {
+          body: { sessionId },
+        });
 
-          if (error) {
-            console.error('Verify payment error:', error);
-            throw new Error(error.message);
-          }
+        if (error) {
+          console.error('Verify payment error:', error);
+          throw new Error(error.message);
+        }
 
-          if (data?.success && data?.birthData) {
+        if (data?.success) {
+          // Get customer email from Stripe session
+          customerEmail = data.birthData?.email;
+          
+          // If birthData is not in store, restore it from Stripe
+          if (!currentBirthData && data.birthData) {
             currentBirthData = data.birthData;
             setBirthData(data.birthData);
             console.log('Birth data restored from Stripe session:', data.birthData);
-            
-            // Also restore free forecast from Stripe metadata
-            if (data.freeForecast) {
-              currentFreeForecast = data.freeForecast;
-              setFreeForecast({ forecast: data.freeForecast });
-              console.log('Free forecast restored from Stripe session');
-            }
-          } else {
-            throw new Error('Could not retrieve birth data');
           }
-        } catch (error) {
-          console.error('Failed to verify payment:', error);
-          setStatus('error');
-          toast.error('Could not verify payment. Please try again.');
-          setTimeout(() => navigate('/input'), 2000);
-          return;
+          
+          // Also restore free forecast from Stripe metadata if not in store
+          if (!currentFreeForecast && data.freeForecast) {
+            currentFreeForecast = data.freeForecast;
+            setFreeForecast({ forecast: data.freeForecast });
+            console.log('Free forecast restored from Stripe session');
+          }
+        } else {
+          throw new Error('Could not verify payment');
         }
+      } catch (error) {
+        console.error('Failed to verify payment:', error);
+        setStatus('error');
+        toast.error('Could not verify payment. Please try again.');
+        setTimeout(() => navigate('/input'), 2000);
+        return;
+      }
+
+      if (!currentBirthData) {
+        setStatus('error');
+        toast.error('Birth data not found. Please try again.');
+        setTimeout(() => navigate('/input'), 2000);
+        return;
       }
 
       // Payment successful - proceed to generate forecast
@@ -90,7 +102,7 @@ const PaymentSuccessPage = () => {
         const { error: saveError } = await supabase.functions.invoke('save-forecast', {
           body: {
             stripeSessionId,
-            customerEmail: currentBirthData.email,
+            customerEmail: customerEmail || currentBirthData.email,
             customerName: currentBirthData.name,
             birthDate: currentBirthData.birthDate,
             birthTime: currentBirthData.birthTime,
