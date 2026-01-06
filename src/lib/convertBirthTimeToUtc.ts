@@ -1,6 +1,6 @@
 /**
- * Converts a local birth date/time to UTC using the TimeZoneDB API via edge function.
- * Falls back to a rough longitude-based offset if the API fails.
+ * Converts a local birth date/time to UTC using longitude-based offset.
+ * The birth time is treated as local time at the given coordinates.
  */
 export async function convertBirthTimeToUtc(
   birthDate: string,  // YYYY-MM-DD
@@ -8,20 +8,45 @@ export async function convertBirthTimeToUtc(
   lat: number,
   lon: number
 ): Promise<string> {
-  // Combine date and time into a local datetime string
-  const localDateTimeStr = `${birthDate}T${birthTime}:00`;
+  // Parse date and time components directly (avoid browser timezone interpretation)
+  const [year, month, day] = birthDate.split('-').map(Number);
+  const [hours, minutes] = birthTime.split(':').map(Number);
   
-  // Calculate rough UTC offset based on longitude (15° per hour)
-  // This is a fallback approximation - actual timezones are more complex
-  const roughOffsetHours = Math.round(lon / 15);
+  // Calculate UTC offset based on longitude (15° per hour)
+  // Positive longitude = east of UTC = positive offset
+  const offsetHours = lon / 15;
   
-  // Create date object treating input as local time at that longitude
-  const localDate = new Date(localDateTimeStr);
+  // Convert local time components to total minutes since midnight
+  const localTotalMinutes = hours * 60 + minutes;
   
-  // Adjust by the rough offset to get approximate UTC
-  // Note: This doesn't account for DST or irregular timezone boundaries
-  const utcMs = localDate.getTime() - (roughOffsetHours * 60 * 60 * 1000);
-  const utcDate = new Date(utcMs);
+  // Subtract the offset to get UTC time in minutes
+  const utcTotalMinutes = localTotalMinutes - (offsetHours * 60);
+  
+  // Handle day rollover
+  let utcHours = Math.floor(utcTotalMinutes / 60);
+  let utcMinutes = Math.round(utcTotalMinutes % 60);
+  let utcDay = day;
+  let utcMonth = month;
+  let utcYear = year;
+  
+  // Handle negative minutes (round to previous hour)
+  if (utcMinutes < 0) {
+    utcMinutes += 60;
+    utcHours -= 1;
+  }
+  
+  // Handle hour overflow/underflow
+  if (utcHours < 0) {
+    utcHours += 24;
+    utcDay -= 1;
+  } else if (utcHours >= 24) {
+    utcHours -= 24;
+    utcDay += 1;
+  }
+  
+  // Handle day overflow/underflow (simplified - use Date for accuracy)
+  // Create a Date object in UTC to handle month/year boundaries correctly
+  const utcDate = new Date(Date.UTC(utcYear, utcMonth - 1, utcDay, utcHours, utcMinutes, 0));
   
   return utcDate.toISOString();
 }
