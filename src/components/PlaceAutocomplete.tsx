@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 import { MapPin } from 'lucide-react';
 
 interface Place {
@@ -37,7 +38,7 @@ export const PlaceAutocomplete = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch suggestions from Nominatim (OpenStreetMap)
+  // Fetch suggestions via backend proxy (avoids browser CORS / header restrictions)
   const fetchSuggestions = async (query: string) => {
     if (query.length < 2) {
       setSuggestions([]);
@@ -46,38 +47,24 @@ export const PlaceAutocomplete = ({
 
     setIsLoading(true);
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
-      // Nominatim requires proper headers - browsers may strip User-Agent
-      // Using mode: 'cors' explicitly and minimal headers for browser compatibility
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
-        {
-          method: 'GET',
-          mode: 'cors',
-          signal: controller.signal,
-        }
-      );
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        console.error('Nominatim API error:', response.status);
+      const { data, error } = await supabase.functions.invoke('geocode-place', {
+        body: { query },
+      });
+
+      if (error) {
+        console.error('Geocode function error:', error);
         setSuggestions([]);
+        setIsOpen(false);
         return;
       }
-      
-      const data = await response.json();
-      setSuggestions(data);
-      setIsOpen(data.length > 0);
+
+      const results = Array.isArray(data?.results) ? data.results : [];
+      setSuggestions(results);
+      setIsOpen(results.length > 0);
     } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        console.error('Location search timed out');
-      } else {
-        console.error('Error fetching places:', error);
-      }
+      console.error('Error fetching places:', error);
       setSuggestions([]);
+      setIsOpen(false);
     } finally {
       setIsLoading(false);
     }
