@@ -472,7 +472,7 @@ Do NOT include headers, titles, or markdown inside the JSON values.
         { role: "user", content: userPrompt },
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 8000,
+      max_completion_tokens: 5000,
     };
 
     console.log("OpenAI strategic payload:", JSON.stringify(payload));
