@@ -32,11 +32,11 @@ export interface LifeAreaPriority {
   explanation: string;
 }
 
-export interface QuarterMap {
-  focus: string;
-  push: string;
+export interface SeasonMap {
+  what_matters: string;
+  lean_into: string;
   protect: string;
-  avoid: string;
+  watch_for: string;
 }
 
 export interface Tradeoff {
@@ -58,13 +58,9 @@ export interface StrategicForecast {
   year: string;
   strategic_character: string;
   comparison_to_prior_year: string;
+  why_this_year_affects_you_differently?: string;
   life_area_prioritization: LifeAreaPriority[];
-  quarterly_map: {
-    Q1: QuarterMap;
-    Q2: QuarterMap;
-    Q3: QuarterMap;
-    Q4: QuarterMap;
-  };
+  seasonal_map: SeasonMap[];
   key_tradeoffs: Tradeoff[];
   counterfactual_paths: CounterfactualPath[];
   operating_principles: OperatingPrinciple[];
