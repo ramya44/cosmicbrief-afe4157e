@@ -240,7 +240,7 @@ Return valid JSON only using this schema:
         { role: "user", content: userPrompt },
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 5000,
+      max_completion_tokens: 8000,
     };
 
     console.log("OpenAI strategic payload:", JSON.stringify(payload));
