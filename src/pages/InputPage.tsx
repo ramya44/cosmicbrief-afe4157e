@@ -103,7 +103,7 @@ const InputPage = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 overflow-visible">
             {/* Name (optional) */}
             <div 
               className="space-y-2 animate-fade-up"
@@ -172,7 +172,7 @@ const InputPage = () => {
 
             {/* Place of Birth */}
             <div 
-              className="space-y-2 animate-fade-up"
+              className="space-y-2 animate-fade-up relative z-50"
               style={{ animationDelay: '200ms', animationFillMode: 'both' }}
             >
               <Label htmlFor="birthPlace" className="text-cream flex items-center gap-2">
