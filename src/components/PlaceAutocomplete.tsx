@@ -6,18 +6,28 @@ import { MapPin } from 'lucide-react';
 interface Place {
   display_name: string;
   place_id: number;
+  lat: string;
+  lon: string;
+}
+
+export interface PlaceSelection {
+  displayName: string;
+  lat: number;
+  lon: number;
 }
 
 interface PlaceAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  onPlaceSelect?: (place: PlaceSelection) => void;
   placeholder?: string;
   className?: string;
 }
 
 export const PlaceAutocomplete = ({ 
   value, 
-  onChange, 
+  onChange,
+  onPlaceSelect,
   placeholder = "City, Country",
   className 
 }: PlaceAutocompleteProps) => {
@@ -85,6 +95,11 @@ export const PlaceAutocomplete = ({
 
   const handleSelectPlace = (place: Place) => {
     onChange(place.display_name);
+    onPlaceSelect?.({
+      displayName: place.display_name,
+      lat: parseFloat(place.lat),
+      lon: parseFloat(place.lon),
+    });
     setIsOpen(false);
     setSuggestions([]);
   };
