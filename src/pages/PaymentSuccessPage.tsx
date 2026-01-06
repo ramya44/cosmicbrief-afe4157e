@@ -36,6 +36,7 @@ const PaymentSuccessPage = () => {
       let currentBirthData = birthData;
       let currentFreeForecast = freeForecast?.forecast;
       let currentPivotalTheme = freeForecast?.pivotalTheme;
+      let currentFreeForecastId = freeForecast?.id;
       let stripeSessionId = sessionId;
       let customerEmail: string | undefined;
 
@@ -117,6 +118,26 @@ const PaymentSuccessPage = () => {
           // Don't fail the whole flow, just log it
         } else {
           console.log('Forecasts saved to database successfully');
+        }
+
+        // Update the free forecast with the customer email
+        if (currentFreeForecastId && customerEmail) {
+          try {
+            const { error: updateError } = await supabase.functions.invoke('update-free-forecast-email', {
+              body: {
+                freeForecastId: currentFreeForecastId,
+                customerEmail: customerEmail,
+              },
+            });
+            
+            if (updateError) {
+              console.error('Failed to update free forecast email:', updateError);
+            } else {
+              console.log('Free forecast email updated successfully');
+            }
+          } catch (updateErr) {
+            console.error('Error updating free forecast email:', updateErr);
+          }
         }
         
         setStatus('complete');
