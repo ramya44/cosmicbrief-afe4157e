@@ -92,6 +92,36 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_cache: {
+        Row: {
+          birth_date: string
+          birth_place: string
+          birth_time_normalized: string
+          created_at: string
+          id: string
+          pivotal_theme: string
+          target_year: string
+        }
+        Insert: {
+          birth_date: string
+          birth_place: string
+          birth_time_normalized: string
+          created_at?: string
+          id?: string
+          pivotal_theme: string
+          target_year: string
+        }
+        Update: {
+          birth_date?: string
+          birth_place?: string
+          birth_time_normalized?: string
+          created_at?: string
+          id?: string
+          pivotal_theme?: string
+          target_year?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

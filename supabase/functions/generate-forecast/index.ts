@@ -1,7 +1,10 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
+const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,6 +53,19 @@ async function generateStyleSeed(input: string): Promise<string> {
     .join("");
 }
 
+// Normalize birth time to 30-minute increments
+function normalizeTime(time: string): string {
+  const [hours, minutes] = time.split(':').map(Number);
+  const normalizedMinutes = minutes < 15 ? 0 : (minutes < 45 ? 30 : 0);
+  const normalizedHours = minutes >= 45 ? (hours + 1) % 24 : hours;
+  return `${String(normalizedHours).padStart(2, '0')}:${String(normalizedMinutes).padStart(2, '0')}`;
+}
+
+// Normalize birth place (lowercase, trimmed)
+function normalizePlace(place: string): string {
+  return place.toLowerCase().trim();
+}
+
 // Deterministic selection of pivotal life element based on age and style seed
 function pickPivotalLifeElement(age: number, styleSeed: string): string {
   const seedNum = Array.from(styleSeed).reduce((acc, c) => acc + c.charCodeAt(0), 0);
@@ -95,25 +111,66 @@ serve(async (req) => {
       "0",
     )}/${dateObj.getFullYear()}`;
 
-    // Calculate age
-    const today = new Date();
-    let age = today.getFullYear() - dateObj.getFullYear();
-    const monthDiff = today.getMonth() - dateObj.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateObj.getDate())) {
-      age--;
-    }
+    // Target year and age calculation based on target year
+    const targetYear = new Date().getFullYear();
+    const age = targetYear - dateObj.getFullYear();
 
     const userName = name || "the seeker";
-    const targetYear = "2026";
 
-    // Generate style seed from birth data
+    // Normalize inputs for cache lookup
+    const normalizedTime = normalizeTime(birthTime);
+    const normalizedPlace = normalizePlace(birthPlace);
+
+    // Generate style seed (used for both cache miss logic and prompt)
     const styleSeed = await generateStyleSeed(`${formattedDob}+${birthTime}+${birthPlace}`);
 
-    // Pick pivotal life element before sending to OpenAI
-    const pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+    // Create Supabase client for cache operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Check theme cache first
+    const { data: cachedTheme, error: cacheError } = await supabase
+      .from("theme_cache")
+      .select("pivotal_theme")
+      .eq("birth_date", birthDate)
+      .eq("birth_time_normalized", normalizedTime)
+      .eq("birth_place", normalizedPlace)
+      .eq("target_year", String(targetYear))
+      .maybeSingle();
+
+    if (cacheError) {
+      console.error("Cache lookup error:", cacheError);
+    }
+
+    let pivotalLifeElement: string;
+
+    if (cachedTheme?.pivotal_theme) {
+      // Cache hit - use existing theme
+      pivotalLifeElement = cachedTheme.pivotal_theme;
+      console.log(`Cache HIT: Using cached theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`);
+    } else {
+      // Cache miss - generate and store new theme
+      pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+      
+      console.log(`Cache MISS: Generated new theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`);
+
+      // Insert into cache (ignore errors - cache is optional)
+      const { error: insertError } = await supabase
+        .from("theme_cache")
+        .insert({
+          birth_date: birthDate,
+          birth_time_normalized: normalizedTime,
+          birth_place: normalizedPlace,
+          target_year: String(targetYear),
+          pivotal_theme: pivotalLifeElement,
+        });
+
+      if (insertError) {
+        console.error("Cache insert error:", insertError);
+      }
+    }
 
     console.log(
-      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, style_seed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
+      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
