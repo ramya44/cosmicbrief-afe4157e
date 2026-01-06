@@ -197,46 +197,213 @@ const ResultsPage = () => {
 
             {/* Preview of Locked Sections */}
             <div className="max-w-3xl mx-auto space-y-6 mb-24 md:mb-12">
-              {[
-                { title: "The Character of 2026", icon: <Target className="w-5 h-5 text-gold" />, lines: 3 },
-                { title: "How 2026 Differs from 2025", icon: <ArrowLeftRight className="w-5 h-5 text-gold" />, lines: 3 },
-                { title: "Life-Area Prioritization", icon: <TrendingUp className="w-5 h-5 text-gold" />, lines: 4 },
-                { title: "The Year in Phases", icon: <Calendar className="w-5 h-5 text-gold" />, lines: 5 },
-                { title: "Key Trade-Offs and Tensions", icon: <Scale className="w-5 h-5 text-gold" />, lines: 3 },
-                { title: "Personal Operating Principles", icon: <BookOpen className="w-5 h-5 text-gold" />, lines: 3 },
-                { title: "The Deeper Arc", icon: <Sparkles className="w-5 h-5 text-gold" />, lines: 4 },
-              ].map((section, index) => (
-                <div 
-                  key={index} 
-                  className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
-                  style={{ animationDelay: `${800 + index * 100}ms`, animationFillMode: 'both' }}
-                >
-                  <div className="flex items-center gap-2 mb-4">
-                    {section.icon}
-                    <h3 className="font-display text-xl text-cream">{section.title}</h3>
+              {/* The Character of 2026 - Short prose */}
+              <div 
+                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                style={{ animationDelay: '800ms', animationFillMode: 'both' }}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Target className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">The Character of 2026</h3>
+                </div>
+                <div className="space-y-3 mb-4 blur-[6px] select-none">
+                  <div className="h-4 rounded bg-cream/15" style={{ width: '92%' }} />
+                  <div className="h-4 rounded bg-cream/12" style={{ width: '78%' }} />
+                  <div className="h-4 rounded bg-cream/10" style={{ width: '85%' }} />
+                </div>
+                <div className="flex justify-center">
+                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Unlock Detailed Analysis
+                  </Button>
+                </div>
+              </div>
+
+              {/* How 2026 Differs - Medium prose */}
+              <div 
+                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                style={{ animationDelay: '900ms', animationFillMode: 'both' }}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <ArrowLeftRight className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">How 2026 Differs from 2025</h3>
+                </div>
+                <div className="space-y-3 mb-4 blur-[6px] select-none">
+                  <div className="h-4 rounded bg-cream/14" style={{ width: '95%' }} />
+                  <div className="h-4 rounded bg-cream/12" style={{ width: '88%' }} />
+                  <div className="h-4 rounded bg-cream/10" style={{ width: '72%' }} />
+                  <div className="h-4 rounded bg-cream/12" style={{ width: '90%' }} />
+                  <div className="h-4 rounded bg-cream/10" style={{ width: '65%' }} />
+                </div>
+                <div className="flex justify-center">
+                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Unlock Detailed Analysis
+                  </Button>
+                </div>
+              </div>
+
+              {/* Life-Area Prioritization - Realistic numbered items */}
+              <div 
+                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                style={{ animationDelay: '1000ms', animationFillMode: 'both' }}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">Life-Area Prioritization</h3>
+                </div>
+                <p className="text-cream-muted text-sm mb-4 blur-[4px] select-none">Ranked by strategic importance</p>
+                <div className="space-y-4 mb-4">
+                  {/* Visible item 1 */}
+                  <div className="blur-[5px] select-none">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-gold font-display text-lg">#1</span>
+                      <span className="text-cream font-medium">Career and contribution</span>
+                    </div>
+                    <div className="h-4 rounded bg-cream/10" style={{ width: '88%' }} />
                   </div>
-                  <div className="space-y-2 mb-4">
-                    {Array.from({ length: section.lines }).map((_, i) => (
-                      <div 
-                        key={i} 
-                        className="h-4 rounded bg-cream/10 blur-[6px]"
-                        style={{ width: `${85 - i * 10 + Math.random() * 15}%` }}
-                      />
-                    ))}
+                  {/* Visible item 2 */}
+                  <div className="blur-[5px] select-none">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-gold font-display text-lg">#2</span>
+                      <span className="text-cream font-medium">Relationships and boundaries</span>
+                    </div>
+                    <div className="h-4 rounded bg-cream/10" style={{ width: '75%' }} />
                   </div>
-                  <div className="flex justify-center">
-                    <Button 
-                      variant="unlock" 
-                      size="sm" 
-                      onClick={handleUnlock}
-                      disabled={isRedirecting}
-                    >
-                      <Lock className="w-3.5 h-3.5 mr-1" />
-                      Unlock Detailed Analysis
-                    </Button>
+                  {/* Blurred placeholder items */}
+                  <div className="blur-[6px] select-none space-y-3">
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '70%' }} />
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '82%' }} />
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '68%' }} />
                   </div>
                 </div>
-              ))}
+                <div className="flex justify-center">
+                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Unlock Detailed Analysis
+                  </Button>
+                </div>
+              </div>
+
+              {/* The Year in Phases - Longer with phase headers */}
+              <div 
+                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                style={{ animationDelay: '1100ms', animationFillMode: 'both' }}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Calendar className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">The Year in Phases</h3>
+                </div>
+                <div className="space-y-5 mb-4">
+                  {/* Phase 1 */}
+                  <div className="blur-[5px] select-none">
+                    <h4 className="font-display text-lg text-gold mb-2">Early Year</h4>
+                    <div className="space-y-2">
+                      <div className="h-4 rounded bg-cream/12" style={{ width: '90%' }} />
+                      <div className="h-4 rounded bg-cream/10" style={{ width: '76%' }} />
+                    </div>
+                  </div>
+                  {/* Phase 2 */}
+                  <div className="blur-[6px] select-none">
+                    <h4 className="font-display text-lg text-gold/70 mb-2">Mid-Year</h4>
+                    <div className="space-y-2">
+                      <div className="h-4 rounded bg-cream/10" style={{ width: '85%' }} />
+                      <div className="h-4 rounded bg-cream/8" style={{ width: '70%' }} />
+                    </div>
+                  </div>
+                  {/* Additional phases hint */}
+                  <div className="blur-[7px] select-none space-y-2">
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '60%' }} />
+                    <div className="h-4 rounded bg-cream/6" style={{ width: '80%' }} />
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Unlock Detailed Analysis
+                  </Button>
+                </div>
+              </div>
+
+              {/* Key Trade-Offs - Short with tension headers */}
+              <div 
+                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                style={{ animationDelay: '1200ms', animationFillMode: 'both' }}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Scale className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">Key Trade-Offs and Tensions</h3>
+                </div>
+                <div className="space-y-4 mb-4">
+                  <div className="blur-[5px] select-none">
+                    <h4 className="text-cream font-medium text-lg mb-1">Ambition vs. Sustainability</h4>
+                    <div className="h-4 rounded bg-cream/10" style={{ width: '82%' }} />
+                  </div>
+                  <div className="blur-[6px] select-none space-y-2">
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '70%' }} />
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '88%' }} />
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Unlock Detailed Analysis
+                  </Button>
+                </div>
+              </div>
+
+              {/* Personal Operating Principles - Medium with italic quotes */}
+              <div 
+                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                style={{ animationDelay: '1300ms', animationFillMode: 'both' }}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <BookOpen className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">Personal Operating Principles</h3>
+                </div>
+                <p className="text-cream-muted text-sm mb-4 blur-[4px] select-none">Your personal constitution for the year</p>
+                <div className="space-y-3 mb-4">
+                  <div className="blur-[5px] select-none">
+                    <h4 className="text-cream font-medium text-lg italic mb-1">"Move slower to move further"</h4>
+                    <div className="h-4 rounded bg-cream/10" style={{ width: '75%' }} />
+                  </div>
+                  <div className="blur-[6px] select-none space-y-2">
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '65%' }} />
+                    <div className="h-4 rounded bg-cream/8" style={{ width: '80%' }} />
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Unlock Detailed Analysis
+                  </Button>
+                </div>
+              </div>
+
+              {/* The Deeper Arc - Longer prose */}
+              <div 
+                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                style={{ animationDelay: '1400ms', animationFillMode: 'both' }}
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">The Deeper Arc</h3>
+                </div>
+                <div className="space-y-3 mb-4 blur-[6px] select-none">
+                  <div className="h-4 rounded bg-cream/14" style={{ width: '94%' }} />
+                  <div className="h-4 rounded bg-cream/12" style={{ width: '87%' }} />
+                  <div className="h-4 rounded bg-cream/10" style={{ width: '91%' }} />
+                  <div className="h-4 rounded bg-cream/12" style={{ width: '78%' }} />
+                  <div className="h-4 rounded bg-cream/10" style={{ width: '84%' }} />
+                  <div className="h-4 rounded bg-cream/8" style={{ width: '62%' }} />
+                </div>
+                <div className="flex justify-center">
+                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
+                    <Lock className="w-3.5 h-3.5 mr-1" />
+                    Unlock Detailed Analysis
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Mobile Sticky CTA */}
