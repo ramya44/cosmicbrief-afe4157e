@@ -17,6 +17,7 @@ export interface MonthEntry {
 export interface FreeForecast {
   forecast: string;
   pivotalTheme?: string;
+  id?: string; // Database ID for linking email later
 }
 
 export interface PaidForecast {

@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      free_forecasts: {
+        Row: {
+          birth_date: string
+          birth_place: string
+          birth_time: string
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          forecast_text: string
+          id: string
+          pivotal_theme: string | null
+        }
+        Insert: {
+          birth_date: string
+          birth_place: string
+          birth_time: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          forecast_text: string
+          id?: string
+          pivotal_theme?: string | null
+        }
+        Update: {
+          birth_date?: string
+          birth_place?: string
+          birth_time?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          forecast_text?: string
+          id?: string
+          pivotal_theme?: string | null
+        }
+        Relationships: []
+      }
       paid_forecasts: {
         Row: {
           amount_paid: number | null
