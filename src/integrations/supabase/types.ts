@@ -19,6 +19,7 @@ export type Database = {
           birth_date: string
           birth_place: string
           birth_time: string
+          birth_time_utc: string | null
           created_at: string
           customer_email: string | null
           customer_name: string | null
@@ -30,6 +31,7 @@ export type Database = {
           birth_date: string
           birth_place: string
           birth_time: string
+          birth_time_utc?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
@@ -41,6 +43,7 @@ export type Database = {
           birth_date?: string
           birth_place?: string
           birth_time?: string
+          birth_time_utc?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
@@ -56,6 +59,7 @@ export type Database = {
           birth_date: string
           birth_place: string
           birth_time: string
+          birth_time_utc: string | null
           created_at: string | null
           customer_email: string
           customer_name: string | null
@@ -69,6 +73,7 @@ export type Database = {
           birth_date: string
           birth_place: string
           birth_time: string
+          birth_time_utc?: string | null
           created_at?: string | null
           customer_email: string
           customer_name?: string | null
@@ -82,6 +87,7 @@ export type Database = {
           birth_date?: string
           birth_place?: string
           birth_time?: string
+          birth_time_utc?: string | null
           created_at?: string | null
           customer_email?: string
           customer_name?: string | null
