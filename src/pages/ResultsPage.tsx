@@ -195,6 +195,49 @@ const ResultsPage = () => {
               </div>
             </div>
 
+            {/* Preview of Locked Sections */}
+            <div className="max-w-3xl mx-auto space-y-6 mb-24 md:mb-12">
+              {[
+                { title: "The Character of 2026", icon: <Target className="w-5 h-5 text-gold" />, lines: 3 },
+                { title: "How 2026 Differs from 2025", icon: <ArrowLeftRight className="w-5 h-5 text-gold" />, lines: 3 },
+                { title: "Life-Area Prioritization", icon: <TrendingUp className="w-5 h-5 text-gold" />, lines: 4 },
+                { title: "Seasonal Map", icon: <Calendar className="w-5 h-5 text-gold" />, lines: 5 },
+                { title: "Key Trade-Offs and Tensions", icon: <Scale className="w-5 h-5 text-gold" />, lines: 3 },
+                { title: "Personal Operating Principles", icon: <BookOpen className="w-5 h-5 text-gold" />, lines: 3 },
+                { title: "The Deeper Arc", icon: <Sparkles className="w-5 h-5 text-gold" />, lines: 4 },
+              ].map((section, index) => (
+                <div 
+                  key={index} 
+                  className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
+                  style={{ animationDelay: `${800 + index * 100}ms`, animationFillMode: 'both' }}
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    {section.icon}
+                    <h3 className="font-display text-xl text-cream">{section.title}</h3>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    {Array.from({ length: section.lines }).map((_, i) => (
+                      <div 
+                        key={i} 
+                        className="h-4 rounded bg-cream/10 blur-[6px]"
+                        style={{ width: `${85 - i * 10 + Math.random() * 15}%` }}
+                      />
+                    ))}
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleUnlock}
+                    disabled={isRedirecting}
+                    className="text-gold hover:text-gold hover:bg-gold/10 gap-1"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    Unlock
+                  </Button>
+                </div>
+              ))}
+            </div>
+
             {/* Mobile Sticky CTA */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-midnight via-midnight to-transparent">
               <div className="rounded-xl border border-gold/30 bg-midnight/90 backdrop-blur-sm p-4 overflow-hidden">
