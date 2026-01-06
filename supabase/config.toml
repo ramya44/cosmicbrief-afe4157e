@@ -15,11 +15,11 @@ verify_jwt = false
 [functions.save-forecast]
 verify_jwt = false
 
-[functions.save-free-forecast]
-verify_jwt = false
-
 [functions.update-free-forecast-email]
 verify_jwt = false
 
 [functions.send-forecast-email]
+verify_jwt = false
+
+[functions.geocode-place]
 verify_jwt = false
