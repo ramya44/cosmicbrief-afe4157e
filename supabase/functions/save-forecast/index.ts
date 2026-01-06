@@ -43,6 +43,7 @@ serve(async (req) => {
       generationStatus,
       generationError,
       retryCount,
+      tokenUsage,
     } = await req.json();
 
     logStep("Received data", { 
@@ -87,6 +88,9 @@ serve(async (req) => {
         generation_status: generationStatus || 'complete',
         generation_error: generationError || null,
         retry_count: retryCount || 0,
+        prompt_tokens: tokenUsage?.promptTokens || null,
+        completion_tokens: tokenUsage?.completionTokens || null,
+        total_tokens: tokenUsage?.totalTokens || null,
       })
       .select()
       .single();

@@ -435,11 +435,16 @@ Return valid JSON only using this schema:
       );
     }
 
-    // Return forecast with metadata
+    // Return forecast with metadata including token usage
     return new Response(JSON.stringify({
       forecast,
       modelUsed,
       totalAttempts,
+      tokenUsage: data.usage ? {
+        promptTokens: data.usage.prompt_tokens,
+        completionTokens: data.usage.completion_tokens,
+        totalTokens: data.usage.total_tokens,
+      } : null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
