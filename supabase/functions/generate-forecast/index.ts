@@ -11,36 +11,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Extract and parse the first complete top-level JSON object from a string.
-// This is resilient to extra prose before/after the JSON and to ``` fences.
-function extractFirstJsonObject(text: string) {
-  const cleaned = text
-    .trim()
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/```$/i, "")
-    .trim();
-
-  let depth = 0;
-  let start = -1;
-
-  for (let i = 0; i < cleaned.length; i++) {
-    const ch = cleaned[i];
-    if (ch === "{") {
-      if (depth === 0) start = i;
-      depth++;
-    } else if (ch === "}") {
-      depth--;
-      if (depth === 0 && start !== -1) {
-        const candidate = cleaned.slice(start, i + 1);
-        return JSON.parse(candidate);
-      }
-    }
-  }
-
-  throw new Error("No complete JSON object found in model output");
-}
-
 // Generate a short hash for style seed
 async function generateStyleSeed(input: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -53,17 +23,21 @@ async function generateStyleSeed(input: string): Promise<string> {
     .join("");
 }
 
-// Normalize birth time to 30-minute increments
-function normalizeTime(time: string): string {
-  const [hours, minutes] = time.split(":").map(Number);
+// Normalize UTC datetime to 30-minute increments for cache key
+function normalizeUtcDatetime(utcDatetime: string): string {
+  const date = new Date(utcDatetime);
+  const minutes = date.getUTCMinutes();
   const normalizedMinutes = minutes < 15 ? 0 : minutes < 45 ? 30 : 0;
-  const normalizedHours = minutes >= 45 ? (hours + 1) % 24 : hours;
-  return `${String(normalizedHours).padStart(2, "0")}:${String(normalizedMinutes).padStart(2, "0")}`;
-}
-
-// Normalize birth place (lowercase, trimmed)
-function normalizePlace(place: string): string {
-  return place.toLowerCase().trim();
+  const normalizedHours = minutes >= 45 ? date.getUTCHours() + 1 : date.getUTCHours();
+  
+  // Handle day rollover
+  date.setUTCHours(normalizedHours % 24, normalizedMinutes, 0, 0);
+  if (normalizedHours >= 24) {
+    date.setUTCDate(date.getUTCDate() + 1);
+    date.setUTCHours(0);
+  }
+  
+  return date.toISOString();
 }
 
 // Deterministic selection of pivotal life element based on age and style seed
@@ -75,6 +49,13 @@ function pickPivotalLifeElement(age: number, styleSeed: string): string {
   else if (age < 60) options = ["health", "family", "relationships", "purpose"];
   else options = ["health", "family", "relationships", "meaning", "stewardship"];
   return options[seedNum % options.length];
+}
+
+// Calculate age from UTC birth datetime
+function calculateAge(birthDatetimeUtc: string, targetYear: number): number {
+  const birthDate = new Date(birthDatetimeUtc);
+  const birthYear = birthDate.getUTCFullYear();
+  return targetYear - birthYear;
 }
 
 serve(async (req) => {
@@ -104,6 +85,23 @@ serve(async (req) => {
       });
     }
 
+    // Require birthTimeUtc for proper theme caching
+    if (!birthTimeUtc) {
+      console.warn("birthTimeUtc not provided - using local date for age calculation");
+    }
+
+    // Target year
+    const targetYear = new Date().getFullYear();
+
+    // Calculate age based on UTC birth datetime (or fallback to local date)
+    let age: number;
+    if (birthTimeUtc) {
+      age = calculateAge(birthTimeUtc, targetYear);
+    } else {
+      const dateObj = new Date(birthDate);
+      age = targetYear - dateObj.getFullYear();
+    }
+
     // Format date for display
     const dateObj = new Date(birthDate);
     const formattedDob = `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(dateObj.getDate()).padStart(
@@ -111,68 +109,69 @@ serve(async (req) => {
       "0",
     )}/${dateObj.getFullYear()}`;
 
-    // Target year and age calculation based on target year
-    const targetYear = new Date().getFullYear();
-    const age = targetYear - dateObj.getFullYear();
-
     const userName = name || "the seeker";
 
-    // Normalize inputs for cache lookup
-    const normalizedTime = normalizeTime(birthTime);
-    const normalizedPlace = normalizePlace(birthPlace);
-
-    // Generate style seed (used for both cache miss logic and prompt)
-    const styleSeed = await generateStyleSeed(`${formattedDob}+${birthTime}+${birthPlace}`);
+    // Generate style seed based on UTC datetime for consistency
+    const styleSeedInput = birthTimeUtc || `${birthDate}+${birthTime}+${birthPlace}`;
+    const styleSeed = await generateStyleSeed(styleSeedInput);
 
     // Create Supabase client for cache operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check theme cache first
-    const { data: cachedTheme, error: cacheError } = await supabase
-      .from("theme_cache")
-      .select("pivotal_theme")
-      .eq("birth_date", birthDate)
-      .eq("birth_time_normalized", normalizedTime)
-      .eq("birth_place", normalizedPlace)
-      .eq("target_year", String(targetYear))
-      .maybeSingle();
-
-    if (cacheError) {
-      console.error("Cache lookup error:", cacheError);
-    }
-
     let pivotalLifeElement: string;
 
-    if (cachedTheme?.pivotal_theme) {
-      // Cache hit - use existing theme
-      pivotalLifeElement = cachedTheme.pivotal_theme;
-      console.log(
-        `Cache HIT: Using cached theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`,
-      );
-    } else {
-      // Cache miss - generate and store new theme
-      pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+    // Only use cache if we have UTC datetime
+    if (birthTimeUtc) {
+      // Normalize UTC datetime for cache key (30-minute increments)
+      const normalizedUtc = normalizeUtcDatetime(birthTimeUtc);
 
-      console.log(
-        `Cache MISS: Generated new theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`,
-      );
+      console.log(`Cache lookup: normalized UTC=${normalizedUtc}, targetYear=${targetYear}`);
 
-      // Insert into cache (ignore errors - cache is optional)
-      const { error: insertError } = await supabase.from("theme_cache").insert({
-        birth_date: birthDate,
-        birth_time_normalized: normalizedTime,
-        birth_place: normalizedPlace,
-        target_year: String(targetYear),
-        pivotal_theme: pivotalLifeElement,
-      });
+      // Check theme cache using UTC datetime
+      const { data: cachedTheme, error: cacheError } = await supabase
+        .from("theme_cache")
+        .select("pivotal_theme")
+        .eq("birth_datetime_utc", normalizedUtc)
+        .eq("target_year", String(targetYear))
+        .maybeSingle();
 
-      if (insertError) {
-        console.error("Cache insert error:", insertError);
+      if (cacheError) {
+        console.error("Cache lookup error:", cacheError);
       }
+
+      if (cachedTheme?.pivotal_theme) {
+        // Cache hit - use existing theme
+        pivotalLifeElement = cachedTheme.pivotal_theme;
+        console.log(
+          `Cache HIT: Using cached theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}`,
+        );
+      } else {
+        // Cache miss - generate and store new theme
+        pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+
+        console.log(
+          `Cache MISS: Generated new theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}, age=${age}`,
+        );
+
+        // Insert into cache (ignore errors - cache is optional)
+        const { error: insertError } = await supabase.from("theme_cache").insert({
+          birth_datetime_utc: normalizedUtc,
+          target_year: String(targetYear),
+          pivotal_theme: pivotalLifeElement,
+        });
+
+        if (insertError) {
+          console.error("Cache insert error:", insertError);
+        }
+      }
+    } else {
+      // No UTC datetime - just generate theme without caching
+      pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+      console.log(`No UTC datetime provided - generated theme "${pivotalLifeElement}" without caching`);
     }
 
     console.log(
-      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
+      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || 'N/A'}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -251,7 +250,7 @@ One short, shareable statement that captures the theme of the year.
 Your Pivotal Life Theme
 Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" this year.
 When describing the pivotal life theme:
-- explicitly state what happens when the user applies last year’s logic to this year
+- explicitly state what happens when the user applies last year's logic to this year
 - do not explain how to fix it
 
 
