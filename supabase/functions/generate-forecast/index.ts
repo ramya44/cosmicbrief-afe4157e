@@ -55,10 +55,10 @@ async function generateStyleSeed(input: string): Promise<string> {
 
 // Normalize birth time to 30-minute increments
 function normalizeTime(time: string): string {
-  const [hours, minutes] = time.split(':').map(Number);
-  const normalizedMinutes = minutes < 15 ? 0 : (minutes < 45 ? 30 : 0);
+  const [hours, minutes] = time.split(":").map(Number);
+  const normalizedMinutes = minutes < 15 ? 0 : minutes < 45 ? 30 : 0;
   const normalizedHours = minutes >= 45 ? (hours + 1) % 24 : hours;
-  return `${String(normalizedHours).padStart(2, '0')}:${String(normalizedMinutes).padStart(2, '0')}`;
+  return `${String(normalizedHours).padStart(2, "0")}:${String(normalizedMinutes).padStart(2, "0")}`;
 }
 
 // Normalize birth place (lowercase, trimmed)
@@ -146,23 +146,25 @@ serve(async (req) => {
     if (cachedTheme?.pivotal_theme) {
       // Cache hit - use existing theme
       pivotalLifeElement = cachedTheme.pivotal_theme;
-      console.log(`Cache HIT: Using cached theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`);
+      console.log(
+        `Cache HIT: Using cached theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`,
+      );
     } else {
       // Cache miss - generate and store new theme
       pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
-      
-      console.log(`Cache MISS: Generated new theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`);
+
+      console.log(
+        `Cache MISS: Generated new theme "${pivotalLifeElement}" for ${birthDate}, ${normalizedTime}, ${normalizedPlace}, ${targetYear}`,
+      );
 
       // Insert into cache (ignore errors - cache is optional)
-      const { error: insertError } = await supabase
-        .from("theme_cache")
-        .insert({
-          birth_date: birthDate,
-          birth_time_normalized: normalizedTime,
-          birth_place: normalizedPlace,
-          target_year: String(targetYear),
-          pivotal_theme: pivotalLifeElement,
-        });
+      const { error: insertError } = await supabase.from("theme_cache").insert({
+        birth_date: birthDate,
+        birth_time_normalized: normalizedTime,
+        birth_place: normalizedPlace,
+        target_year: String(targetYear),
+        pivotal_theme: pivotalLifeElement,
+      });
 
       if (insertError) {
         console.error("Cache insert error:", insertError);
@@ -230,7 +232,16 @@ Inputs:
 - Style seed: ${styleSeed}
 - Pivotal life element (preselected): ${pivotalLifeElement}
 
-Write 90–110 words, plain text only.
+Write 90–110 words, plain text only. 
+
+EDGE REQUIREMENT (MANDATORY):
+
+For every visible section:
+- Include at least one sentence that implies a cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually.
+- Do NOT resolve the consequence.
+- Do NOT offer the correction.
+
+The reader should feel informed but slightly underprepared.
 
 Structure (write exactly in this format with headers):
 
@@ -239,6 +250,10 @@ One short, shareable statement that captures the theme of the year.
 
 Your Pivotal Life Theme
 Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" this year.
+When describing the pivotal life theme:
+- explicitly state what happens when the user applies last year’s logic to this year
+- do not explain how to fix it
+
 
 The Quiet Undercurrent
 Write 1–2 sentences describing what needs balancing inside "${pivotalLifeElement}" this year.
@@ -322,13 +337,16 @@ Stop when finished.
       console.error("Failed to save free forecast:", saveErr);
     }
 
-    return new Response(JSON.stringify({ 
-      forecast: forecastText, 
-      pivotalTheme: pivotalLifeElement,
-      freeForecastId,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        forecast: forecastText,
+        pivotalTheme: pivotalLifeElement,
+        freeForecastId,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (error) {
     console.error("Error in generate-forecast function:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
