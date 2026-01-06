@@ -350,7 +350,7 @@ const ResultsPage = () => {
         {/* Footer */}
         <footer className="text-center py-8 border-t border-border/30">
           <p className="text-muted-foreground text-sm">
-            A personalized reading based on Ancient Indian Astrology.
+            A personalized reading grounded in traditional Indian astrological methods.
           </p>
         </footer>
       </main>
