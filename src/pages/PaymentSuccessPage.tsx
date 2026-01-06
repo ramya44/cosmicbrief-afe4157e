@@ -100,7 +100,7 @@ const PaymentSuccessPage = () => {
         setStatus('saving');
         console.log('Saving forecasts to database...');
         
-        const { error: saveError } = await supabase.functions.invoke('save-forecast', {
+        const { data: saveData, error: saveError } = await supabase.functions.invoke('save-forecast', {
           body: {
             stripeSessionId,
             customerEmail: customerEmail || currentBirthData.email,
@@ -117,7 +117,29 @@ const PaymentSuccessPage = () => {
           console.error('Failed to save forecast to database:', saveError);
           // Don't fail the whole flow, just log it
         } else {
-          console.log('Forecasts saved to database successfully');
+          console.log('Forecasts saved to database successfully', saveData);
+          
+          // Send email with link to the forecast
+          const forecastEmail = customerEmail || currentBirthData.email;
+          if (forecastEmail && saveData?.id) {
+            try {
+              const { error: emailError } = await supabase.functions.invoke('send-forecast-email', {
+                body: {
+                  customerEmail: forecastEmail,
+                  customerName: currentBirthData.name,
+                  forecastId: saveData.id,
+                },
+              });
+              
+              if (emailError) {
+                console.error('Failed to send forecast email:', emailError);
+              } else {
+                console.log('Forecast email sent successfully');
+              }
+            } catch (emailErr) {
+              console.error('Error sending forecast email:', emailErr);
+            }
+          }
         }
 
         // Update the free forecast with the customer email
