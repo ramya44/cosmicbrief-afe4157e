@@ -11,7 +11,7 @@ import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, User } from 'lucide-react
 
 const InputPage = () => {
   const navigate = useNavigate();
-  const { setBirthData, setForecast, setIsLoading } = useForecastStore();
+  const { setBirthData, setForecast, setIsLoading, setIsPaid, setStrategicForecast } = useForecastStore();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -55,6 +55,10 @@ const InputPage = () => {
     
     if (!validateForm()) return;
 
+    // Reset paid state for new forecast entry
+    setIsPaid(false);
+    setStrategicForecast(null);
+    
     setBirthData(formData);
     setIsLoading(true);
     navigate('/results');
