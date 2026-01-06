@@ -224,16 +224,17 @@ const ResultsPage = () => {
                       />
                     ))}
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleUnlock}
-                    disabled={isRedirecting}
-                    className="text-gold hover:text-gold hover:bg-gold/10 gap-1"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                    Unlock
-                  </Button>
+                  <div className="flex justify-center">
+                    <Button 
+                      variant="unlock" 
+                      size="sm" 
+                      onClick={handleUnlock}
+                      disabled={isRedirecting}
+                    >
+                      <Lock className="w-3.5 h-3.5 mr-1" />
+                      Unlock Detailed Analysis
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
