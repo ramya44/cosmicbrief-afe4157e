@@ -43,12 +43,12 @@ serve(async (req) => {
   }
 
   try {
-    const { birthDate, birthTime, birthPlace, name, pivotalTheme } = await req.json();
+    const { birthDateTimeUtc, lat, lon, name, pivotalTheme } = await req.json();
 
-    if (!birthDate || !birthTime || !birthPlace) {
+    if (!birthDateTimeUtc || lat === undefined || lon === undefined) {
       return new Response(
         JSON.stringify({
-          error: "Missing required fields: birthDate, birthTime, birthPlace",
+          error: "Missing required fields: birthDateTimeUtc, lat, lon",
         }),
         {
           status: 400,
@@ -64,18 +64,11 @@ serve(async (req) => {
       });
     }
 
-    // Format date for display
-    const dateObj = new Date(birthDate);
-    const formattedDob = `${String(dateObj.getMonth() + 1).padStart(2, "0")}/${String(dateObj.getDate()).padStart(
-      2,
-      "0",
-    )}/${dateObj.getFullYear()}`;
-
     const userName = name || "the seeker";
     const targetYear = "2026";
     const priorYear = "2025";
 
-    console.log(`Generating strategic forecast for: ${userName}, ${formattedDob} ${birthTime} in ${birthPlace}, pivotalTheme: ${pivotalTheme || 'not specified'}`);
+    console.log(`Generating strategic forecast for: ${userName}, UTC: ${birthDateTimeUtc}, lat: ${lat}, lon: ${lon}, pivotalTheme: ${pivotalTheme || 'not specified'}`);
 
     const systemPrompt = `You are an expert practitioner of Indian Jyotish (Vedic astrology).
 
@@ -197,11 +190,11 @@ INPUTS:
 
 - Name (optional): ${userName}
 
-- Date of birth (MM/DD/YYYY): ${formattedDob}
+- Birth date and time (UTC): ${birthDateTimeUtc}
 
-- Birth time (local): ${birthTime}
+- Birth location latitude: ${lat}
 
-- Birth location: ${birthPlace}
+- Birth location longitude: ${lon}
 
 - Target year: ${targetYear}
 

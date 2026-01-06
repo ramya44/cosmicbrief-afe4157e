@@ -9,9 +9,9 @@ export const generateStrategicForecast = async (
   
   const { data, error } = await supabase.functions.invoke('generate-strategic-forecast', {
     body: {
-      birthDate: birthData.birthDate,
-      birthTime: birthData.birthTime,
-      birthPlace: birthData.birthPlace,
+      birthDateTimeUtc: birthData.birthDateTimeUtc,
+      lat: birthData.lat,
+      lon: birthData.lon,
       name: birthData.name,
       pivotalTheme,
     },
