@@ -64,7 +64,11 @@ export type Database = {
           customer_email: string
           customer_name: string | null
           free_forecast: string
+          generation_error: string | null
+          generation_status: string | null
           id: string
+          model_used: string | null
+          retry_count: number | null
           strategic_forecast: Json
           stripe_session_id: string
         }
@@ -78,7 +82,11 @@ export type Database = {
           customer_email: string
           customer_name?: string | null
           free_forecast: string
+          generation_error?: string | null
+          generation_status?: string | null
           id?: string
+          model_used?: string | null
+          retry_count?: number | null
           strategic_forecast: Json
           stripe_session_id: string
         }
@@ -92,7 +100,11 @@ export type Database = {
           customer_email?: string
           customer_name?: string | null
           free_forecast?: string
+          generation_error?: string | null
+          generation_status?: string | null
           id?: string
+          model_used?: string | null
+          retry_count?: number | null
           strategic_forecast?: Json
           stripe_session_id?: string
         }

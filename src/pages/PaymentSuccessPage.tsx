@@ -3,14 +3,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { StarField } from '@/components/StarField';
 import { useForecastStore } from '@/store/forecastStore';
 import { generateStrategicForecast } from '@/lib/generateStrategicForecast';
-import { Compass, CheckCircle } from 'lucide-react';
+import { Compass, CheckCircle, AlertTriangle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'verifying' | 'generating' | 'saving' | 'complete' | 'error'>('verifying');
+  const [status, setStatus] = useState<'verifying' | 'generating' | 'saving' | 'complete' | 'failed' | 'error'>('verifying');
+  const [failedEmail, setFailedEmail] = useState<string>('');
   
   const { 
     birthData, 
@@ -92,9 +93,13 @@ const PaymentSuccessPage = () => {
       setIsPaid(true);
       setIsStrategicLoading(true);
 
+      // Store email for potential failure display
+      const forecastEmail = customerEmail || currentBirthData.email || '';
+      setFailedEmail(forecastEmail);
+
       try {
-        const strategic = await generateStrategicForecast(currentBirthData, currentPivotalTheme);
-        setStrategicForecast(strategic);
+        const result = await generateStrategicForecast(currentBirthData, currentPivotalTheme);
+        setStrategicForecast(result.forecast);
         
         // Save both forecasts to database
         setStatus('saving');
@@ -103,13 +108,16 @@ const PaymentSuccessPage = () => {
         const { data: saveData, error: saveError } = await supabase.functions.invoke('save-forecast', {
           body: {
             stripeSessionId,
-            customerEmail: customerEmail || currentBirthData.email,
+            customerEmail: forecastEmail,
             customerName: currentBirthData.name,
             birthDate: currentBirthData.birthDate,
             birthTime: currentBirthData.birthTime,
             birthPlace: currentBirthData.birthPlace,
             freeForecast: currentFreeForecast,
-            strategicForecast: strategic,
+            strategicForecast: result.forecast,
+            modelUsed: result.modelUsed,
+            generationStatus: 'complete',
+            retryCount: result.totalAttempts,
           },
         });
 
@@ -120,7 +128,6 @@ const PaymentSuccessPage = () => {
           console.log('Forecasts saved to database successfully', saveData);
           
           // Send email with link to the forecast
-          const forecastEmail = customerEmail || currentBirthData.email;
           if (forecastEmail && saveData?.id) {
             try {
               const { error: emailError } = await supabase.functions.invoke('send-forecast-email', {
@@ -169,9 +176,49 @@ const PaymentSuccessPage = () => {
         setTimeout(() => navigate('/results'), 1500);
       } catch (error) {
         console.error('Failed to generate strategic forecast:', error);
-        toast.error('Failed to generate forecast. Please try again.');
-        setStatus('error');
-        setTimeout(() => navigate('/results'), 2000);
+        
+        // Save failed attempt to database for support follow-up
+        try {
+          await supabase.functions.invoke('save-forecast', {
+            body: {
+              stripeSessionId,
+              customerEmail: forecastEmail,
+              customerName: currentBirthData.name,
+              birthDate: currentBirthData.birthDate,
+              birthTime: currentBirthData.birthTime,
+              birthPlace: currentBirthData.birthPlace,
+              freeForecast: currentFreeForecast,
+              strategicForecast: null,
+              generationStatus: 'failed',
+              generationError: error instanceof Error ? error.message : 'Unknown error',
+              retryCount: 4, // Max attempts (3 primary + 1 fallback)
+            },
+          });
+          console.log('Failed forecast record saved for support follow-up');
+        } catch (saveErr) {
+          console.error('Failed to save failed forecast record:', saveErr);
+        }
+
+        // Notify support team
+        try {
+          await supabase.functions.invoke('notify-support', {
+            body: {
+              customerEmail: forecastEmail,
+              customerName: currentBirthData.name,
+              birthDate: currentBirthData.birthDate,
+              birthTime: currentBirthData.birthTime,
+              birthPlace: currentBirthData.birthPlace,
+              errorMessage: error instanceof Error ? error.message : 'Unknown error',
+              stripeSessionId,
+              totalAttempts: 4,
+            },
+          });
+          console.log('Support team notified');
+        } catch (notifyErr) {
+          console.error('Failed to notify support:', notifyErr);
+        }
+
+        setStatus('failed');
       } finally {
         setIsStrategicLoading(false);
       }
@@ -214,6 +261,20 @@ const PaymentSuccessPage = () => {
             </>
           )}
 
+          {status === 'saving' && (
+            <>
+              <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <CheckCircle className="w-8 h-8 text-gold" />
+              </div>
+              <h2 className="font-display text-2xl text-cream mb-3">
+                Saving Your Forecast...
+              </h2>
+              <p className="text-cream-muted">
+                Almost there...
+              </p>
+            </>
+          )}
+
           {status === 'complete' && (
             <>
               <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
@@ -224,6 +285,37 @@ const PaymentSuccessPage = () => {
               </h2>
               <p className="text-cream-muted">
                 Redirecting you to your results...
+              </p>
+            </>
+          )}
+
+          {status === 'failed' && (
+            <>
+              <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-amber-400" />
+              </div>
+              <h2 className="font-display text-2xl text-cream mb-3">
+                We're Completing Your Forecast Manually
+              </h2>
+              <p className="text-cream-muted mb-4">
+                We encountered a temporary issue while generating your Strategic Year Map. Don't worry — your payment is confirmed.
+              </p>
+              <div className="bg-midnight/60 rounded-lg p-4 mb-4 border border-gold/20">
+                <div className="flex items-center justify-center gap-2 text-gold mb-2">
+                  <Mail className="w-5 h-5" />
+                  <span className="font-medium">Check your inbox</span>
+                </div>
+                <p className="text-cream-muted text-sm">
+                  Our team has been notified and will email your complete forecast to{' '}
+                  <span className="text-cream font-medium">{failedEmail || 'your email'}</span>{' '}
+                  within 24 hours.
+                </p>
+              </div>
+              <p className="text-cream-muted text-sm">
+                Questions? Contact{' '}
+                <a href="mailto:support@yourdomain.com" className="text-gold hover:underline">
+                  support@yourdomain.com
+                </a>
               </p>
             </>
           )}

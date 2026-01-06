@@ -37,7 +37,11 @@ serve(async (req) => {
       birthTime, 
       birthPlace, 
       freeForecast, 
-      strategicForecast 
+      strategicForecast,
+      modelUsed,
+      generationStatus,
+      generationError,
+      retryCount,
     } = await req.json();
 
     logStep("Received data", { 
@@ -46,12 +50,22 @@ serve(async (req) => {
       birthDate, 
       birthPlace,
       hasFreeForecast: !!freeForecast,
-      hasStrategicForecast: !!strategicForecast 
+      hasStrategicForecast: !!strategicForecast,
+      modelUsed,
+      generationStatus,
+      retryCount,
     });
 
-    // Validate required fields
-    if (!stripeSessionId || !customerEmail || !birthDate || !birthTime || !birthPlace || !freeForecast || !strategicForecast) {
+    // For failed generation, we still save what we have
+    const isFailed = generationStatus === 'failed';
+
+    // Validate required fields (allow missing strategicForecast if failed)
+    if (!stripeSessionId || !customerEmail || !birthDate || !birthTime || !birthPlace) {
       throw new Error("Missing required fields");
+    }
+
+    if (!isFailed && (!freeForecast || !strategicForecast)) {
+      throw new Error("Missing forecast data for successful generation");
     }
 
     // Insert into paid_forecasts table
@@ -64,9 +78,13 @@ serve(async (req) => {
         birth_date: birthDate,
         birth_time: birthTime,
         birth_place: birthPlace,
-        free_forecast: freeForecast,
-        strategic_forecast: strategicForecast,
+        free_forecast: freeForecast || null,
+        strategic_forecast: strategicForecast || null,
         amount_paid: 2000, // $20 in cents
+        model_used: modelUsed || null,
+        generation_status: generationStatus || 'complete',
+        generation_error: generationError || null,
+        retry_count: retryCount || 0,
       })
       .select()
       .single();
@@ -76,7 +94,7 @@ serve(async (req) => {
       throw new Error(`Failed to save forecast: ${error.message}`);
     }
 
-    logStep("Forecast saved successfully", { id: data.id });
+    logStep("Forecast saved successfully", { id: data.id, generationStatus: generationStatus || 'complete' });
 
     return new Response(JSON.stringify({ 
       success: true,

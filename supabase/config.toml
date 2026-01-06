@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.geocode-place]
 verify_jwt = false
+
+[functions.notify-support]
+verify_jwt = false
