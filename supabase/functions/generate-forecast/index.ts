@@ -29,14 +29,14 @@ function normalizeUtcDatetime(utcDatetime: string): string {
   const minutes = date.getUTCMinutes();
   const normalizedMinutes = minutes < 15 ? 0 : minutes < 45 ? 30 : 0;
   const normalizedHours = minutes >= 45 ? date.getUTCHours() + 1 : date.getUTCHours();
-  
+
   // Handle day rollover
   date.setUTCHours(normalizedHours % 24, normalizedMinutes, 0, 0);
   if (normalizedHours >= 24) {
     date.setUTCDate(date.getUTCDate() + 1);
     date.setUTCHours(0);
   }
-  
+
   return date.toISOString();
 }
 
@@ -171,7 +171,7 @@ serve(async (req) => {
     }
 
     console.log(
-      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || 'N/A'}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
+      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -225,40 +225,73 @@ No mysticism. No motivation. No technical astrology language.`;
     const userPrompt = `Create a concise preview of the user's ${targetYear}.
 
 Inputs:
+- Name (if available): ${name}
 - Age: ${age}
 - Time of birth: ${birthTime}
 - Place of birth: ${birthPlace}
 - Style seed: ${styleSeed}
-- Pivotal life element (preselected): ${pivotalLifeElement}
+- Pivotal life element (preselected, stable): ${pivotalLifeElement}
 
-Write 90–110 words, plain text only. 
+Write 90–110 words. Plain text only.
 
-EDGE REQUIREMENT (MANDATORY):
+NON-NEGOTIABLE OUTPUT RULES:
 
-For every visible section:
-- Include at least one sentence that implies a cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually.
-- Do NOT resolve the consequence.
-- Do NOT offer the correction.
+Do NOT:
+- Offer advice, fixes, reassurance, or resolution
+- Explain mechanisms (no astrology, charts, or systems)
+- Use universal language that could apply to anyone
+- Use em dashes
+- Exceed 110 words or drop below 90
 
 The reader should feel informed but slightly underprepared.
 
-Structure (write exactly in this format with headers):
+PERSONALIZATION REQUIREMENTS (MANDATORY):
+
+1) Signature Line  
+The first section must contain exactly one short, shareable line that functions as a signature.  
+It must satisfy at least TWO of the following:
+- Life-stage anchoring based on age or positioning (without saying “at your age”)
+- Birth-timing texture (how the person meets the world, implied)
+- Place-of-birth imprint (subtle, non-stereotypical)
+- Irreversibility (something that cannot be deferred or easily undone this year)
+
+If a name is provided, subtly anchor the line to the person.
+
+2) Time Windows  
+Include 2–3 distinct time windows using months or tight ranges.
+- One must signal pressure or demand
+- One must signal clarity or reckoning
+- Optional third may signal fatigue or consequence emergence
+Do not resolve or explain what to do.
+
+3) Concrete Tradeoff  
+Include exactly one explicit tradeoff inside "${pivotalLifeElement}", framed as A vs B.
+Both sides must feel costly. No soft language.
+
+EDGE REQUIREMENT (MANDATORY):
+
+For EVERY section:
+- Include at least one sentence that implies cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually
+- Do NOT resolve the consequence
+- Do NOT offer correction
+
+STRUCTURE (WRITE EXACTLY IN THIS FORMAT):
 
 Your Defining Arc
-One short, shareable statement that captures the theme of the year.
+One short, shareable signature statement capturing the year’s core tension.
 
 Your Pivotal Life Theme
-Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" this year.
-When describing the pivotal life theme:
-- explicitly state what happens when the user applies last year's logic to this year
-- do not explain how to fix it
-
+Write 2–3 sentences describing how attention gathers around "${pivotalLifeElement}" this year.
+- Explicitly state what happens when last year’s logic is applied to this year
+- Introduce the concrete tradeoff
+- Reference at least one time window
 
 The Quiet Undercurrent
-Write 1–2 sentences describing what needs balancing inside "${pivotalLifeElement}" this year.
-Use gentle phrasing like "balancing", "recalibration", or "two pulls". Do not explain consequences. Do not give advice.
-
-Include the exact headers "Your Defining Arc", "Your Pivotal Life Theme", and "The Quiet Undercurrent" on their own lines before each section.
+Write 1–2 sentences describing the internal balancing inside "${pivotalLifeElement}" this year.
+- Reference a different time window
+- Use language like “balancing,” “recalibration,” or “two pulls”
+- Do not explain consequences
+- Do not give advice
 
 Stop when finished.
 `.trim();
