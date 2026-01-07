@@ -152,12 +152,12 @@ const InputPage = () => {
             >
               <Label htmlFor="name" className="text-cream flex items-center gap-2">
                 <User className="w-4 h-4 text-gold" />
-                Name <span className="text-muted-foreground text-xs">(optional)</span>
+                First Name <span className="text-muted-foreground text-xs">(optional)</span>
               </Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Your name"
+                placeholder="Your first name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
@@ -204,7 +204,7 @@ const InputPage = () => {
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
               />
               <p className="text-xs text-muted-foreground">
-                Use the closest time you know
+                Approximate is OK
               </p>
               {errors.birthTime && (
                 <p className="text-sm text-destructive">{errors.birthTime}</p>
