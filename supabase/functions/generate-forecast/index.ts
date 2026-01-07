@@ -249,13 +249,9 @@ PERSONALIZATION REQUIREMENTS (MANDATORY):
 
 1) Signature Line  
 The first section must contain exactly one short, shareable line that functions as a signature.  
-It must satisfy at least TWO of the following:
-- Life-stage anchoring based on age or positioning (without saying “at your age”)
-- Birth-timing texture (how the person meets the world, implied)
-- Place-of-birth imprint (subtle, non-stereotypical)
-- Irreversibility (something that cannot be deferred or easily undone this year)
+It must anchor on Life-stage based on age without saying “at your age”.
 
-If a name is provided, subtly anchor the line to the person. The signature line must not explicitly mention age, birthplace, or time of birth, but must still feel derived from them. Prefer language of narrowing, solidifying, or momentum over absolutes like “cannot” or “never.”
+If a name is provided, subtly anchor the line to the person.
 
 2) Time Windows  
 Include 2–3 distinct time windows using months or tight ranges.
