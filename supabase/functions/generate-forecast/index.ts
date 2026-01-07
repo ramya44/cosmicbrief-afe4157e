@@ -234,66 +234,45 @@ Inputs:
 
 Write 90–110 words. Plain text only.
 
-NON-NEGOTIABLE OUTPUT RULES:
+ABSOLUTE RULES (FAIL IF VIOLATED):
+
+- You MUST include calendar-based time windows using month names (e.g., March, late June–July, October).
+- You MUST include exactly ONE explicit tradeoff phrased as “X vs Y”.
+- You MUST include one identifying signature line that would not fit a random person.
+- You MUST reference age, birth timing, or place implicitly at least once.
+- If any requirement is missing, the output is invalid.
 
 Do NOT:
-- Offer advice, fixes, reassurance, or resolution
-- Explain mechanisms (no astrology, charts, or systems)
-- Use universal language that could apply to anyone
+- Offer advice, reassurance, or resolution
+- Explain systems or mechanisms
 - Use em dashes
-- Exceed 110 words or drop below 90
+- Use generic language that could apply to anyone
 
-The reader should feel informed but slightly underprepared.
+EDGE REQUIREMENT:
 
-PERSONALIZATION REQUIREMENTS (MANDATORY):
+Every section must imply cost, friction, or consequence if mishandled.
+Do not resolve it.
 
-1) Signature Line  
-The first section must contain exactly one short, shareable line that functions as a signature.  
-It must satisfy at least TWO of the following:
-- Life-stage anchoring based on age or positioning (without saying “at your age”)
-- Birth-timing texture (how the person meets the world, implied)
-- Place-of-birth imprint (subtle, non-stereotypical)
-- Irreversibility (something that cannot be deferred or easily undone this year)
-
-If a name is provided, subtly anchor the line to the person.
-
-2) Time Windows  
-Include 2–3 distinct time windows using months or tight ranges.
-- One must signal pressure or demand
-- One must signal clarity or reckoning
-- Optional third may signal fatigue or consequence emergence
-Do not resolve or explain what to do.
-
-3) Concrete Tradeoff  
-Include exactly one explicit tradeoff inside "${pivotalLifeElement}", framed as A vs B.
-Both sides must feel costly. No soft language.
-
-EDGE REQUIREMENT (MANDATORY):
-
-For EVERY section:
-- Include at least one sentence that implies cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually
-- Do NOT resolve the consequence
-- Do NOT offer correction
-
-STRUCTURE (WRITE EXACTLY IN THIS FORMAT):
+STRUCTURE (WRITE EXACTLY THIS FORMAT):
 
 Your Defining Arc
-One short, shareable signature statement capturing the year’s core tension.
+[ONE sentence only. This sentence MUST function as the signature line.
+It must imply irreversibility or narrowing options this year.]
 
 Your Pivotal Life Theme
-Write 2–3 sentences describing how attention gathers around "${pivotalLifeElement}" this year.
-- Explicitly state what happens when last year’s logic is applied to this year
-- Introduce the concrete tradeoff
-- Reference at least one time window
+Write 2–3 sentences about "${pivotalLifeElement}".
+- Explicitly state what breaks if last year’s logic is reused
+- Include ONE tradeoff written exactly as “X vs Y”
+- Include ONE time window using month names
+- Imply a cost if attention is delayed
 
 The Quiet Undercurrent
-Write 1–2 sentences describing the internal balancing inside "${pivotalLifeElement}" this year.
-- Reference a different time window
-- Use language like “balancing,” “recalibration,” or “two pulls”
-- Do not explain consequences
-- Do not give advice
+Write 1–2 sentences.
+- Include a DIFFERENT time window using month names
+- Describe an internal balancing or recalibration
+- Imply tension without resolving it
 
-Stop when finished.
+Stop immediately when finished.
 `.trim();
 
     const payload = {
