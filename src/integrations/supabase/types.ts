@@ -74,6 +74,7 @@ export type Database = {
           strategic_forecast: Json
           stripe_session_id: string
           total_tokens: number | null
+          user_id: string | null
         }
         Insert: {
           amount_paid?: number | null
@@ -95,6 +96,7 @@ export type Database = {
           strategic_forecast: Json
           stripe_session_id: string
           total_tokens?: number | null
+          user_id?: string | null
         }
         Update: {
           amount_paid?: number | null
@@ -116,6 +118,42 @@ export type Database = {
           strategic_forecast?: Json
           stripe_session_id?: string
           total_tokens?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paid_forecasts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

@@ -20,7 +20,9 @@ const PaymentSuccessPage = () => {
     setFreeForecast,
     setIsPaid, 
     setStrategicForecast, 
-    setIsStrategicLoading 
+    setIsStrategicLoading,
+    setStripeSessionId,
+    setCustomerEmail,
   } = useForecastStore();
 
   useEffect(() => {
@@ -92,10 +94,12 @@ const PaymentSuccessPage = () => {
       setStatus('generating');
       setIsPaid(true);
       setIsStrategicLoading(true);
+      setStripeSessionId(stripeSessionId);
 
-      // Store email for potential failure display
+      // Store email for potential failure display and account creation
       const forecastEmail = customerEmail || currentBirthData.email || '';
       setFailedEmail(forecastEmail);
+      setCustomerEmail(forecastEmail);
 
       try {
         const result = await generateStrategicForecast(currentBirthData, currentPivotalTheme);
@@ -228,7 +232,7 @@ const PaymentSuccessPage = () => {
     };
 
     processPayment();
-  }, [searchParams, birthData, freeForecast, navigate, setBirthData, setFreeForecast, setIsPaid, setStrategicForecast, setIsStrategicLoading]);
+  }, [searchParams, birthData, freeForecast, navigate, setBirthData, setFreeForecast, setIsPaid, setStrategicForecast, setIsStrategicLoading, setStripeSessionId, setCustomerEmail]);
 
   return (
     <div className="relative min-h-screen bg-celestial flex items-center justify-center">
