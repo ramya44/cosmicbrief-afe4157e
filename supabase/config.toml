@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.notify-support]
 verify_jwt = false
+
+[functions.get-timezone]
+verify_jwt = false
