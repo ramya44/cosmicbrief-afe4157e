@@ -192,6 +192,8 @@ Execution rules:
 
 - Choose the first coherent framing and write it.
 
+- Do NOT use em dashes
+
 - Always produce visible text.
 
 Personalization comes from tone and emphasis using the provided style seed.
@@ -232,7 +234,7 @@ Inputs:
 - Style seed: ${styleSeed}
 - Pivotal life element (preselected): ${pivotalLifeElement}
 
-Write 90–110 words, plain text only.
+Write 90–120 words, plain text only.
 
 EDGE REQUIREMENT (MANDATORY):
 
@@ -251,6 +253,11 @@ STYLE AND SAFETY RULES:
 - No advice. No reassurance. No mechanisms.
 - Do NOT use em dashes.
 
+MONTH CONSTRAINT (IMPORTANT):
+- Month names (e.g., March, July, October) may appear ONLY in the section "Your Pivotal Life Theme".
+- Do NOT include months in "Your Defining Arc" or "The Quiet Undercurrent".
+- If months appear outside the allowed section, the output is invalid.
+
 Structure (write exactly in this format with headers):
 
 Your Defining Arc
@@ -268,6 +275,7 @@ Use gentle phrasing like “balancing,” “recalibration,” or “two pulls.�
 Do not explain consequences. Do not give advice.
 
 Stop when finished.
+
 `.trim();
 
     const payload = {
