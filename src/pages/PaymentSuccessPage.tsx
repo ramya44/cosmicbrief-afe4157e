@@ -9,11 +9,11 @@ import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 const GENERATING_STEPS = [
-  "Anchoring your birth moment",
-  "Establishing your year's underlying rhythm",
-  "Identifying where pressure builds and where support appears",
-  "Mapping how the year unfolds over time",
-  "Finalizing your personal year map",
+  "Anchoring your moment",
+  "Reading the rhythm",
+  "Mapping pressure and support",
+  "Tracing the arc",
+  "Weaving your year map",
 ];
 
 const PaymentSuccessPage = () => {
@@ -293,14 +293,27 @@ const PaymentSuccessPage = () => {
               <h2 className="font-display text-2xl text-cream mb-3">
                 Generating your Strategic Forecast
               </h2>
-              <p className="text-cream-muted mb-6">
-                This deeper analysis takes a moment. You'll receive an email with a link to your full report.
+              <p className="text-cream/50 text-sm mb-6">
+                You'll receive an email with your full report.
               </p>
-              <p className="font-display text-lg italic text-cream tracking-wide">
+              <p className="font-display text-lg italic text-cream tracking-wide mb-6">
                 <span key={messageIndex} className="animate-fade-in">
                   {GENERATING_STEPS[messageIndex]}...
                 </span>
               </p>
+              {/* Progress dots */}
+              <div className="flex items-center justify-center gap-2">
+                {GENERATING_STEPS.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                      index <= messageIndex
+                        ? 'bg-gold'
+                        : 'bg-gold/30'
+                    }`}
+                  />
+                ))}
+              </div>
             </>
           )}
 
