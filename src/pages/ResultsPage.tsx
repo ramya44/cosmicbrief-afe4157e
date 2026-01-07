@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { ForecastSection } from '@/components/ForecastSection';
+import { SeasonalMapAccordion } from '@/components/SeasonalMapAccordion';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
@@ -59,7 +60,7 @@ const ResultsPage = () => {
     }
   };
 
-  const seasonLabels = ['Early Year', 'Mid-Year', 'Late Year', 'Year End'];
+  
 
   return (
     <div className="relative min-h-screen bg-celestial">
@@ -488,31 +489,7 @@ const ResultsPage = () => {
 
             {/* The Year in Phases */}
             <ForecastSection title="The Year in Phases" delay={400} icon={<Calendar className="w-5 h-5 text-gold" />}>
-              <div className="space-y-6">
-                {strategicForecast.seasonal_map.map((season, index) => (
-                  <div key={index} className="mb-6 last:mb-0">
-                    <h4 className="font-display text-lg text-gold mb-3">{seasonLabels[index]}</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <h5 className="text-cream font-medium text-lg mb-1">What matters</h5>
-                        <p className="text-cream/70">{season.what_matters}</p>
-                      </div>
-                      <div>
-                        <h5 className="text-cream font-medium text-lg mb-1">Lean into</h5>
-                        <p className="text-cream/70">{season.lean_into}</p>
-                      </div>
-                      <div>
-                        <h5 className="text-cream font-medium text-lg mb-1">Protect</h5>
-                        <p className="text-cream/70">{season.protect}</p>
-                      </div>
-                      <div>
-                        <h5 className="text-cream font-medium text-lg mb-1">Watch for</h5>
-                        <p className="text-cream/70">{season.watch_for}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <SeasonalMapAccordion phases={strategicForecast.seasonal_map} />
             </ForecastSection>
 
             {/* Key Trade-offs */}
