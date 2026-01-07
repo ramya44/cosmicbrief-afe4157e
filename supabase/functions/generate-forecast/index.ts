@@ -234,7 +234,7 @@ Inputs:
 - Style seed: ${styleSeed}
 - Pivotal life element (preselected): ${pivotalLifeElement}
 
-Write 90–120 words, plain text only.
+Write 90–110 words, plain text only.
 
 EDGE REQUIREMENT (MANDATORY):
 
@@ -265,18 +265,16 @@ One short, shareable statement that captures the theme of the year.
 
 Your Pivotal Life Theme
 Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" this year.
-- Explicitly state what happens when last year’s logic is applied to this year.
+- Explicitly state what happens when last year's logic is applied to this year.
 - Reference 1–2 months naturally.
 - Do not explain how to fix it.
 
 The Quiet Undercurrent
 Write 1–2 sentences describing what needs balancing inside "${pivotalLifeElement}" this year.
-Use gentle phrasing like “balancing,” “recalibration,” or “two pulls.”
+Use gentle phrasing like "balancing," "recalibration," or "two pulls."
 Do not explain consequences. Do not give advice.
 
-Stop when finished.
-
-`.trim();
+Stop when finished.`.trim();
 
     const payload = {
       model: "gpt-4.1-mini-2025-04-14",
