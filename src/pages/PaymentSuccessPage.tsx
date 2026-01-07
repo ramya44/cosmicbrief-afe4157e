@@ -13,7 +13,6 @@ const GENERATING_STEPS = [
   "Identifying where pressure builds and where support appears",
   "Mapping how the year unfolds over time",
   "Finalizing your personal year map",
-  "Generate the forecast and display once ready",
 ];
 
 const PaymentSuccessPage = () => {
@@ -286,29 +285,11 @@ const PaymentSuccessPage = () => {
               <p className="text-cream-muted mb-6">
                 This deeper analysis takes a moment. You'll receive an email with a link to your full report.
               </p>
-              <div className="space-y-2 text-left max-w-md mx-auto">
-                {GENERATING_STEPS.map((step, index) => (
-                  <div 
-                    key={step}
-                    className={`flex items-center gap-3 transition-all duration-500 ${
-                      index < messageIndex 
-                        ? 'text-gold/50' 
-                        : index === messageIndex 
-                          ? 'text-cream' 
-                          : 'text-cream/30'
-                    }`}
-                  >
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 transition-all duration-500 ${
-                      index < messageIndex 
-                        ? 'bg-gold/50' 
-                        : index === messageIndex 
-                          ? 'bg-gold animate-pulse' 
-                          : 'bg-cream/30'
-                    }`} />
-                    <span className="text-sm">{step}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-cream/80 min-h-[1.5em]">
+                <span key={messageIndex} className="animate-fade-in">
+                  {GENERATING_STEPS[messageIndex]}...
+                </span>
+              </p>
             </>
           )}
 
