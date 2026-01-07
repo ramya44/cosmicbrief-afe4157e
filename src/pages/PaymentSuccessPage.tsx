@@ -285,7 +285,7 @@ const PaymentSuccessPage = () => {
               <p className="text-cream-muted mb-6">
                 This deeper analysis takes a moment. You'll receive an email with a link to your full report.
               </p>
-              <p className="text-cream/80 min-h-[1.5em]">
+              <p className="font-display text-lg italic text-cream tracking-wide">
                 <span key={messageIndex} className="animate-fade-in">
                   {GENERATING_STEPS[messageIndex]}...
                 </span>
