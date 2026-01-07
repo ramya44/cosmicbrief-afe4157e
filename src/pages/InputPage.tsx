@@ -194,7 +194,7 @@ const InputPage = () => {
             >
               <Label htmlFor="birthTime" className="text-cream flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gold" />
-                Time of Birth
+                Time of Birth <span className="text-muted-foreground text-xs">(Approximate)</span>
               </Label>
               <Input
                 id="birthTime"
@@ -203,9 +203,6 @@ const InputPage = () => {
                 onChange={(e) => setFormData({ ...formData, birthTime: e.target.value })}
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
               />
-              <p className="text-xs text-muted-foreground">
-                Approximate is OK
-              </p>
               {errors.birthTime && (
                 <p className="text-sm text-destructive">{errors.birthTime}</p>
               )}
@@ -270,12 +267,19 @@ const InputPage = () => {
             </div>
           </form>
 
-          {/* Privacy note */}
           <p 
             className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
             Your information is used only to generate your personalized forecast. We never sell information, ever.
+          </p>
+          <p 
+            className="text-center text-xs text-muted-foreground mt-3 animate-fade-up"
+            style={{ animationDelay: '350ms', animationFillMode: 'both' }}
+          >
+            <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
+            {' · '}
+            <a href="/terms" className="text-gold hover:underline">Terms of Service</a>
           </p>
         </div>
       </div>
