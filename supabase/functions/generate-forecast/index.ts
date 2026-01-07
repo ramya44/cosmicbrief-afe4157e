@@ -225,76 +225,75 @@ No mysticism. No motivation. No technical astrology language.`;
     const userPrompt = `Create a concise preview of the user's ${targetYear}.
 
 Inputs:
-
 - Name (if available): ${name}
-
 - Age: ${age}
-
 - Time of birth: ${birthTime}
-
 - Place of birth: ${birthPlace}
-
 - Style seed: ${styleSeed}
-
 - Pivotal life element (preselected, stable): ${pivotalLifeElement}
 
 Write 90–110 words. Plain text only.
 
-THIS IS A STRICT TEMPLATE. FAILURE TO FOLLOW ANY RULE INVALIDATES THE OUTPUT.
+NON-NEGOTIABLE OUTPUT RULES:
 
-MANDATORY CONTENT TOKENS (MUST APPEAR VERBATIM):
-
-- At least two month names (e.g., March, July, October).
-
-- Exactly one tradeoff written in the form "X vs Y".
-
-- One sentence that implies irreversibility this year (cannot be delayed or undone).
-
-DO NOT:
-
-- Offer advice, fixes, reassurance, or conclusions
-
-- Explain systems, charts, or reasoning
-
+Do NOT:
+- Offer advice, fixes, reassurance, or resolution
+- Explain mechanisms (no astrology, charts, or systems)
+- Use universal language that could apply to anyone
 - Use em dashes
+- Exceed 110 words or drop below 90
 
-- Use generic statements that could apply to anyone
+The reader should feel informed but slightly underprepared.
 
-PERSONALIZATION ENFORCEMENT:
+PERSONALIZATION REQUIREMENTS (MANDATORY):
 
-- Reference age, birth timing, or place of birth implicitly at least once.
+1) Signature Line  
+The first section must contain exactly one short, shareable line that functions as a signature.  
+It must satisfy at least TWO of the following:
+- Life-stage anchoring based on age or positioning (without saying “at your age”)
+- Birth-timing texture (how the person meets the world, implied)
+- Place-of-birth imprint (subtle, non-stereotypical)
+- Irreversibility (something that cannot be deferred or easily undone this year)
 
-- The opening sentence must read as identifying, not universal.
+If a name is provided, subtly anchor the line to the person. The signature line must not explicitly mention age, birthplace, or time of birth, but must still feel derived from them. Prefer language of narrowing, solidifying, or momentum over absolutes like “cannot” or “never.”
 
-STRUCTURE (WRITE EXACTLY THIS FORMAT):
+2) Time Windows  
+Include 2–3 distinct time windows using months or tight ranges.
+- One must signal pressure or demand
+- One must signal clarity or reckoning
+- Optional third may signal fatigue or consequence emergence
+Do not resolve or explain what to do.
+
+3) Concrete Tradeoff  
+Include exactly one explicit tradeoff inside "${pivotalLifeElement}", framed as A vs B.
+Both sides must feel costly. No soft language.
+
+EDGE REQUIREMENT (MANDATORY):
+
+For EVERY section:
+- Include at least one sentence that implies cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually
+- Do NOT resolve the consequence
+- Do NOT offer correction
+
+STRUCTURE (WRITE EXACTLY IN THIS FORMAT):
 
 Your Defining Arc
-
-[ONE sentence only. This sentence must function as a signature line and imply narrowing options or irreversibility.]
+One short, shareable signature statement capturing the year’s core tension.
 
 Your Pivotal Life Theme
-
-Write 2–3 sentences about "${pivotalLifeElement}".
-
-- State explicitly what fails if last year's logic is reused
-
-- Include exactly one "X vs Y" tradeoff
-
-- Include one month name
-
-- Imply a cost if attention is delayed
+Write 2–3 sentences describing how attention gathers around "${pivotalLifeElement}" this year.
+- Explicitly state what happens when last year’s logic is applied to this year
+- Introduce the concrete tradeoff
+- Reference at least one time window
 
 The Quiet Undercurrent
+Write 1–2 sentences describing the internal balancing inside "${pivotalLifeElement}" this year.
+- Reference a different time window
+- Use language like “balancing,” “recalibration,” or “two pulls”
+- Do not explain consequences
+- Do not give advice
 
-Write 1–2 sentences.
-
-- Include a DIFFERENT month name
-
-- Describe an internal balancing or recalibration
-
-- Imply tension without resolution
-
-Stop immediately when finished.
+Stop when finished.
 `.trim();
 
     const payload = {
