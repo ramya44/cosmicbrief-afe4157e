@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import InputPage from "./pages/InputPage";
 import ResultsPage from "./pages/ResultsPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/input" element={<InputPage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
