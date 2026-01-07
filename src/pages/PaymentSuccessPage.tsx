@@ -6,6 +6,7 @@ import { generateStrategicForecast } from '@/lib/generateStrategicForecast';
 import { Compass, CheckCircle, AlertTriangle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const GENERATING_STEPS = [
   "Anchoring your birth moment",
@@ -21,6 +22,7 @@ const PaymentSuccessPage = () => {
   const [status, setStatus] = useState<'verifying' | 'generating' | 'saving' | 'complete' | 'failed' | 'error'>('verifying');
   const [failedEmail, setFailedEmail] = useState<string>('');
   const [messageIndex, setMessageIndex] = useState(0);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const { 
     birthData, 
@@ -33,6 +35,13 @@ const PaymentSuccessPage = () => {
     setStripeSessionId,
     setCustomerEmail,
   } = useForecastStore();
+
+  // Detect logged-in user
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session?.user ?? null);
+    });
+  }, []);
 
   // Advance through generating steps every 12 seconds (no loop)
   useEffect(() => {
@@ -144,6 +153,7 @@ const PaymentSuccessPage = () => {
             generationStatus: 'complete',
             retryCount: result.totalAttempts,
             tokenUsage: result.tokenUsage,
+            userId: currentUser?.id,
           },
         });
 
@@ -219,6 +229,7 @@ const PaymentSuccessPage = () => {
               generationStatus: 'failed',
               generationError: error instanceof Error ? error.message : 'Unknown error',
               retryCount: 4, // Max attempts (3 primary + 1 fallback)
+              userId: currentUser?.id,
             },
           });
           console.log('Failed forecast record saved for support follow-up');
