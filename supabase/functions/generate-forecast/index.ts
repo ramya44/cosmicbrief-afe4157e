@@ -225,52 +225,74 @@ No mysticism. No motivation. No technical astrology language.`;
     const userPrompt = `Create a concise preview of the user's ${targetYear}.
 
 Inputs:
+
 - Name (if available): ${name}
+
 - Age: ${age}
+
 - Time of birth: ${birthTime}
+
 - Place of birth: ${birthPlace}
+
 - Style seed: ${styleSeed}
+
 - Pivotal life element (preselected, stable): ${pivotalLifeElement}
 
 Write 90–110 words. Plain text only.
 
-ABSOLUTE RULES (FAIL IF VIOLATED):
+THIS IS A STRICT TEMPLATE. FAILURE TO FOLLOW ANY RULE INVALIDATES THE OUTPUT.
 
-- You MUST include calendar-based time windows using month names (e.g., March, late June–July, October).
-- You MUST include exactly ONE explicit tradeoff phrased as “X vs Y”.
-- You MUST include one identifying signature line that would not fit a random person.
-- You MUST reference age, birth timing, or place implicitly at least once.
-- If any requirement is missing, the output is invalid.
+MANDATORY CONTENT TOKENS (MUST APPEAR VERBATIM):
 
-Do NOT:
-- Offer advice, reassurance, or resolution
-- Explain systems or mechanisms
+- At least two month names (e.g., March, July, October).
+
+- Exactly one tradeoff written in the form "X vs Y".
+
+- One sentence that implies irreversibility this year (cannot be delayed or undone).
+
+DO NOT:
+
+- Offer advice, fixes, reassurance, or conclusions
+
+- Explain systems, charts, or reasoning
+
 - Use em dashes
-- Use generic language that could apply to anyone
 
-EDGE REQUIREMENT:
+- Use generic statements that could apply to anyone
 
-Every section must imply cost, friction, or consequence if mishandled.
-Do not resolve it.
+PERSONALIZATION ENFORCEMENT:
+
+- Reference age, birth timing, or place of birth implicitly at least once.
+
+- The opening sentence must read as identifying, not universal.
 
 STRUCTURE (WRITE EXACTLY THIS FORMAT):
 
 Your Defining Arc
-[ONE sentence only. This sentence MUST function as the signature line.
-It must imply irreversibility or narrowing options this year.]
+
+[ONE sentence only. This sentence must function as a signature line and imply narrowing options or irreversibility.]
 
 Your Pivotal Life Theme
+
 Write 2–3 sentences about "${pivotalLifeElement}".
-- Explicitly state what breaks if last year’s logic is reused
-- Include ONE tradeoff written exactly as “X vs Y”
-- Include ONE time window using month names
+
+- State explicitly what fails if last year's logic is reused
+
+- Include exactly one "X vs Y" tradeoff
+
+- Include one month name
+
 - Imply a cost if attention is delayed
 
 The Quiet Undercurrent
+
 Write 1–2 sentences.
-- Include a DIFFERENT time window using month names
+
+- Include a DIFFERENT month name
+
 - Describe an internal balancing or recalibration
-- Imply tension without resolving it
+
+- Imply tension without resolution
 
 Stop immediately when finished.
 `.trim();
