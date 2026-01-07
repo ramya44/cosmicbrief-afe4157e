@@ -249,7 +249,11 @@ PERSONALIZATION REQUIREMENTS (MANDATORY):
 
 1) Signature Line  
 The first section must contain exactly one short, shareable line that functions as a signature.  
-It must anchor on Life-stage based on age without saying “at your age”.
+It must satisfy at least TWO of the following:
+- Life-stage anchoring based on age or positioning (without saying “at your age”)
+- Birth-timing texture (how the person meets the world, implied)
+- Place-of-birth imprint (subtle, non-stereotypical)
+- Irreversibility (something that cannot be deferred or easily undone this year)
 
 If a name is provided, subtly anchor the line to the person.
 
