@@ -7,11 +7,20 @@ import { Compass, CheckCircle, AlertTriangle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
+const GENERATING_MESSAGES = [
+  "Anchoring your birth moment",
+  "Establishing your year's underlying rhythm",
+  "Identifying where pressure builds and where support appears",
+  "Mapping how the year unfolds over time",
+  "Finalizing your personal year map",
+];
+
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<'verifying' | 'generating' | 'saving' | 'complete' | 'failed' | 'error'>('verifying');
   const [failedEmail, setFailedEmail] = useState<string>('');
+  const [messageIndex, setMessageIndex] = useState(0);
   
   const { 
     birthData, 
@@ -24,6 +33,17 @@ const PaymentSuccessPage = () => {
     setStripeSessionId,
     setCustomerEmail,
   } = useForecastStore();
+
+  // Rotate generating messages every 12 seconds
+  useEffect(() => {
+    if (status !== 'generating') return;
+    
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % GENERATING_MESSAGES.length);
+    }, 12000);
+    
+    return () => clearInterval(interval);
+  }, [status]);
 
   useEffect(() => {
     const processPayment = async () => {
@@ -259,11 +279,13 @@ const PaymentSuccessPage = () => {
               <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
                 <Compass className="w-8 h-8 text-gold animate-spin" style={{ animationDuration: '3s' }} />
               </div>
-              <h2 className="font-display text-2xl text-cream mb-3">
-                Generating Your Strategic Year Map...
+              <h2 className="font-display text-2xl text-cream mb-3 min-h-[2.5em] flex items-center justify-center">
+                <span key={messageIndex} className="animate-fade-in">
+                  {GENERATING_MESSAGES[messageIndex]}...
+                </span>
               </h2>
               <p className="text-cream-muted">
-                This deeper analysis takes a moment. We're preparing your personalized guidance. You'll receive an email with a link to your full report.
+                This deeper analysis takes a moment. You'll receive an email with a link to your full report.
               </p>
             </>
           )}
