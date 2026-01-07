@@ -4,7 +4,6 @@ import { StarField } from '@/components/StarField';
 import { ForecastSection } from '@/components/ForecastSection';
 import { SeasonalMapAccordion } from '@/components/SeasonalMapAccordion';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { CreateAccountCard } from '@/components/CreateAccountCard';
 import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 import { stripLeadingHeaders } from '@/lib/utils';
@@ -30,28 +29,6 @@ const ResultsPage = () => {
   } = useForecastStore();
 
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [hasCreatedAccount, setHasCreatedAccount] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-
-  // Check if user is already logged in
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setCurrentUser(session?.user ?? null);
-      if (session?.user) {
-        setHasCreatedAccount(true);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setCurrentUser(session?.user ?? null);
-      if (session?.user) {
-        setHasCreatedAccount(true);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   useEffect(() => {
     if (!birthData && !isLoading) {
       navigate('/input');
@@ -557,17 +534,6 @@ const ResultsPage = () => {
               </p>
             </ForecastSection>
 
-            {/* Account Creation Card - only show if not already logged in and has stripe session */}
-            {!hasCreatedAccount && !currentUser && stripeSessionId && customerEmail && (
-              <div className="animate-fade-up" style={{ animationDelay: '900ms', animationFillMode: 'both' }}>
-                <CreateAccountCard
-                  email={customerEmail}
-                  displayName={birthData?.name}
-                  stripeSessionId={stripeSessionId}
-                  onAccountCreated={() => setHasCreatedAccount(true)}
-                />
-              </div>
-            )}
           </div>
         )}
 
