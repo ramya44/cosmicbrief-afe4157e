@@ -76,6 +76,8 @@ export interface ForecastState {
   isPaid: boolean;
   isLoading: boolean;
   isStrategicLoading: boolean;
+  stripeSessionId: string | null;
+  customerEmail: string | null;
   setBirthData: (data: BirthData) => void;
   setFreeForecast: (forecast: FreeForecast) => void;
   setForecast: (free: FreeForecast, paid: PaidForecast) => void;
@@ -83,6 +85,8 @@ export interface ForecastState {
   setIsPaid: (paid: boolean) => void;
   setIsLoading: (loading: boolean) => void;
   setIsStrategicLoading: (loading: boolean) => void;
+  setStripeSessionId: (sessionId: string | null) => void;
+  setCustomerEmail: (email: string | null) => void;
   reset: () => void;
 }
 
@@ -96,6 +100,8 @@ export const useForecastStore = create<ForecastState>()(
       isPaid: false,
       isLoading: false,
       isStrategicLoading: false,
+      stripeSessionId: null,
+      customerEmail: null,
       setBirthData: (data) => set({ birthData: data }),
       setFreeForecast: (forecast) => set({ freeForecast: forecast }),
       setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
@@ -103,6 +109,8 @@ export const useForecastStore = create<ForecastState>()(
       setIsPaid: (paid) => set({ isPaid: paid }),
       setIsLoading: (loading) => set({ isLoading: loading }),
       setIsStrategicLoading: (loading) => set({ isStrategicLoading: loading }),
+      setStripeSessionId: (sessionId) => set({ stripeSessionId: sessionId }),
+      setCustomerEmail: (email) => set({ customerEmail: email }),
       reset: () => set({ 
         birthData: null, 
         freeForecast: null, 
@@ -110,7 +118,9 @@ export const useForecastStore = create<ForecastState>()(
         strategicForecast: null,
         isPaid: false, 
         isLoading: false,
-        isStrategicLoading: false 
+        isStrategicLoading: false,
+        stripeSessionId: null,
+        customerEmail: null,
       }),
     }),
     {
@@ -120,6 +130,8 @@ export const useForecastStore = create<ForecastState>()(
         freeForecast: state.freeForecast,
         isPaid: state.isPaid,
         strategicForecast: state.strategicForecast,
+        stripeSessionId: state.stripeSessionId,
+        customerEmail: state.customerEmail,
       }),
     }
   )
