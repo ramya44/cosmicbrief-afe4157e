@@ -225,73 +225,47 @@ No mysticism. No motivation. No technical astrology language.`;
     const userPrompt = `Create a concise preview of the user's ${targetYear}.
 
 Inputs:
-- Name (if available): ${name}
+- Name (optional): ${name}
 - Age: ${age}
 - Time of birth: ${birthTime}
 - Place of birth: ${birthPlace}
 - Style seed: ${styleSeed}
-- Pivotal life element (preselected, stable): ${pivotalLifeElement}
+- Pivotal life element (preselected): ${pivotalLifeElement}
 
-Write 90–110 words. Plain text only.
-
-NON-NEGOTIABLE OUTPUT RULES:
-
-Do NOT:
-- Offer advice, fixes, reassurance, or resolution
-- Explain mechanisms (no astrology, charts, or systems)
-- Use universal language that could apply to anyone
-- Use em dashes
-- Exceed 110 words or drop below 90
-
-The reader should feel informed but slightly underprepared.
-
-PERSONALIZATION REQUIREMENTS (MANDATORY):
-
-1) Signature Line  
-The first section must contain exactly one short, shareable line that functions as a signature.  
-It must satisfy at least TWO of the following:
-- Life-stage anchoring based on age or positioning (without saying “at your age”)
-- Birth-timing texture (how the person meets the world, implied)
-- Place-of-birth imprint (subtle, non-stereotypical)
-- Irreversibility (something that cannot be deferred or easily undone this year)
-
-If a name is provided, subtly anchor the line to the person.
-
-2) Time Windows  
-Include 2–3 distinct time windows using months or tight ranges.
-- One must signal pressure or demand
-- One must signal clarity or reckoning
-- Optional third may signal fatigue or consequence emergence
-Do not resolve or explain what to do.
-
-3) Concrete Tradeoff  
-Include exactly one explicit tradeoff inside "${pivotalLifeElement}", framed as A vs B.
-Both sides must feel costly. No soft language.
+Write 90–110 words, plain text only.
 
 EDGE REQUIREMENT (MANDATORY):
 
-For EVERY section:
-- Include at least one sentence that implies cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually
-- Do NOT resolve the consequence
-- Do NOT offer correction
+For every visible section:
+- Include at least one sentence that implies a cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually.
+- Do NOT resolve the consequence.
+- Do NOT offer the correction.
 
-STRUCTURE (WRITE EXACTLY IN THIS FORMAT):
+The reader should feel informed but slightly underprepared.
+
+STYLE AND SAFETY RULES:
+- You MAY reference the user's name if it improves naturalness.
+- Do NOT explicitly mention age, birthplace, or time of birth.
+- Do NOT invent specific events, moments, or decisions.
+- Avoid medical or literal predictions, especially for health.
+- No advice. No reassurance. No mechanisms.
+- Do NOT use em dashes.
+
+Structure (write exactly in this format with headers):
 
 Your Defining Arc
-One short, shareable signature statement capturing the year’s core tension.
+One short, shareable statement that captures the theme of the year.
 
 Your Pivotal Life Theme
-Write 2–3 sentences describing how attention gathers around "${pivotalLifeElement}" this year.
-- Explicitly state what happens when last year’s logic is applied to this year
-- Introduce the concrete tradeoff
-- Reference at least one time window
+Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" this year.
+- Explicitly state what happens when last year’s logic is applied to this year.
+- Reference 1–2 months naturally.
+- Do not explain how to fix it.
 
 The Quiet Undercurrent
-Write 1–2 sentences describing the internal balancing inside "${pivotalLifeElement}" this year.
-- Reference a different time window
-- Use language like “balancing,” “recalibration,” or “two pulls”
-- Do not explain consequences
-- Do not give advice
+Write 1–2 sentences describing what needs balancing inside "${pivotalLifeElement}" this year.
+Use gentle phrasing like “balancing,” “recalibration,” or “two pulls.”
+Do not explain consequences. Do not give advice.
 
 Stop when finished.
 `.trim();
