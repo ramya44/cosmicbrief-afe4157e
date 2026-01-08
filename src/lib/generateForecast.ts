@@ -11,7 +11,6 @@ export const generateForecast = async (
       birthDate: birthData.birthDate,
       birthTime: birthData.birthTime,
       birthPlace: birthData.birthPlace,
-      name: birthData.name,
       birthTimeUtc: birthData.birthDateTimeUtc,
     },
   });
