@@ -26,6 +26,7 @@ export type Database = {
           forecast_text: string
           id: string
           pivotal_theme: string | null
+          zodiac_sign: string | null
         }
         Insert: {
           birth_date: string
@@ -38,6 +39,7 @@ export type Database = {
           forecast_text: string
           id?: string
           pivotal_theme?: string | null
+          zodiac_sign?: string | null
         }
         Update: {
           birth_date?: string
@@ -50,6 +52,7 @@ export type Database = {
           forecast_text?: string
           id?: string
           pivotal_theme?: string | null
+          zodiac_sign?: string | null
         }
         Relationships: []
       }
@@ -75,6 +78,7 @@ export type Database = {
           stripe_session_id: string
           total_tokens: number | null
           user_id: string | null
+          zodiac_sign: string | null
         }
         Insert: {
           amount_paid?: number | null
@@ -97,6 +101,7 @@ export type Database = {
           stripe_session_id: string
           total_tokens?: number | null
           user_id?: string | null
+          zodiac_sign?: string | null
         }
         Update: {
           amount_paid?: number | null
@@ -119,6 +124,7 @@ export type Database = {
           stripe_session_id?: string
           total_tokens?: number | null
           user_id?: string | null
+          zodiac_sign?: string | null
         }
         Relationships: [
           {
