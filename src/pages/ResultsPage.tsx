@@ -124,6 +124,7 @@ const ResultsPage = () => {
               const sectionHeaders = [
                 'Your Natural Orientation',
                 `Your ${priorYear}`,
+                'Looking Ahead',
                 'Your Pivotal Life Theme', 
                 'The Quiet Undercurrent'
               ];
