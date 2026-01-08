@@ -92,6 +92,7 @@ serve(async (req) => {
 
     // Target year
     const targetYear = new Date().getFullYear();
+    const priorYear = targetYear - 1;
 
     // Calculate age based on UTC birth datetime (or fallback to local date)
     let age: number;
@@ -230,7 +231,6 @@ This preview should feel specific, grounded, and slightly unfinished in a way th
 
 INPUTS:
 - Name (optional): ${name}
-- Date of birth: ${dob}
 - Age: ${age}
 - Time of birth: ${birthTime}
 - Place of birth: ${birthPlace}
