@@ -181,6 +181,33 @@ export type Database = {
         }
         Relationships: []
       }
+      zodiac_signs: {
+        Row: {
+          end_day: number
+          end_month: number
+          id: number
+          name: string
+          start_day: number
+          start_month: number
+        }
+        Insert: {
+          end_day: number
+          end_month: number
+          id?: number
+          name: string
+          start_day: number
+          start_month: number
+        }
+        Update: {
+          end_day?: number
+          end_month?: number
+          id?: number
+          name?: string
+          start_day?: number
+          start_month?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
