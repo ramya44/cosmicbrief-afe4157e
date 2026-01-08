@@ -8,7 +8,7 @@ import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplet
 import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail } from 'lucide-react';
 
 const InputPage = () => {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ const InputPage = () => {
     birthDate: '',
     birthTime: '',
     birthPlace: '',
+    email: '',
   });
   const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -228,6 +229,25 @@ const InputPage = () => {
               {errors.birthPlace && (
                 <p className="text-sm text-destructive">{errors.birthPlace}</p>
               )}
+            </div>
+
+            {/* Email Address */}
+            <div 
+              className="space-y-2 animate-fade-up"
+              style={{ animationDelay: '250ms', animationFillMode: 'both' }}
+            >
+              <Label htmlFor="email" className="text-cream flex items-center gap-2">
+                <Mail className="w-4 h-4 text-gold" />
+                Email Address <span className="text-muted-foreground text-xs">(optional)</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+              />
             </div>
 
             {/* Submit Button */}
