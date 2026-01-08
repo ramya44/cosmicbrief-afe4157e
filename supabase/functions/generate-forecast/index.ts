@@ -232,6 +232,7 @@ This preview should feel specific, grounded, and slightly unfinished in a way th
 INPUTS:
 - Name (optional): ${name}
 - Age: ${age}
+- Date of birth: ${birthDate}
 - Time of birth: ${birthTime}
 - Place of birth: ${birthPlace}
 - Style seed: ${styleSeed}
