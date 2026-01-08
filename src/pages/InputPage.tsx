@@ -8,14 +8,13 @@ import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplet
 import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, User, Check, X } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X } from 'lucide-react';
 
 const InputPage = () => {
   const navigate = useNavigate();
   const { setBirthData, setForecast, setIsLoading, setIsPaid, setStrategicForecast } = useForecastStore();
   
   const [formData, setFormData] = useState({
-    name: '',
     birthDate: '',
     birthTime: '',
     birthPlace: '',
@@ -145,25 +144,6 @@ const InputPage = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6 overflow-visible">
-            {/* Name (optional) */}
-            <div 
-              className="space-y-2 animate-fade-up"
-              style={{ animationDelay: '50ms', animationFillMode: 'both' }}
-            >
-              <Label htmlFor="name" className="text-cream flex items-center gap-2">
-                <User className="w-4 h-4 text-gold" />
-                Name <span className="text-muted-foreground text-xs">(optional)</span>
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Your first name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
-              />
-            </div>
-
             {/* Date of Birth */}
             <div 
               className="space-y-2 animate-fade-up"
