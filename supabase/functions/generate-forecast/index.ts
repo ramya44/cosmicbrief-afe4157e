@@ -224,57 +224,77 @@ Grounded, clear, confident.
 
 No mysticism. No motivation. No technical astrology language.`;
 
-    const userPrompt = `Create a concise preview of the user's ${targetYear}.
+    const userPrompt = `Create a concise preview of the user’s ${targetYear}.
 
-Inputs:
+This preview should feel specific, grounded, and slightly unfinished in a way that creates curiosity.
+
+INPUTS:
 - Name (optional): ${name}
+- Date of birth: ${dob}
 - Age: ${age}
 - Time of birth: ${birthTime}
 - Place of birth: ${birthPlace}
 - Style seed: ${styleSeed}
 - Pivotal life element (preselected): ${pivotalLifeElement}
+- Prior year: ${priorYear}
 
-Write 90–110 words, plain text only.
+LENGTH:
+- 120–160 words total
+- Plain text only
 
 EDGE REQUIREMENT (MANDATORY):
+Across the preview, include at least TWO moments where:
+- A cost, friction, or limit is implied if something is misread, delayed, or treated casually
+- The consequence is NOT resolved
+- No correction or advice is offered
 
-For every visible section:
-- Include at least one sentence that implies a cost, friction, or consequence if the theme is misunderstood, delayed, or treated casually.
-- Do NOT resolve the consequence.
-- Do NOT offer the correction.
-
-The reader should feel informed but slightly underprepared.
+The reader should feel oriented, but not fully equipped.
 
 STYLE AND SAFETY RULES:
-- You MAY reference the user's name if it improves naturalness.
-- Do NOT explicitly mention age, birthplace, or time of birth.
-- Do NOT invent specific events, moments, or decisions.
-- Avoid medical or literal predictions, especially for health.
-- No advice. No reassurance. No mechanisms.
-- Do NOT use em dashes.
+- Grounded, composed, quietly confident
+- Observational, not therapeutic
+- No reassurance
+- No advice or instructions
+- No predictions of specific events
+- No mechanisms or explanations of how things work
+- Do NOT mention astrology, zodiac signs, or systems
+- Do NOT explicitly mention age, birthplace, or time of birth
+- Avoid medical or literal health claims
+- Do NOT use em dashes
 
-MONTH CONSTRAINT (IMPORTANT):
-- Month names (e.g., March, July, October) may appear ONLY in the section "Your Pivotal Life Theme".
-- Do NOT include months in "Your Defining Arc" or "The Quiet Undercurrent".
-- If months appear outside the allowed section, the output is invalid.
+STRUCTURE:
+Write exactly in the following format with headers.
+Do not add extra sections.
+Do not add commentary.
 
-Structure (write exactly in this format with headers):
+---
 
-Your Defining Arc
-One short, shareable statement that captures the theme of the year.
+Your Natural Orientation  
+Write 3–4 sentences describing how the user typically responds to uncertainty or pressure at this stage of life.
+- Frame this as an orientation or default pattern, not a personality trait
+- Describe how this orientation has generally helped them
+- Name one way this same pattern is beginning to show a limit now
+- Do not give advice or suggest change
 
-Your Pivotal Life Theme
-Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" this year.
-- Explicitly state what happens when last year's logic is applied to this year.
-- Reference 1–2 months naturally.
-- Do not explain how to fix it.
+Your ${priorYear}  
+Write 2–3 sentences describing what the prior year felt like emotionally or psychologically.
+- Focus on pacing, effort, and what was required to keep things moving
+- Explicitly state what stopped working or felt increasingly costly
+- Do not resolve the tension
 
-The Quiet Undercurrent
-Write 1–2 sentences describing what needs balancing inside "${pivotalLifeElement}" this year.
-Use gentle phrasing like "balancing," "recalibration," or "two pulls."
-Do not explain consequences. Do not give advice.
+Your Pivotal Life Theme  
+Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" in ${targetYear}.
+- Explicitly state what happens when last year’s logic is applied to this year
+- Do not explain how to fix it
 
-Stop when finished.`.trim();
+The Quiet Undercurrent  
+Write 1–2 sentences describing a subtle, ongoing tension within "${pivotalLifeElement}" this year.
+- Use language like balancing, recalibration, or competing pulls
+- Do not describe outcomes
+- Do not give advice
+
+Stop when finished.
+`.trim();
 
     const payload = {
       model: "gpt-4.1-mini-2025-04-14",
