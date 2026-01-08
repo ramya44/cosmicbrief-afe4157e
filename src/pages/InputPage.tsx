@@ -49,6 +49,11 @@ const InputPage = () => {
     } else if (!placeCoords) {
       newErrors.birthPlace = 'Please select a location from the dropdown to confirm coordinates';
     }
+    if (!formData.email.trim()) {
+      newErrors.email = 'Please enter your email address';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -238,7 +243,7 @@ const InputPage = () => {
             >
               <Label htmlFor="email" className="text-cream flex items-center gap-2">
                 <Mail className="w-4 h-4 text-gold" />
-                Email Address <span className="text-muted-foreground text-xs">(optional)</span>
+                Email Address
               </Label>
               <Input
                 id="email"
@@ -248,6 +253,9 @@ const InputPage = () => {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
               />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email}</p>
+              )}
             </div>
 
             {/* Submit Button */}
