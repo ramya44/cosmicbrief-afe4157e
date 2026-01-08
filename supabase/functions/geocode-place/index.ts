@@ -29,8 +29,9 @@ serve(async (req) => {
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "json");
     url.searchParams.set("q", query.trim());
-    url.searchParams.set("limit", "5");
+    url.searchParams.set("limit", "10"); // Fetch more to allow for deduplication
     url.searchParams.set("addressdetails", "1");
+    url.searchParams.set("featureType", "settlement"); // Only cities, towns, villages
 
     const resp = await fetch(url.toString(), {
       method: "GET",
@@ -53,7 +54,7 @@ serve(async (req) => {
 
     const data = (await resp.json()) as NominatimResult[];
 
-    const results = Array.isArray(data)
+    const mapped = Array.isArray(data)
       ? data.map((r) => ({
           place_id: r.place_id,
           display_name: r.display_name,
@@ -61,6 +62,14 @@ serve(async (req) => {
           lon: r.lon,
         }))
       : [];
+
+    // Deduplicate by display_name
+    const seen = new Set<string>();
+    const results = mapped.filter((r) => {
+      if (seen.has(r.display_name)) return false;
+      seen.add(r.display_name);
+      return true;
+    }).slice(0, 5); // Return max 5 results
 
     return new Response(JSON.stringify({ results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
