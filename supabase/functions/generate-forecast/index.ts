@@ -64,7 +64,7 @@ serve(async (req) => {
   }
 
   try {
-    const { birthDate, birthTime, birthPlace, birthTimeUtc } = await req.json();
+    const { birthDate, birthTime, birthPlace, name, birthTimeUtc } = await req.json();
 
     if (!birthDate || !birthTime || !birthPlace) {
       return new Response(
@@ -110,7 +110,7 @@ serve(async (req) => {
       "0",
     )}/${dateObj.getFullYear()}`;
 
-    
+    const userName = name || "the seeker";
 
     // Generate style seed based on UTC datetime for consistency
     const styleSeedInput = birthTimeUtc || `${birthDate}+${birthTime}+${birthPlace}`;
@@ -172,7 +172,7 @@ serve(async (req) => {
     }
 
     console.log(
-      `Generating forecast for: age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
+      `Generating forecast for: ${userName}, age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -230,6 +230,7 @@ No mysticism. No motivation. No technical astrology language.`;
 This preview should feel specific, grounded, and slightly unfinished in a way that creates curiosity.
 
 INPUTS:
+- Name (optional): ${name}
 - Age: ${age}
 - Date of birth: ${birthDate}
 - Time of birth: ${birthTime}
@@ -253,8 +254,10 @@ The reader should feel oriented, but not fully equipped.
 STYLE AND SAFETY RULES:
 - Grounded, composed, quietly confident
 - Observational, not therapeutic
-- Avoid abstract or managerial phrasing (e.g., "systems," "processes," "strategies," "management," "momentum").
-- Write in direct second-person language that reflects lived experience.
+- No reassurance
+- No advice or instructions
+- No predictions of specific events
+- No mechanisms or explanations of how things work
 - Do NOT mention astrology, zodiac signs, or systems
 - Do NOT explicitly mention age, birthplace, or time of birth
 - Avoid medical or literal health claims
@@ -268,13 +271,14 @@ Do not add commentary.
 ---
 
 Your Natural Orientation  
+INTERNAL LOGIC (DO NOT MENTION):
+- Determine the user’s zodiac sign from the birth date.
+- Use this ONLY as a subtle influence on decision posture and pressure response.
 Write 3–4 sentences describing how the user typically responds to uncertainty or pressure at this stage of life.
 - Frame this as an orientation or default pattern, not a personality trait
-- Describe the orientation using concrete internal behaviors (e.g., how you decide, what you carry, what you delay, what you absorb).
 - Describe how this orientation has generally helped them
 - Name one way this same pattern is beginning to show a limit now
 - Do not give advice or suggest change
-- Do not summarize or generalize.
 
 Your ${priorYear}  
 Write 2–3 sentences describing what the prior year felt like emotionally or psychologically.
@@ -352,6 +356,7 @@ Stop when finished.
           birth_time: birthTime,
           birth_place: birthPlace,
           birth_time_utc: birthTimeUtc || null,
+          customer_name: name || null,
           forecast_text: forecastText,
           pivotal_theme: pivotalLifeElement,
         })
