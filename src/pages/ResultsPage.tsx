@@ -130,22 +130,29 @@ const ResultsPage = () => {
               ];
               
               sectionHeaders.forEach((header, index) => {
+                // Escape special regex characters in header (for dynamic year like "Your 2025")
+                const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 // Match header with optional markdown formatting (**, ##, etc.) and colon
-                const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${header}(?:\\*\\*)?:?\\s*\\n?`, 'i');
-                const nextHeader = sectionHeaders[index + 1];
-                const nextPattern = nextHeader 
-                  ? new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${nextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i') 
-                  : null;
+                const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${escapedHeader}(?:\\*\\*)?:?\\s*\\n?`, 'i');
+                
+                // For finding the end, we need to check ALL remaining headers (not just the next one)
+                const remainingHeaders = sectionHeaders.slice(index + 1);
                 
                 const headerMatch = text.match(headerPattern);
                 if (headerMatch && headerMatch.index !== undefined) {
                   const startIndex = headerMatch.index + headerMatch[0].length;
                   let endIndex = text.length;
                   
-                  if (nextPattern) {
+                  // Find the earliest match of any remaining header
+                  for (const nextHeader of remainingHeaders) {
+                    const escapedNextHeader = nextHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const nextPattern = new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${escapedNextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i');
                     const nextMatch = text.slice(startIndex).match(nextPattern);
                     if (nextMatch && nextMatch.index !== undefined) {
-                      endIndex = startIndex + nextMatch.index;
+                      const potentialEnd = startIndex + nextMatch.index;
+                      if (potentialEnd < endIndex) {
+                        endIndex = potentialEnd;
+                      }
                     }
                   }
                   
