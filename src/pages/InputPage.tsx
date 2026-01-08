@@ -152,7 +152,7 @@ const InputPage = () => {
             >
               <Label htmlFor="name" className="text-cream flex items-center gap-2">
                 <User className="w-4 h-4 text-gold" />
-                First Name <span className="text-muted-foreground text-xs">(optional)</span>
+                Name <span className="text-muted-foreground text-xs">(optional)</span>
               </Label>
               <Input
                 id="name"
