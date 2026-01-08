@@ -133,8 +133,6 @@ serve(async (req) => {
     // Compute zodiac sign
     const zodiacSign = getZodiacSign(birthDate);
 
-    
-
     // Generate style seed based on UTC datetime for consistency
     const styleSeedInput = birthTimeUtc || `${birthDate}+${birthTime}+${birthPlace}`;
     const styleSeed = await generateStyleSeed(styleSeedInput);
@@ -195,7 +193,7 @@ serve(async (req) => {
     }
 
     console.log(
-      `Generating forecast for: age ${age}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
+      `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -248,12 +246,13 @@ Grounded, clear, confident.
 
 No mysticism. No motivation. No technical astrology language.`;
 
-    const userPrompt = `Create a concise preview of the user’s ${targetYear}.
+    const userPrompt = `Create a concise preview of the user's ${targetYear}.
 
 This preview should feel specific, grounded, and slightly unfinished in a way that creates curiosity.
 
 INPUTS:
 - Age: ${age}
+- Zodiac sign: ${zodiacSign}
 - Date of birth: ${birthDate}
 - Time of birth: ${birthTime}
 - Place of birth: ${birthPlace}
@@ -293,9 +292,11 @@ Do not add commentary.
 ---
 
 Your Natural Orientation  
-INTERNAL LOGIC (DO NOT MENTION):
-- Determine the user’s zodiac sign from the birth date.
-- Use this ONLY as a subtle influence on decision posture and pressure response.
+INTERNAL LOGIC (DO NOT REVEAL TO USER):
+- Use the provided zodiac sign (${zodiacSign}) and age (${age}) together to shape this section.
+- The zodiac sign informs the user's instinctive response style: how they move toward or away from friction, whether they lead or observe, push or wait.
+- Age informs the life stage context: what pressures are typical, what has accumulated, what is shifting.
+- Blend these subtly. Do NOT mention the zodiac sign, astrology, or age directly.
 Write 3–4 sentences describing how the user typically responds to uncertainty or pressure at this stage of life.
 - Frame this as an orientation or default pattern, not a personality trait
 - Describe how this orientation has generally helped them
@@ -310,7 +311,7 @@ Write 2–3 sentences describing what the prior year felt like emotionally or ps
 
 Your Pivotal Life Theme  
 Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" in ${targetYear}.
-- Explicitly state what happens when last year’s logic is applied to this year
+- Explicitly state what happens when last year's logic is applied to this year
 - Do not explain how to fix it
 
 The Quiet Undercurrent  
