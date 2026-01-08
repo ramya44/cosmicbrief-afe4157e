@@ -117,9 +117,16 @@ const ResultsPage = () => {
           <ForecastSection title="Your Year at a Glance" delay={100}>
             {(() => {
               const text = freeForecast.forecast;
+              const priorYear = new Date().getFullYear() - 1;
               // Parse sections from the forecast text using more flexible regex
               const sections: { header: string; content: string }[] = [];
-              const sectionHeaders = ['Your Defining Arc', 'Your Pivotal Life Theme', 'The Quiet Undercurrent'];
+              // Updated headers to match new prompt structure, including dynamic prior year
+              const sectionHeaders = [
+                'Your Natural Orientation',
+                `Your ${priorYear}`,
+                'Your Pivotal Life Theme', 
+                'The Quiet Undercurrent'
+              ];
               
               sectionHeaders.forEach((header, index) => {
                 // Match header with optional markdown formatting (**, ##, etc.) and colon
