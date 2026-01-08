@@ -9,6 +9,7 @@ import ResultsPage from "./pages/ResultsPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import Horoscope2026Page from "./pages/Horoscope2026Page";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/payment-success" element={<PaymentSuccessPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/2026-horoscope" element={<Horoscope2026Page />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
