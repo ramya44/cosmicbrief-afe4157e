@@ -254,10 +254,8 @@ The reader should feel oriented, but not fully equipped.
 STYLE AND SAFETY RULES:
 - Grounded, composed, quietly confident
 - Observational, not therapeutic
-- No reassurance
-- No advice or instructions
-- No predictions of specific events
-- No mechanisms or explanations of how things work
+- Avoid abstract or managerial phrasing (e.g., "systems," "processes," "strategies," "management," "momentum").
+- Write in direct second-person language that reflects lived experience.
 - Do NOT mention astrology, zodiac signs, or systems
 - Do NOT explicitly mention age, birthplace, or time of birth
 - Avoid medical or literal health claims
@@ -273,9 +271,11 @@ Do not add commentary.
 Your Natural Orientation  
 Write 3–4 sentences describing how the user typically responds to uncertainty or pressure at this stage of life.
 - Frame this as an orientation or default pattern, not a personality trait
+- Describe the orientation using concrete internal behaviors (e.g., how you decide, what you carry, what you delay, what you absorb).
 - Describe how this orientation has generally helped them
 - Name one way this same pattern is beginning to show a limit now
 - Do not give advice or suggest change
+- Do not summarize or generalize.
 
 Your ${priorYear}  
 Write 2–3 sentences describing what the prior year felt like emotionally or psychologically.
