@@ -3,9 +3,6 @@ project_id = "kfqnrdnwnmzawajybytr"
 [functions.generate-forecast]
 verify_jwt = false
 
-[functions.generate-strategic-forecast]
-verify_jwt = false
-
 [functions.generate-paid-forecast]
 verify_jwt = false
 
@@ -13,9 +10,6 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.verify-payment]
-verify_jwt = false
-
-[functions.save-forecast]
 verify_jwt = false
 
 [functions.update-free-forecast-email]
