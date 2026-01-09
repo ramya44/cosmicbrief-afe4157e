@@ -982,10 +982,8 @@ async function saveForecastToDb(
       birth_time: birthTime,
       birth_time_utc: params.birthDateTimeUtc,
       birth_place: `${params.lat},${params.lon}`, // Store coords as fallback
-      latitude: params.lat,
-      longitude: params.lon,
-      free_forecast: params.freeForecast || null,
-      strategic_forecast: params.strategicForecast,
+      free_forecast: params.freeForecast || "",
+      strategic_forecast: params.strategicForecast || {},
       amount_paid: EXPECTED_AMOUNT,
       model_used: params.modelUsed,
       generation_status: params.generationStatus,
@@ -995,8 +993,6 @@ async function saveForecastToDb(
       completion_tokens: params.tokenUsage?.completionTokens || null,
       total_tokens: params.tokenUsage?.totalTokens || null,
       zodiac_sign: zodiacSign,
-      payment_status: 'paid',
-      tier: 'paid',
       device_id: params.deviceId || null,
     }, {
       onConflict: 'stripe_session_id',
