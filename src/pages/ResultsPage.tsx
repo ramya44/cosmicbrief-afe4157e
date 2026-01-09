@@ -99,7 +99,7 @@ const ResultsPage = () => {
         <div className="text-center mb-12 animate-fade-up">
           <p className="text-gold text-sm uppercase tracking-widest mb-2">Your Personalized Reading</p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
-            2026 Annual Forecast
+            2026 Cosmic Brief
           </h1>
           {birthData && (
             <p className="text-cream-muted">
