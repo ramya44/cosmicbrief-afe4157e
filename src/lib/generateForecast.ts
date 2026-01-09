@@ -1,10 +1,20 @@
 import { FreeForecast, BirthData } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from './deviceId';
+
+export interface GenerateForecastResult {
+  forecast?: FreeForecast;
+  captchaRequired?: boolean;
+  message?: string;
+}
 
 export const generateForecast = async (
-  birthData: BirthData
-): Promise<FreeForecast> => {
+  birthData: BirthData,
+  captchaToken?: string
+): Promise<GenerateForecastResult> => {
   console.log('Calling generate-forecast (with integrated save)...');
+  
+  const deviceId = getDeviceId();
   
   const { data, error } = await supabase.functions.invoke('generate-forecast', {
     body: {
@@ -12,6 +22,8 @@ export const generateForecast = async (
       birthTime: birthData.birthTime,
       birthPlace: birthData.birthPlace,
       birthTimeUtc: birthData.birthDateTimeUtc,
+      deviceId,
+      captchaToken,
     },
   });
 
@@ -22,9 +34,19 @@ export const generateForecast = async (
 
   console.log('Received forecast data:', data);
 
+  // Check if CAPTCHA is required
+  if (data.captcha_required) {
+    return {
+      captchaRequired: true,
+      message: data.message || 'Please complete verification to continue.',
+    };
+  }
+
   return { 
-    forecast: data.forecast, 
-    pivotalTheme: data.pivotalTheme,
-    id: data.freeForecastId,
+    forecast: {
+      forecast: data.forecast, 
+      pivotalTheme: data.pivotalTheme,
+      id: data.freeForecastId,
+    }
   };
 };

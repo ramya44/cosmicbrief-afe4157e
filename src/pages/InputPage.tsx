@@ -9,6 +9,7 @@ import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail } from 'lucide-react';
+import { toast } from 'sonner';
 
 const InputPage = () => {
   const navigate = useNavigate();
@@ -95,10 +96,22 @@ const InputPage = () => {
     navigate('/results');
 
     try {
-      const forecast = await generateForecast(fullBirthData);
-      setForecast(forecast, {});
+      const result = await generateForecast(fullBirthData);
+      
+      if (result.captchaRequired) {
+        // CAPTCHA required - show message and stay on page
+        setIsLoading(false);
+        toast.error(result.message || 'Please complete verification to continue.');
+        navigate('/input');
+        return;
+      }
+      
+      if (result.forecast) {
+        setForecast(result.forecast, {});
+      }
     } catch (error) {
       console.error('Error generating forecast:', error);
+      toast.error('Failed to generate forecast. Please try again.');
     } finally {
       setIsLoading(false);
     }
