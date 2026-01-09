@@ -71,8 +71,6 @@ export type Database = {
           nakshatra_id: number | null
           nakshatra_pada: number | null
           pivotal_theme: string | null
-          rising_sign: string | null
-          rising_sign_id: number | null
           sun_sign: string | null
           sun_sign_id: number | null
           zodiac_sign: string | null
@@ -97,8 +95,6 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_pada?: number | null
           pivotal_theme?: string | null
-          rising_sign?: string | null
-          rising_sign_id?: number | null
           sun_sign?: string | null
           sun_sign_id?: number | null
           zodiac_sign?: string | null
@@ -123,8 +119,6 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_pada?: number | null
           pivotal_theme?: string | null
-          rising_sign?: string | null
-          rising_sign_id?: number | null
           sun_sign?: string | null
           sun_sign_id?: number | null
           zodiac_sign?: string | null
