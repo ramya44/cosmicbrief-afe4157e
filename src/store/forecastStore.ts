@@ -78,6 +78,9 @@ export interface ForecastState {
   isStrategicLoading: boolean;
   stripeSessionId: string | null;
   customerEmail: string | null;
+  // Guest tokens for secure forecast retrieval
+  freeGuestToken: string | null;
+  paidGuestToken: string | null;
   setBirthData: (data: BirthData) => void;
   setFreeForecast: (forecast: FreeForecast) => void;
   setForecast: (free: FreeForecast, paid: PaidForecast) => void;
@@ -87,6 +90,8 @@ export interface ForecastState {
   setIsStrategicLoading: (loading: boolean) => void;
   setStripeSessionId: (sessionId: string | null) => void;
   setCustomerEmail: (email: string | null) => void;
+  setFreeGuestToken: (token: string | null) => void;
+  setPaidGuestToken: (token: string | null) => void;
   reset: () => void;
 }
 
@@ -102,6 +107,8 @@ export const useForecastStore = create<ForecastState>()(
       isStrategicLoading: false,
       stripeSessionId: null,
       customerEmail: null,
+      freeGuestToken: null,
+      paidGuestToken: null,
       setBirthData: (data) => set({ birthData: data }),
       setFreeForecast: (forecast) => set({ freeForecast: forecast }),
       setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
@@ -111,6 +118,8 @@ export const useForecastStore = create<ForecastState>()(
       setIsStrategicLoading: (loading) => set({ isStrategicLoading: loading }),
       setStripeSessionId: (sessionId) => set({ stripeSessionId: sessionId }),
       setCustomerEmail: (email) => set({ customerEmail: email }),
+      setFreeGuestToken: (token) => set({ freeGuestToken: token }),
+      setPaidGuestToken: (token) => set({ paidGuestToken: token }),
       reset: () => set({ 
         birthData: null, 
         freeForecast: null, 
@@ -121,6 +130,8 @@ export const useForecastStore = create<ForecastState>()(
         isStrategicLoading: false,
         stripeSessionId: null,
         customerEmail: null,
+        freeGuestToken: null,
+        paidGuestToken: null,
       }),
     }),
     {
@@ -132,6 +143,8 @@ export const useForecastStore = create<ForecastState>()(
         strategicForecast: state.strategicForecast,
         stripeSessionId: state.stripeSessionId,
         customerEmail: state.customerEmail,
+        freeGuestToken: state.freeGuestToken,
+        paidGuestToken: state.paidGuestToken,
       }),
     }
   )

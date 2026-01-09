@@ -4,6 +4,7 @@ import { getDeviceId } from './deviceId';
 
 export interface GenerateForecastResult {
   forecast?: FreeForecast;
+  guestToken?: string;
   captchaRequired?: boolean;
   message?: string;
 }
@@ -47,6 +48,7 @@ export const generateForecast = async (
       forecast: data.forecast, 
       pivotalTheme: data.pivotalTheme,
       id: data.freeForecastId,
-    }
+    },
+    guestToken: data.guestToken,
   };
 };
