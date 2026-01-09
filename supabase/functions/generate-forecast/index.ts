@@ -33,6 +33,8 @@ const InputSchema = z.object({
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM"),
   birthPlace: z.string().min(2, "Birth place too short").max(MAX_BIRTH_PLACE_LENGTH, `Birth place too long (max ${MAX_BIRTH_PLACE_LENGTH} chars)`),
   birthTimeUtc: z.string().max(50).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   deviceId: z.string().uuid("Invalid device ID").optional(),
   captchaToken: z.string().max(MAX_CAPTCHA_TOKEN_LENGTH).optional(),
 });
@@ -390,7 +392,7 @@ serve(async (req) => {
       );
     }
     
-    const { birthDate, birthTime, birthPlace, birthTimeUtc, captchaToken } = parseResult.data;
+    const { birthDate, birthTime, birthPlace, birthTimeUtc, latitude, longitude, captchaToken } = parseResult.data;
     deviceId = parseResult.data.deviceId;
 
     // Check for traffic spike
@@ -501,6 +503,61 @@ serve(async (req) => {
     // Create Supabase client for cache operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Fetch birth chart from Prokerala API (non-blocking - continue even if it fails)
+    interface BirthChartData {
+      moonSign?: string;
+      moonSignId?: number;
+      risingSign?: string;
+      risingSignId?: number;
+      sunSign?: string;
+      sunSignId?: number;
+      nakshatra?: string;
+      nakshatraId?: number;
+      nakshatraPada?: number;
+    }
+    let birthChartData: BirthChartData = {};
+    
+    if (birthTimeUtc && latitude !== undefined && longitude !== undefined) {
+      try {
+        logStep("Fetching birth chart", { datetime: birthTimeUtc, lat: latitude, lon: longitude });
+        
+        const birthChartResponse = await fetch(`${supabaseUrl}/functions/v1/get-birth-chart`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            datetime: birthTimeUtc,
+            latitude,
+            longitude,
+            ayanamsa: 1, // Lahiri
+          }),
+        });
+        
+        if (birthChartResponse.ok) {
+          const chartResult = await birthChartResponse.json();
+          birthChartData = {
+            moonSign: chartResult.moonSign,
+            moonSignId: chartResult.moonSignId,
+            risingSign: chartResult.risingSign,
+            risingSignId: chartResult.risingSignId,
+            sunSign: chartResult.sunSign,
+            sunSignId: chartResult.sunSignId,
+            nakshatra: chartResult.nakshatra,
+            nakshatraId: chartResult.nakshatraId,
+            nakshatraPada: chartResult.nakshatraPada,
+          };
+          logStep("Birth chart fetched successfully", { ...birthChartData });
+        } else {
+          const errorText = await birthChartResponse.text();
+          logStep("Birth chart fetch failed", { status: birthChartResponse.status, error: errorText });
+        }
+      } catch (chartError) {
+        logStep("Birth chart fetch exception", { error: chartError instanceof Error ? chartError.message : String(chartError) });
+      }
+    }
+
     let pivotalLifeElement: string;
 
     // Only use cache if we have UTC datetime
@@ -554,7 +611,7 @@ serve(async (req) => {
     }
 
     console.log(
-      `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}`,
+      `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}, birthChart: ${JSON.stringify(birthChartData)}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -761,6 +818,17 @@ Stop when finished.
           pivotal_theme: pivotalLifeElement,
           zodiac_sign: zodiacSign,
           device_id: deviceId || null,
+          latitude: latitude ?? null,
+          longitude: longitude ?? null,
+          moon_sign: birthChartData.moonSign ?? null,
+          moon_sign_id: birthChartData.moonSignId ?? null,
+          rising_sign: birthChartData.risingSign ?? null,
+          rising_sign_id: birthChartData.risingSignId ?? null,
+          sun_sign: birthChartData.sunSign ?? null,
+          sun_sign_id: birthChartData.sunSignId ?? null,
+          nakshatra: birthChartData.nakshatra ?? null,
+          nakshatra_id: birthChartData.nakshatraId ?? null,
+          nakshatra_pada: birthChartData.nakshatraPada ?? null,
         })
         .select("id, guest_token")
         .single();
