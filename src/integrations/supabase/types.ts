@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          device_id: string | null
+          event_type: string
+          hourly_count: number | null
+          id: string
+          ip_address: string | null
+          notified: boolean | null
+          threshold: number | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          device_id?: string | null
+          event_type: string
+          hourly_count?: number | null
+          id?: string
+          ip_address?: string | null
+          notified?: boolean | null
+          threshold?: number | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          device_id?: string | null
+          event_type?: string
+          hourly_count?: number | null
+          id?: string
+          ip_address?: string | null
+          notified?: boolean | null
+          threshold?: number | null
+        }
+        Relationships: []
+      }
       free_forecasts: {
         Row: {
           birth_date: string

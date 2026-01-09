@@ -9,18 +9,102 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ============= INPUT VALIDATION & LIMITS =============
+const MAX_NAME_LENGTH = 100;
+const MAX_FREE_FORECAST_LENGTH = 5000;
+const MAX_REQUEST_BODY_SIZE = 10000; // 10KB max for paid forecast requests
+
 // Input validation schema - strict and narrow
 const InputSchema = z.object({
   sessionId: z.string().min(10, "Valid Stripe session ID required").max(200),
-  birthDateTimeUtc: z.string().min(1, "Birth datetime is required"),
+  birthDateTimeUtc: z.string().min(1, "Birth datetime is required").max(50),
   lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
   lon: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
-  name: z.string().max(100).optional(),
+  name: z.string().max(MAX_NAME_LENGTH).optional(),
   pivotalTheme: z.string().max(50).optional(),
-  freeForecast: z.string().max(5000).optional(),
+  freeForecast: z.string().max(MAX_FREE_FORECAST_LENGTH).optional(),
   freeForecastId: z.string().uuid().optional(),
   deviceId: z.string().max(100).optional(),
 });
+
+// ============= ABUSE DETECTION & ALERTING =============
+const PAID_ABUSE_ALERT_THRESHOLD = 20; // Alert if more than 20 paid forecasts per hour
+const paidHourlyGenerationCount = { count: 0, hourStart: Date.now() };
+const PAID_ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour between alerts
+let paidLastAlertTime = 0;
+
+// deno-lint-ignore no-explicit-any
+async function checkAndAlertPaidAbuse(
+  supabase: any,
+  ip: string,
+  deviceId: string | undefined
+): Promise<void> {
+  const now = Date.now();
+  
+  // Reset hourly counter if hour has passed
+  if (now - paidHourlyGenerationCount.hourStart > 60 * 60 * 1000) {
+    paidHourlyGenerationCount.count = 0;
+    paidHourlyGenerationCount.hourStart = now;
+  }
+  
+  paidHourlyGenerationCount.count++;
+  
+  // Check if threshold exceeded and we haven't alerted recently
+  if (paidHourlyGenerationCount.count >= PAID_ABUSE_ALERT_THRESHOLD && now - paidLastAlertTime > PAID_ALERT_COOLDOWN_MS) {
+    paidLastAlertTime = now;
+    
+    logStep("ABUSE_THRESHOLD_EXCEEDED", { 
+      hourlyCount: paidHourlyGenerationCount.count, 
+      threshold: PAID_ABUSE_ALERT_THRESHOLD 
+    });
+    
+    // Write abuse event to database
+    try {
+      await supabase.from("abuse_events").insert({
+        event_type: "paid_hourly_threshold_exceeded",
+        ip_address: ip,
+        device_id: deviceId || null,
+        hourly_count: paidHourlyGenerationCount.count,
+        threshold: PAID_ABUSE_ALERT_THRESHOLD,
+        details: { function: "generate-paid-forecast", timestamp: new Date().toISOString() },
+      });
+    } catch (err) {
+      console.error("Failed to write abuse event:", err);
+    }
+    
+    // Send email alert
+    try {
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Cosmic Brief Alerts <alerts@cosmicbrief.com>",
+            to: ["contact@cosmicbrief.com"],
+            subject: `🚨 Abuse Alert: Paid Forecast Threshold Exceeded`,
+            html: `
+              <h2>Paid Forecast Abuse Threshold Exceeded</h2>
+              <p><strong>Function:</strong> generate-paid-forecast</p>
+              <p><strong>Hourly Count:</strong> ${paidHourlyGenerationCount.count}</p>
+              <p><strong>Threshold:</strong> ${PAID_ABUSE_ALERT_THRESHOLD}</p>
+              <p><strong>Last IP:</strong> ${ip}</p>
+              <p><strong>Device ID:</strong> ${deviceId || "N/A"}</p>
+              <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+              <p style="color: red;"><strong>⚠️ This is a high-priority alert - paid forecasts are expensive!</strong></p>
+            `,
+          }),
+        });
+        logStep("Paid abuse alert email sent");
+      }
+    } catch (emailErr) {
+      console.error("Failed to send paid abuse alert email:", emailErr);
+    }
+  }
+}
 
 // Rate limiting: 2 requests per minute per IP (very strict for expensive paid endpoint)
 const rateLimiter = new Map<string, { count: number; resetAt: number }>();
@@ -231,8 +315,40 @@ serve(async (req) => {
       );
     }
 
+    // Check request body size
+    const rawBody = await req.text();
+    if (rawBody.length > MAX_REQUEST_BODY_SIZE) {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "request_too_large",
+        ip: clientIP,
+        bodySize: rawBody.length,
+        maxSize: MAX_REQUEST_BODY_SIZE,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Request too large" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
     // Parse and validate input
-    const rawInput = await req.json();
+    let rawInput: unknown;
+    try {
+      rawInput = JSON.parse(rawBody);
+    } catch {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "invalid_json",
+        ip: clientIP,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
     const parseResult = InputSchema.safeParse(rawInput);
     
     if (!parseResult.success) {
@@ -783,6 +899,9 @@ Return valid JSON only using this schema:
       .select('guest_token')
       .eq('id', forecastId)
       .single();
+
+    // Check for abuse and alert if threshold exceeded
+    await checkAndAlertPaidAbuse(supabase, clientIP, deviceId);
 
     // Log successful completion
     const guestTokenHash = forecastData?.guest_token ? await hashToken(forecastData.guest_token) : null;
