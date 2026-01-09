@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { StarField } from '@/components/StarField';
 import { useForecastStore } from '@/store/forecastStore';
-import { generateStrategicForecast } from '@/lib/generateStrategicForecast';
 import { Compass, CheckCircle, AlertTriangle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,7 +18,7 @@ const GENERATING_STEPS = [
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'verifying' | 'generating' | 'saving' | 'complete' | 'failed' | 'error'>('verifying');
+  const [status, setStatus] = useState<'verifying' | 'generating' | 'complete' | 'failed' | 'error'>('verifying');
   const [failedEmail, setFailedEmail] = useState<string>('');
   const [messageIndex, setMessageIndex] = useState(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -27,8 +26,6 @@ const PaymentSuccessPage = () => {
   const { 
     birthData, 
     freeForecast,
-    setBirthData,
-    setFreeForecast,
     setIsPaid, 
     setStrategicForecast, 
     setIsStrategicLoading,
@@ -65,143 +62,67 @@ const PaymentSuccessPage = () => {
         return;
       }
 
-      let currentBirthData = birthData;
-      let currentFreeForecast = freeForecast?.forecast;
-      let currentPivotalTheme = freeForecast?.pivotalTheme;
-      let currentFreeForecastId = freeForecast?.id;
-      let stripeSessionId = sessionId;
-      let customerEmail: string | undefined;
-
-      // Always verify payment to get customer email from Stripe
-      try {
-        console.log('Verifying payment session...');
-        const { data, error } = await supabase.functions.invoke('verify-payment', {
-          body: { sessionId },
-        });
-
-        if (error) {
-          console.error('Verify payment error:', error);
-          throw new Error(error.message);
-        }
-
-        if (data?.success) {
-          // Get customer email from Stripe session
-          customerEmail = data.birthData?.email;
-          
-          // If birthData is not in store, restore it from Stripe
-          if (!currentBirthData && data.birthData) {
-            currentBirthData = data.birthData;
-            setBirthData(data.birthData);
-            console.log('Birth data restored from Stripe session:', data.birthData);
-          }
-          
-          // Also restore free forecast from Stripe metadata if not in store
-          if (!currentFreeForecast && data.freeForecast) {
-            currentFreeForecast = data.freeForecast;
-            setFreeForecast({ forecast: data.freeForecast });
-            console.log('Free forecast restored from Stripe session');
-          }
-        } else {
-          throw new Error('Could not verify payment');
-        }
-      } catch (error) {
-        console.error('Failed to verify payment:', error);
-        setStatus('error');
-        toast.error('Could not verify payment. Please try again.');
-        setTimeout(() => navigate('/input'), 2000);
-        return;
-      }
-
-      if (!currentBirthData) {
+      // Must have birth data in store (set during input flow)
+      if (!birthData || !birthData.birthDateTimeUtc || !birthData.lat || !birthData.lon) {
         setStatus('error');
         toast.error('Birth data not found. Please try again.');
         setTimeout(() => navigate('/input'), 2000);
         return;
       }
 
-      // Payment successful - proceed to generate forecast
+      // Start generation immediately - the secure endpoint handles payment verification
       setStatus('generating');
       setIsPaid(true);
       setIsStrategicLoading(true);
-      setStripeSessionId(stripeSessionId);
-
-      // Store email for potential failure display and account creation
-      const forecastEmail = customerEmail || currentBirthData.email || '';
-      setFailedEmail(forecastEmail);
-      setCustomerEmail(forecastEmail);
+      setStripeSessionId(sessionId);
 
       try {
-        const result = await generateStrategicForecast(currentBirthData, currentPivotalTheme);
-        setStrategicForecast(result.forecast);
-        
-        // Save both forecasts to database
-        setStatus('saving');
-        console.log('Saving forecasts to database...');
-        
-        const { data: saveData, error: saveError } = await supabase.functions.invoke('save-forecast', {
+        // Single secure call that verifies payment AND generates forecast
+        const { data, error } = await supabase.functions.invoke('generate-paid-forecast', {
           body: {
-            stripeSessionId,
-            customerEmail: forecastEmail,
-            customerName: currentBirthData.name,
-            birthDate: currentBirthData.birthDate,
-            birthTime: currentBirthData.birthTime,
-            birthTimeUtc: currentBirthData.birthDateTimeUtc,
-            birthPlace: currentBirthData.birthPlace,
-            freeForecast: currentFreeForecast,
-            strategicForecast: result.forecast,
-            modelUsed: result.modelUsed,
-            generationStatus: 'complete',
-            retryCount: result.totalAttempts,
-            tokenUsage: result.tokenUsage,
-            userId: currentUser?.id,
+            sessionId,
+            birthDateTimeUtc: birthData.birthDateTimeUtc,
+            lat: birthData.lat,
+            lon: birthData.lon,
+            name: birthData.name,
+            pivotalTheme: freeForecast?.pivotalTheme,
+            freeForecast: freeForecast?.forecast,
+            freeForecastId: freeForecast?.id,
           },
         });
 
-        if (saveError) {
-          console.error('Failed to save forecast to database:', saveError);
-          // Don't fail the whole flow, just log it
-        } else {
-          console.log('Forecasts saved to database successfully', saveData);
-          
-          // Send email with link to the forecast
-          if (forecastEmail && saveData?.id) {
-            try {
-              const { error: emailError } = await supabase.functions.invoke('send-forecast-email', {
-                body: {
-                  customerEmail: forecastEmail,
-                  customerName: currentBirthData.name,
-                  forecastId: saveData.id,
-                },
-              });
-              
-              if (emailError) {
-                console.error('Failed to send forecast email:', emailError);
-              } else {
-                console.log('Forecast email sent successfully');
-              }
-            } catch (emailErr) {
-              console.error('Error sending forecast email:', emailErr);
-            }
-          }
+        if (error) {
+          console.error('Generate paid forecast error:', error);
+          throw new Error(error.message || 'Failed to generate forecast');
         }
 
-        // Update the free forecast with the customer email
-        if (currentFreeForecastId && customerEmail) {
+        if (!data?.success) {
+          throw new Error(data?.error || 'Failed to generate forecast');
+        }
+
+        // Success - store the forecast
+        setStrategicForecast(data.forecast);
+        
+        // Extract customer email from forecast for display
+        if (data.customerEmail) {
+          setCustomerEmail(data.customerEmail);
+          setFailedEmail(data.customerEmail);
+        }
+
+        // Send confirmation email if we have an email and forecast ID
+        if (data.forecastId) {
           try {
-            const { error: updateError } = await supabase.functions.invoke('update-free-forecast-email', {
+            await supabase.functions.invoke('send-forecast-email', {
               body: {
-                freeForecastId: currentFreeForecastId,
-                customerEmail: customerEmail,
+                customerEmail: data.customerEmail || birthData.email,
+                customerName: birthData.name,
+                forecastId: data.forecastId,
               },
             });
-            
-            if (updateError) {
-              console.error('Failed to update free forecast email:', updateError);
-            } else {
-              console.log('Free forecast email updated successfully');
-            }
-          } catch (updateErr) {
-            console.error('Error updating free forecast email:', updateErr);
+            console.log('Forecast email sent successfully');
+          } catch (emailErr) {
+            console.error('Error sending forecast email:', emailErr);
+            // Don't fail the whole flow for email errors
           }
         }
         
@@ -210,44 +131,25 @@ const PaymentSuccessPage = () => {
         
         // Redirect to results after a brief moment
         setTimeout(() => navigate('/results'), 1500);
+
       } catch (error) {
         console.error('Failed to generate strategic forecast:', error);
         
-        // Save failed attempt to database for support follow-up
-        try {
-          await supabase.functions.invoke('save-forecast', {
-            body: {
-              stripeSessionId,
-              customerEmail: forecastEmail,
-              customerName: currentBirthData.name,
-              birthDate: currentBirthData.birthDate,
-              birthTime: currentBirthData.birthTime,
-              birthTimeUtc: currentBirthData.birthDateTimeUtc,
-              birthPlace: currentBirthData.birthPlace,
-              freeForecast: currentFreeForecast,
-              strategicForecast: null,
-              generationStatus: 'failed',
-              generationError: error instanceof Error ? error.message : 'Unknown error',
-              retryCount: 4, // Max attempts (3 primary + 1 fallback)
-              userId: currentUser?.id,
-            },
-          });
-          console.log('Failed forecast record saved for support follow-up');
-        } catch (saveErr) {
-          console.error('Failed to save failed forecast record:', saveErr);
-        }
+        // Extract email for failure display
+        const forecastEmail = birthData.email || '';
+        setFailedEmail(forecastEmail);
 
-        // Notify support team
+        // Notify support team about the failure
         try {
           await supabase.functions.invoke('notify-support', {
             body: {
               customerEmail: forecastEmail,
-              customerName: currentBirthData.name,
-              birthDate: currentBirthData.birthDate,
-              birthTime: currentBirthData.birthTime,
-              birthPlace: currentBirthData.birthPlace,
+              customerName: birthData.name,
+              birthDate: birthData.birthDate,
+              birthTime: birthData.birthTime,
+              birthPlace: birthData.birthPlace,
               errorMessage: error instanceof Error ? error.message : 'Unknown error',
-              stripeSessionId,
+              stripeSessionId: sessionId,
               totalAttempts: 4,
             },
           });
@@ -263,7 +165,7 @@ const PaymentSuccessPage = () => {
     };
 
     processPayment();
-  }, [searchParams, birthData, freeForecast, navigate, setBirthData, setFreeForecast, setIsPaid, setStrategicForecast, setIsStrategicLoading, setStripeSessionId, setCustomerEmail]);
+  }, [searchParams, birthData, freeForecast, navigate, setIsPaid, setStrategicForecast, setIsStrategicLoading, setStripeSessionId, setCustomerEmail]);
 
   return (
     <div className="relative min-h-screen bg-celestial flex items-center justify-center">
@@ -314,20 +216,6 @@ const PaymentSuccessPage = () => {
                   />
                 ))}
               </div>
-            </>
-          )}
-
-          {status === 'saving' && (
-            <>
-              <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
-                <CheckCircle className="w-8 h-8 text-gold" />
-              </div>
-              <h2 className="font-display text-2xl text-cream mb-3">
-                Saving Your Forecast...
-              </h2>
-              <p className="text-cream-muted">
-                Almost there...
-              </p>
             </>
           )}
 
