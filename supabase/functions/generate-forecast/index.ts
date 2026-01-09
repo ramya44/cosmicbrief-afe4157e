@@ -9,7 +9,7 @@ const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 // Consistent logging helper
 const logStep = (step: string, details?: Record<string, unknown>) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[GENERATE-FORECAST] ${step}${detailsStr}`);
 };
 
@@ -19,7 +19,10 @@ async function hashToken(token: string): Promise<string> {
   const data = encoder.encode(token);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+  return hashArray
+    .slice(0, 4)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 // ============= INPUT VALIDATION & LIMITS =============
@@ -31,7 +34,10 @@ const MAX_REQUEST_BODY_SIZE = 5000; // 5KB max for free forecast requests
 const InputSchema = z.object({
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD"),
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM"),
-  birthPlace: z.string().min(2, "Birth place too short").max(MAX_BIRTH_PLACE_LENGTH, `Birth place too long (max ${MAX_BIRTH_PLACE_LENGTH} chars)`),
+  birthPlace: z
+    .string()
+    .min(2, "Birth place too short")
+    .max(MAX_BIRTH_PLACE_LENGTH, `Birth place too long (max ${MAX_BIRTH_PLACE_LENGTH} chars)`),
   birthTimeUtc: z.string().max(50).optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
@@ -51,30 +57,26 @@ const ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour between alerts
 let lastAlertTime = 0;
 
 // deno-lint-ignore no-explicit-any
-async function checkAndAlertAbuse(
-  supabase: any,
-  ip: string,
-  deviceId: string | undefined
-): Promise<void> {
+async function checkAndAlertAbuse(supabase: any, ip: string, deviceId: string | undefined): Promise<void> {
   const now = Date.now();
-  
+
   // Reset hourly counter if hour has passed
   if (now - hourlyGenerationCount.hourStart > 60 * 60 * 1000) {
     hourlyGenerationCount.count = 0;
     hourlyGenerationCount.hourStart = now;
   }
-  
+
   hourlyGenerationCount.count++;
-  
+
   // Check if threshold exceeded and we haven't alerted recently
   if (hourlyGenerationCount.count >= ABUSE_ALERT_THRESHOLD && now - lastAlertTime > ALERT_COOLDOWN_MS) {
     lastAlertTime = now;
-    
-    logStep("ABUSE_THRESHOLD_EXCEEDED", { 
-      hourlyCount: hourlyGenerationCount.count, 
-      threshold: ABUSE_ALERT_THRESHOLD 
+
+    logStep("ABUSE_THRESHOLD_EXCEEDED", {
+      hourlyCount: hourlyGenerationCount.count,
+      threshold: ABUSE_ALERT_THRESHOLD,
     });
-    
+
     // Write abuse event to database
     try {
       // Using 'any' cast since abuse_events table was just created
@@ -89,7 +91,7 @@ async function checkAndAlertAbuse(
     } catch (err) {
       console.error("Failed to write abuse event:", err);
     }
-    
+
     // Send email alert
     try {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -138,9 +140,7 @@ const DEVICE_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 // CAPTCHA thresholds
 const CAPTCHA_IP_THRESHOLD = 5; // Require CAPTCHA after 5 requests in 24h
-const SUSPICIOUS_USER_AGENTS = [
-  "curl", "wget", "python", "httpie", "postman", "insomnia", "bot", "crawler", "spider"
-];
+const SUSPICIOUS_USER_AGENTS = ["curl", "wget", "python", "httpie", "postman", "insomnia", "bot", "crawler", "spider"];
 
 // Rate limiting maps
 const ipBurstLimiter = new Map<string, { count: number; resetAt: number }>();
@@ -161,9 +161,7 @@ function cleanupMap(map: Map<string, { count: number; resetAt: number }>, now: n
 }
 
 function getClientIP(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
-         req.headers.get("x-real-ip") || 
-         "unknown";
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
 function getUserAgent(req: Request): string {
@@ -172,7 +170,7 @@ function getUserAgent(req: Request): string {
 
 function isSuspiciousUserAgent(userAgent: string): boolean {
   const lowerUA = userAgent.toLowerCase();
-  return SUSPICIOUS_USER_AGENTS.some(pattern => lowerUA.includes(pattern));
+  return SUSPICIOUS_USER_AGENTS.some((pattern) => lowerUA.includes(pattern));
 }
 
 function detectTrafficSpike(): boolean {
@@ -193,58 +191,58 @@ interface RateLimitResult {
 
 function checkRateLimits(ip: string, deviceId: string | undefined): RateLimitResult {
   const now = Date.now();
-  
+
   // Cleanup old entries
   cleanupMap(ipBurstLimiter, now);
   cleanupMap(ipDailyLimiter, now);
   cleanupMap(deviceDailyLimiter, now);
-  
+
   // Tier 1: IP burst limit (1 per minute)
   const burstRecord = ipBurstLimiter.get(ip);
   if (burstRecord && now <= burstRecord.resetAt && burstRecord.count >= IP_BURST_LIMIT) {
     const waitSeconds = Math.ceil((burstRecord.resetAt - now) / 1000);
-    return { 
-      allowed: false, 
-      requireCaptcha: false, 
-      message: `Please wait ${waitSeconds} seconds before generating another forecast.`
+    return {
+      allowed: false,
+      requireCaptcha: false,
+      message: `Please wait ${waitSeconds} seconds before generating another forecast.`,
     };
   }
-  
+
   // Update burst counter
   if (!burstRecord || now > burstRecord.resetAt) {
     ipBurstLimiter.set(ip, { count: 1, resetAt: now + IP_BURST_WINDOW_MS });
   } else {
     burstRecord.count++;
   }
-  
+
   // Tier 2: IP daily limit (10 per 24h)
   const dailyRecord = ipDailyLimiter.get(ip);
   if (dailyRecord && now <= dailyRecord.resetAt && dailyRecord.count >= IP_DAILY_LIMIT) {
-    return { 
-      allowed: false, 
-      requireCaptcha: false, 
-      message: "Daily limit reached. Please try again tomorrow."
+    return {
+      allowed: false,
+      requireCaptcha: false,
+      message: "Daily limit reached. Please try again tomorrow.",
     };
   }
-  
+
   // Update daily counter
   if (!dailyRecord || now > dailyRecord.resetAt) {
     ipDailyLimiter.set(ip, { count: 1, resetAt: now + IP_DAILY_WINDOW_MS });
   } else {
     dailyRecord.count++;
   }
-  
+
   // Tier 3: Device daily limit (3 per 24h)
   if (deviceId) {
     const deviceRecord = deviceDailyLimiter.get(deviceId);
     if (deviceRecord && now <= deviceRecord.resetAt && deviceRecord.count >= DEVICE_DAILY_LIMIT) {
-      return { 
-        allowed: false, 
-        requireCaptcha: false, 
-        message: "You've reached the maximum free previews for today. Please try again tomorrow."
+      return {
+        allowed: false,
+        requireCaptcha: false,
+        message: "You've reached the maximum free previews for today. Please try again tomorrow.",
       };
     }
-    
+
     // Update device counter
     if (!deviceRecord || now > deviceRecord.resetAt) {
       deviceDailyLimiter.set(deviceId, { count: 1, resetAt: now + DEVICE_DAILY_WINDOW_MS });
@@ -252,11 +250,11 @@ function checkRateLimits(ip: string, deviceId: string | undefined): RateLimitRes
       deviceRecord.count++;
     }
   }
-  
+
   // Check if CAPTCHA should be required
   const currentDailyCount = ipDailyLimiter.get(ip)?.count || 0;
   const requireCaptcha = currentDailyCount > CAPTCHA_IP_THRESHOLD;
-  
+
   return { allowed: true, requireCaptcha };
 }
 
@@ -329,7 +327,7 @@ function getZodiacSign(birthDate: string): string {
 
 serve(async (req) => {
   const requestStartTime = Date.now();
-  
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -352,12 +350,12 @@ serve(async (req) => {
         maxSize: MAX_REQUEST_BODY_SIZE,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Request too large" }),
-        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Request too large" }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
+
     // Parse and validate input
     let rawInput: unknown;
     try {
@@ -369,16 +367,16 @@ serve(async (req) => {
         ip: clientIP,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
+
     const parseResult = InputSchema.safeParse(rawInput);
-    
+
     if (!parseResult.success) {
-      const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
+      const errorMessages = parseResult.error.errors.map((e) => e.message).join(", ");
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
         reason: "validation_error",
@@ -386,12 +384,12 @@ serve(async (req) => {
         deviceId: null,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: `Invalid input: ${errorMessages}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: `Invalid input: ${errorMessages}` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
+
     const { birthDate, birthTime, birthPlace, birthTimeUtc, latitude, longitude, captchaToken } = parseResult.data;
     deviceId = parseResult.data.deviceId;
 
@@ -401,7 +399,7 @@ serve(async (req) => {
 
     // Check rate limits
     const rateLimitResult = checkRateLimits(clientIP, deviceId);
-    
+
     if (!rateLimitResult.allowed) {
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
@@ -410,15 +408,15 @@ serve(async (req) => {
         deviceId: deviceId || null,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: rateLimitResult.message }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: rateLimitResult.message }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Determine if CAPTCHA is required
     const captchaRequired = rateLimitResult.requireCaptcha || isSuspiciousUA || isTrafficSpike;
-    
+
     if (captchaRequired && !captchaToken) {
       logStep("REQUEST_COMPLETE", {
         outcome: "captcha_required",
@@ -428,11 +426,11 @@ serve(async (req) => {
         latencyMs: Date.now() - requestStartTime,
       });
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           captcha_required: true,
-          message: "Please complete the verification to continue."
+          message: "Please complete the verification to continue.",
         }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -447,10 +445,10 @@ serve(async (req) => {
           deviceId: deviceId || null,
           latencyMs: Date.now() - requestStartTime,
         });
-        return new Response(
-          JSON.stringify({ error: "CAPTCHA verification failed. Please try again." }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ error: "CAPTCHA verification failed. Please try again." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
 
@@ -462,10 +460,10 @@ serve(async (req) => {
         deviceId: deviceId || null,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Service configuration error. Please try again later." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Service configuration error. Please try again later." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Require birthTimeUtc for proper theme caching
@@ -514,16 +512,16 @@ serve(async (req) => {
       nakshatraPada?: number;
     }
     let birthChartData: BirthChartData = {};
-    
+
     if (birthTimeUtc && latitude !== undefined && longitude !== undefined) {
       try {
         logStep("Fetching birth chart", { datetime: birthTimeUtc, lat: latitude, lon: longitude });
-        
+
         const birthChartResponse = await fetch(`${supabaseUrl}/functions/v1/get-birth-chart`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseServiceKey}`,
+            Authorization: `Bearer ${supabaseServiceKey}`,
           },
           body: JSON.stringify({
             datetime: birthTimeUtc,
@@ -532,7 +530,7 @@ serve(async (req) => {
             ayanamsa: 1, // Lahiri
           }),
         });
-        
+
         if (birthChartResponse.ok) {
           const chartResult = await birthChartResponse.json();
           birthChartData = {
@@ -550,7 +548,9 @@ serve(async (req) => {
           logStep("Birth chart fetch failed", { status: birthChartResponse.status, error: errorText });
         }
       } catch (chartError) {
-        logStep("Birth chart fetch exception", { error: chartError instanceof Error ? chartError.message : String(chartError) });
+        logStep("Birth chart fetch exception", {
+          error: chartError instanceof Error ? chartError.message : String(chartError),
+        });
       }
     }
 
@@ -610,69 +610,61 @@ serve(async (req) => {
       `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}, birthChart: ${JSON.stringify(birthChartData)}`,
     );
 
-    const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
+    const systemPrompt = `
+You generate concise, high-impact annual previews inspired by Indian Jyotish.
 
-This is a free glimpse meant to be personally resonant.
+This is a free preview meant to feel personally resonant and slightly incomplete.
 
-It should feel specific, not analytical.
+It should feel specific, grounded, and composed rather than mystical or analytical.
 
-Execution rules:
+Tone:
+- Grounded
+- Clear
+- Confident
+- Observational, not therapeutic
+- No reassurance, no motivation
 
-- Write immediately.
-
-- Do NOT analyze deeply.
-
-- Do NOT think through multiple alternatives.
-
-- Do NOT justify your choices.
-
-- Choose the first coherent framing and write it.
-
+Hard rules:
+- Always produce visible text
+- Plain language only
+- No technical astrology terms
+- Do NOT mention astrology, zodiac signs, systems, age, birthplace, or birth time
+- Do NOT give advice, instructions, or solutions
+- Do NOT predict specific events
+- Abstract directional pressure is allowed (narrowing, accumulation, friction, exposure)
 - Do NOT use em dashes
 
-- Always produce visible text.
-
-Personalization comes from tone and emphasis using the provided style seed.
-
-Do not reason about uniqueness.
+Internal logic rules (do not reveal to user):
+- Sun sign influences instinctive orientation and default response to pressure
+- Moon sign influences emotional pacing and internal tension
+- Nakshatra biases intensity, moral pressure, and how strain accumulates
+- Age defines life-stage context and which areas carry real stakes
+- Reflect these through emphasis and consequences, not symbolism or explanation
 
 AGE-BASED PIVOTAL LIFE ELEMENT (STRICT):
-
-You must select exactly ONE pivotal life element from the allowed list for the user's age.
-
-Do not compare options. Do not deliberate. Pick one quickly.
+You must select exactly ONE pivotal life element from the allowed list for the user’s age.
 
 Allowed lists:
-
 - Age < 35: [career, education, identity]
-
 - Age 35–49: [career, relationships, family, health]
-
 - Age 50–59: [health, family, relationships, purpose]
-
 - Age >= 60: [health, family, relationships, meaning, stewardship]
 
 Rule: if age >= 60, never choose career.
 
-Tone:
+Personalization should come from tone, pressure, and what feels costly if misread or delayed.
+`;
 
-Grounded, clear, confident.
-
-No mysticism. No motivation. No technical astrology language.`;
-
-    const userPrompt = `Create a concise preview of the user's ${targetYear}.
+    const userPrompt = `
+Create a concise preview of the user's ${targetYear}.
 
 This preview should feel specific, grounded, and slightly unfinished in a way that creates curiosity.
 
 INPUTS:
 - Age: ${age}
-- Zodiac sign: ${zodiacSign}
-- Moon sign: ${birthChartData.moonSign || "unknown"}
 - Sun sign: ${birthChartData.sunSign || "unknown"}
+- Moon sign: ${birthChartData.moonSign || "unknown"}
 - Nakshatra: ${birthChartData.nakshatra || "unknown"}
-- Date of birth: ${birthDate}
-- Time of birth: ${birthTime}
-- Place of birth: ${birthPlace}
 - Style seed: ${styleSeed}
 - Pivotal life element (preselected): ${pivotalLifeElement}
 - Prior year: ${priorYear}
@@ -694,10 +686,8 @@ STYLE AND SAFETY RULES:
 - Observational, not therapeutic
 - No reassurance
 - No advice or instructions
-- No predictions of specific events
-- No mechanisms or explanations of how things work
-- Do NOT mention astrology, zodiac signs, or systems
-- Do NOT explicitly mention age, birthplace, or time of birth
+- No specific event predictions
+- No explanations of mechanisms or systems
 - Avoid medical or literal health claims
 - Do NOT use em dashes
 
@@ -709,11 +699,6 @@ Do not add commentary.
 ---
 
 Your Natural Orientation  
-INTERNAL LOGIC (DO NOT REVEAL TO USER):
-- Use the provided zodiac sign (${zodiacSign}) and age (${age}) together to shape this section.
-- The zodiac sign informs the user's instinctive response style: how they move toward or away from friction, whether they lead or observe, push or wait.
-- Age informs the life stage context: what pressures are typical, what has accumulated, what is shifting.
-- Blend these subtly. Do NOT mention the zodiac sign, astrology, or age directly.
 Write 3–4 sentences describing how the user typically responds to uncertainty or pressure at this stage of life.
 - Frame this as an orientation or default pattern, not a personality trait
 - Describe how this orientation has generally helped them
@@ -747,7 +732,7 @@ Stop when finished.
         { role: "user", content: userPrompt },
       ],
       max_tokens: 400,
-      temperature: 0.8,
+      temperature: 0.65,
     };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
@@ -772,10 +757,10 @@ Stop when finished.
         errorStatus: resp.status,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unable to generate forecast. Please try again." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await resp.json();
@@ -794,10 +779,10 @@ Stop when finished.
         finishReason: data?.choices?.[0]?.finish_reason,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unable to generate forecast. Please try again." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const forecastText = generatedContent.trim();
@@ -876,10 +861,10 @@ Stop when finished.
       error: error instanceof Error ? error.message : String(error),
       latencyMs: Date.now() - requestStartTime,
     });
-    return new Response(
-      JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Unable to generate forecast. Please try again." }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
 
@@ -888,7 +873,7 @@ async function verifyCaptchaToken(token: string, clientIP: string): Promise<bool
   // TODO: Integrate with actual CAPTCHA provider (e.g., hCaptcha, reCAPTCHA, Turnstile)
   // For now, accept any non-empty token for testing
   // In production, this should verify the token with the CAPTCHA provider's API
-  
+
   const captchaSecretKey = Deno.env.get("CAPTCHA_SECRET_KEY");
   if (!captchaSecretKey) {
     console.warn("CAPTCHA_SECRET_KEY not configured - skipping verification");
@@ -902,7 +887,7 @@ async function verifyCaptchaToken(token: string, clientIP: string): Promise<bool
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: `secret=${captchaSecretKey}&response=${token}&remoteip=${clientIP}`,
     });
-    
+
     const result = await response.json();
     return result.success === true;
   } catch (error) {
