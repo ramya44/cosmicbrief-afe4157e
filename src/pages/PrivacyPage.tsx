@@ -34,7 +34,7 @@ const PrivacyPage = () => {
             </p>
 
             <p className="text-cream/90 leading-relaxed">
-              This Privacy Policy explains how [Your Company Name] ("we," "us," or "our") collects, uses, and protects personal information when you use our Service.
+              This Privacy Policy explains how Cosmic Brief ("we," "us," or "our") collects, uses, and protects personal information when you use our Service. This policy is governed by the laws of California.
             </p>
 
             <h2 className="font-display text-xl text-cream mt-8 mb-4">1. Information We Collect</h2>
@@ -120,7 +120,7 @@ const PrivacyPage = () => {
               If you have questions or requests regarding this Privacy Policy, contact us at:
             </p>
             <p className="text-cream/90 leading-relaxed">
-              <strong>Email:</strong> support@[yourdomain].com
+              <strong>Email:</strong> contact@cosmicbrief.com
             </p>
           </article>
         </div>
