@@ -72,7 +72,7 @@ const Index = () => {
             className="mt-6 text-xs text-muted-foreground animate-fade-up"
             style={{ animationDelay: '600ms', animationFillMode: 'both' }}
           >
-            <a href="/horoscope-2026" className="text-gold hover:underline">Blog</a>
+            <a href="/2026-horoscope" className="text-gold hover:underline">Blog</a>
             {' · '}
             <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
             {' · '}
