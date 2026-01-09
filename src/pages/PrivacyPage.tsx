@@ -30,7 +30,7 @@ const PrivacyPage = () => {
               Privacy Policy
             </h1>
             <p className="text-cream-muted text-center mb-10">
-              <strong>Effective Date:</strong> [Insert Date]
+              <strong>Effective Date:</strong> January 1, 2026
             </p>
 
             <p className="text-cream/90 leading-relaxed">
