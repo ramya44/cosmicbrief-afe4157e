@@ -19,6 +19,7 @@ const InputSchema = z.object({
   pivotalTheme: z.string().max(50).optional(),
   freeForecast: z.string().max(5000).optional(),
   freeForecastId: z.string().uuid().optional(),
+  deviceId: z.string().max(100).optional(),
 });
 
 // Rate limiting: 2 requests per minute per IP (very strict for expensive paid endpoint)
@@ -219,7 +220,7 @@ serve(async (req) => {
       );
     }
     
-    const { sessionId, birthDateTimeUtc, lat, lon, name, pivotalTheme, freeForecast, freeForecastId } = parseResult.data;
+    const { sessionId, birthDateTimeUtc, lat, lon, name, pivotalTheme, freeForecast, freeForecastId, deviceId } = parseResult.data;
 
     // ========== CRITICAL: STRIPE PAYMENT VERIFICATION ==========
     logStep("Verifying Stripe payment", { sessionId: sessionId.slice(0, 20) + "..." });
@@ -569,6 +570,7 @@ Return valid JSON only using this schema:
           generationError,
           totalAttempts,
           tokenUsage: null,
+          deviceId,
         });
 
         return new Response(
@@ -605,6 +607,7 @@ Return valid JSON only using this schema:
         generationError,
         totalAttempts,
         tokenUsage,
+        deviceId,
       });
 
       return new Response(
@@ -634,6 +637,7 @@ Return valid JSON only using this schema:
         generationError,
         totalAttempts,
         tokenUsage,
+        deviceId,
       });
 
       return new Response(
@@ -657,6 +661,7 @@ Return valid JSON only using this schema:
       generationError: null,
       totalAttempts,
       tokenUsage,
+      deviceId,
     });
 
     logStep("Forecast saved successfully", { forecastId });
@@ -720,6 +725,7 @@ async function saveForecastToDb(
     generationError: string | null;
     totalAttempts: number;
     tokenUsage: { promptTokens?: number; completionTokens?: number; totalTokens?: number } | null;
+    deviceId?: string;
   }
 ): Promise<string | null> {
   // Extract birth date/time from UTC string
@@ -753,6 +759,7 @@ async function saveForecastToDb(
       zodiac_sign: zodiacSign,
       payment_status: 'paid',
       tier: 'paid',
+      device_id: params.deviceId || null,
     }, {
       onConflict: 'stripe_session_id',
     })
