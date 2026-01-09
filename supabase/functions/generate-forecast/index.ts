@@ -13,6 +13,8 @@ const InputSchema = z.object({
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM"),
   birthPlace: z.string().min(2, "Birth place too short").max(200, "Birth place too long"),
   birthTimeUtc: z.string().optional(),
+  deviceId: z.string().uuid("Invalid device ID").optional(),
+  captchaToken: z.string().optional(),
 });
 
 const corsHeaders = {
@@ -20,10 +22,42 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Rate limiting: 5 requests per minute per IP
-const rateLimiter = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 60000;
+// ============= RATE LIMITING CONFIGURATION =============
+// Tier 1: 1 request per minute per IP (burst protection)
+const IP_BURST_LIMIT = 1;
+const IP_BURST_WINDOW_MS = 60000;
+
+// Tier 2: 10 requests per 24h per IP
+const IP_DAILY_LIMIT = 10;
+const IP_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+// Tier 3: 3 requests per 24h per device_id
+const DEVICE_DAILY_LIMIT = 3;
+const DEVICE_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+// CAPTCHA thresholds
+const CAPTCHA_IP_THRESHOLD = 5; // Require CAPTCHA after 5 requests in 24h
+const SUSPICIOUS_USER_AGENTS = [
+  "curl", "wget", "python", "httpie", "postman", "insomnia", "bot", "crawler", "spider"
+];
+
+// Rate limiting maps
+const ipBurstLimiter = new Map<string, { count: number; resetAt: number }>();
+const ipDailyLimiter = new Map<string, { count: number; resetAt: number }>();
+const deviceDailyLimiter = new Map<string, { count: number; resetAt: number }>();
+
+// Traffic spike detection (requests in last 5 minutes across all IPs)
+const recentRequestTimestamps: number[] = [];
+const SPIKE_WINDOW_MS = 5 * 60 * 1000;
+const SPIKE_THRESHOLD = 100; // If more than 100 requests in 5 minutes, enable CAPTCHA
+
+function cleanupMap(map: Map<string, { count: number; resetAt: number }>, now: number, maxSize: number = 10000) {
+  if (map.size > maxSize) {
+    for (const [key, value] of map.entries()) {
+      if (now > value.resetAt) map.delete(key);
+    }
+  }
+}
 
 function getClientIP(req: Request): string {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
@@ -31,28 +65,98 @@ function getClientIP(req: Request): string {
          "unknown";
 }
 
-function checkRateLimit(ip: string): boolean {
+function getUserAgent(req: Request): string {
+  return req.headers.get("user-agent") || "";
+}
+
+function isSuspiciousUserAgent(userAgent: string): boolean {
+  const lowerUA = userAgent.toLowerCase();
+  return SUSPICIOUS_USER_AGENTS.some(pattern => lowerUA.includes(pattern));
+}
+
+function detectTrafficSpike(): boolean {
   const now = Date.now();
-  const record = rateLimiter.get(ip);
+  // Clean old timestamps
+  while (recentRequestTimestamps.length > 0 && recentRequestTimestamps[0] < now - SPIKE_WINDOW_MS) {
+    recentRequestTimestamps.shift();
+  }
+  recentRequestTimestamps.push(now);
+  return recentRequestTimestamps.length > SPIKE_THRESHOLD;
+}
+
+interface RateLimitResult {
+  allowed: boolean;
+  requireCaptcha: boolean;
+  message?: string;
+}
+
+function checkRateLimits(ip: string, deviceId: string | undefined): RateLimitResult {
+  const now = Date.now();
   
-  // Clean up old entries periodically
-  if (rateLimiter.size > 10000) {
-    for (const [key, value] of rateLimiter.entries()) {
-      if (now > value.resetAt) rateLimiter.delete(key);
+  // Cleanup old entries
+  cleanupMap(ipBurstLimiter, now);
+  cleanupMap(ipDailyLimiter, now);
+  cleanupMap(deviceDailyLimiter, now);
+  
+  // Tier 1: IP burst limit (1 per minute)
+  const burstRecord = ipBurstLimiter.get(ip);
+  if (burstRecord && now <= burstRecord.resetAt && burstRecord.count >= IP_BURST_LIMIT) {
+    const waitSeconds = Math.ceil((burstRecord.resetAt - now) / 1000);
+    return { 
+      allowed: false, 
+      requireCaptcha: false, 
+      message: `Please wait ${waitSeconds} seconds before generating another forecast.`
+    };
+  }
+  
+  // Update burst counter
+  if (!burstRecord || now > burstRecord.resetAt) {
+    ipBurstLimiter.set(ip, { count: 1, resetAt: now + IP_BURST_WINDOW_MS });
+  } else {
+    burstRecord.count++;
+  }
+  
+  // Tier 2: IP daily limit (10 per 24h)
+  const dailyRecord = ipDailyLimiter.get(ip);
+  if (dailyRecord && now <= dailyRecord.resetAt && dailyRecord.count >= IP_DAILY_LIMIT) {
+    return { 
+      allowed: false, 
+      requireCaptcha: false, 
+      message: "Daily limit reached. Please try again tomorrow."
+    };
+  }
+  
+  // Update daily counter
+  if (!dailyRecord || now > dailyRecord.resetAt) {
+    ipDailyLimiter.set(ip, { count: 1, resetAt: now + IP_DAILY_WINDOW_MS });
+  } else {
+    dailyRecord.count++;
+  }
+  
+  // Tier 3: Device daily limit (3 per 24h)
+  if (deviceId) {
+    const deviceRecord = deviceDailyLimiter.get(deviceId);
+    if (deviceRecord && now <= deviceRecord.resetAt && deviceRecord.count >= DEVICE_DAILY_LIMIT) {
+      return { 
+        allowed: false, 
+        requireCaptcha: false, 
+        message: "You've reached the maximum free previews for today. Please try again tomorrow."
+      };
+    }
+    
+    // Update device counter
+    if (!deviceRecord || now > deviceRecord.resetAt) {
+      deviceDailyLimiter.set(deviceId, { count: 1, resetAt: now + DEVICE_DAILY_WINDOW_MS });
+    } else {
+      deviceRecord.count++;
     }
   }
   
-  if (!record || now > record.resetAt) {
-    rateLimiter.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
+  // Check if CAPTCHA should be required
+  const currentDailyCount = ipDailyLimiter.get(ip)?.count || 0;
+  const requireCaptcha = currentDailyCount > CAPTCHA_IP_THRESHOLD;
   
-  if (record.count >= RATE_LIMIT_MAX) {
-    return false;
-  }
-  
-  record.count++;
-  return true;
+  return { allowed: true, requireCaptcha };
 }
 
 // Generate a short hash for style seed
@@ -127,18 +231,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limiting check
   const clientIP = getClientIP(req);
-  if (!checkRateLimit(clientIP)) {
-    console.warn(`Rate limit exceeded for IP: ${clientIP}`);
-    return new Response(
-      JSON.stringify({ error: "Too many requests. Please try again later." }),
-      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  }
+  const userAgent = getUserAgent(req);
 
   try {
-    // Parse and validate input
+    // Parse and validate input first to get deviceId
     const rawInput = await req.json();
     const parseResult = InputSchema.safeParse(rawInput);
     
@@ -150,7 +247,47 @@ serve(async (req) => {
       );
     }
     
-    const { birthDate, birthTime, birthPlace, birthTimeUtc } = parseResult.data;
+    const { birthDate, birthTime, birthPlace, birthTimeUtc, deviceId, captchaToken } = parseResult.data;
+
+    // Check for traffic spike
+    const isTrafficSpike = detectTrafficSpike();
+    const isSuspiciousUA = isSuspiciousUserAgent(userAgent);
+
+    // Check rate limits
+    const rateLimitResult = checkRateLimits(clientIP, deviceId);
+    
+    if (!rateLimitResult.allowed) {
+      console.warn(`Rate limit exceeded for IP: ${clientIP}, device: ${deviceId || 'none'}`);
+      return new Response(
+        JSON.stringify({ error: rateLimitResult.message }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Determine if CAPTCHA is required
+    const captchaRequired = rateLimitResult.requireCaptcha || isSuspiciousUA || isTrafficSpike;
+    
+    if (captchaRequired && !captchaToken) {
+      console.log(`CAPTCHA required for IP: ${clientIP}, reason: threshold=${rateLimitResult.requireCaptcha}, suspicious=${isSuspiciousUA}, spike=${isTrafficSpike}`);
+      return new Response(
+        JSON.stringify({ 
+          captcha_required: true,
+          message: "Please complete the verification to continue."
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Verify CAPTCHA token if provided
+    if (captchaToken) {
+      const captchaValid = await verifyCaptchaToken(captchaToken, clientIP);
+      if (!captchaValid) {
+        return new Response(
+          JSON.stringify({ error: "CAPTCHA verification failed. Please try again." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
 
     if (!openAIApiKey) {
       console.error("Missing OPENAI_API_KEY environment variable");
@@ -248,7 +385,7 @@ serve(async (req) => {
     }
 
     console.log(
-      `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}`,
+      `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}`,
     );
 
     const systemPrompt = `You generate fast, high-impact annual previews inspired by Indian Jyotish.
@@ -469,3 +606,31 @@ Stop when finished.
     );
   }
 });
+
+// Verify CAPTCHA token (placeholder - integrate with your CAPTCHA provider)
+async function verifyCaptchaToken(token: string, clientIP: string): Promise<boolean> {
+  // TODO: Integrate with actual CAPTCHA provider (e.g., hCaptcha, reCAPTCHA, Turnstile)
+  // For now, accept any non-empty token for testing
+  // In production, this should verify the token with the CAPTCHA provider's API
+  
+  const captchaSecretKey = Deno.env.get("CAPTCHA_SECRET_KEY");
+  if (!captchaSecretKey) {
+    console.warn("CAPTCHA_SECRET_KEY not configured - skipping verification");
+    return true; // Skip verification if not configured
+  }
+
+  try {
+    // Example for Cloudflare Turnstile:
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=${captchaSecretKey}&response=${token}&remoteip=${clientIP}`,
+    });
+    
+    const result = await response.json();
+    return result.success === true;
+  } catch (error) {
+    console.error("CAPTCHA verification error:", error);
+    return false;
+  }
+}
