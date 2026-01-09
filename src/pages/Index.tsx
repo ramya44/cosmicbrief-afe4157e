@@ -66,6 +66,18 @@ const Index = () => {
           >
             No zodiac signs. This forecast uses the position of the stars at your birth, based on ancient techniques refined over centuries.
           </p>
+          
+          {/* Footer links */}
+          <p 
+            className="mt-6 text-xs text-muted-foreground animate-fade-up"
+            style={{ animationDelay: '600ms', animationFillMode: 'both' }}
+          >
+            <a href="/horoscope-2026" className="text-gold hover:underline">Blog</a>
+            {' · '}
+            <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
+            {' · '}
+            <a href="/terms" className="text-gold hover:underline">Terms of Service</a>
+          </p>
         </div>
       </div>
 

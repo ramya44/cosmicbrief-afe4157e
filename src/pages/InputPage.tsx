@@ -378,6 +378,8 @@ const InputPage = () => {
             className="text-center text-xs text-muted-foreground mt-3 animate-fade-up"
             style={{ animationDelay: '350ms', animationFillMode: 'both' }}
           >
+            <a href="/horoscope-2026" className="text-gold hover:underline">Blog</a>
+            {' · '}
             <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
             {' · '}
             <a href="/terms" className="text-gold hover:underline">Terms of Service</a>
