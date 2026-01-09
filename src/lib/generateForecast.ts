@@ -24,6 +24,8 @@ export const generateForecast = async (
       birthTime: birthData.birthTime,
       birthPlace: birthData.birthPlace,
       birthTimeUtc: birthData.birthDateTimeUtc,
+      latitude: birthData.lat,
+      longitude: birthData.lon,
       deviceId,
       captchaToken,
     },

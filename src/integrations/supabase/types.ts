@@ -63,7 +63,18 @@ export type Database = {
           forecast_text: string
           guest_token: string | null
           id: string
+          latitude: number | null
+          longitude: number | null
+          moon_sign: string | null
+          moon_sign_id: number | null
+          nakshatra: string | null
+          nakshatra_id: number | null
+          nakshatra_pada: number | null
           pivotal_theme: string | null
+          rising_sign: string | null
+          rising_sign_id: number | null
+          sun_sign: string | null
+          sun_sign_id: number | null
           zodiac_sign: string | null
         }
         Insert: {
@@ -78,7 +89,18 @@ export type Database = {
           forecast_text: string
           guest_token?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
+          moon_sign?: string | null
+          moon_sign_id?: number | null
+          nakshatra?: string | null
+          nakshatra_id?: number | null
+          nakshatra_pada?: number | null
           pivotal_theme?: string | null
+          rising_sign?: string | null
+          rising_sign_id?: number | null
+          sun_sign?: string | null
+          sun_sign_id?: number | null
           zodiac_sign?: string | null
         }
         Update: {
@@ -93,7 +115,18 @@ export type Database = {
           forecast_text?: string
           guest_token?: string | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
+          moon_sign?: string | null
+          moon_sign_id?: number | null
+          nakshatra?: string | null
+          nakshatra_id?: number | null
+          nakshatra_pada?: number | null
           pivotal_theme?: string | null
+          rising_sign?: string | null
+          rising_sign_id?: number | null
+          sun_sign?: string | null
+          sun_sign_id?: number | null
           zodiac_sign?: string | null
         }
         Relationships: []
