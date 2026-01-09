@@ -507,6 +507,57 @@ serve(async (req) => {
     const targetYear = "2026";
     const priorYear = "2025";
 
+    // Fetch birth chart data from Prokerala API
+    interface BirthChartData {
+      moonSign?: string;
+      moonSignId?: number;
+      sunSign?: string;
+      sunSignId?: number;
+      nakshatra?: string;
+      nakshatraId?: number;
+      nakshatraPada?: number;
+    }
+    let birthChartData: BirthChartData = {};
+
+    try {
+      logStep("Fetching birth chart", { datetime: birthDateTimeUtc, lat, lon });
+
+      const birthChartResponse = await fetch(`${supabaseUrl}/functions/v1/get-birth-chart`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          datetime: birthDateTimeUtc,
+          latitude: lat,
+          longitude: lon,
+          ayanamsa: 1, // Lahiri
+        }),
+      });
+
+      if (birthChartResponse.ok) {
+        const chartResult = await birthChartResponse.json();
+        birthChartData = {
+          moonSign: chartResult.moonSign,
+          moonSignId: chartResult.moonSignId,
+          sunSign: chartResult.sunSign,
+          sunSignId: chartResult.sunSignId,
+          nakshatra: chartResult.nakshatra,
+          nakshatraId: chartResult.nakshatraId,
+          nakshatraPada: chartResult.nakshatraPada,
+        };
+        logStep("Birth chart fetched successfully", { ...birthChartData });
+      } else {
+        const errorText = await birthChartResponse.text();
+        logStep("Birth chart fetch failed", { status: birthChartResponse.status, error: errorText });
+      }
+    } catch (chartError) {
+      logStep("Birth chart fetch exception", {
+        error: chartError instanceof Error ? chartError.message : String(chartError),
+      });
+    }
+
     const systemPrompt = `You are an expert practitioner of Indian Jyotish (Vedic astrology).
 
 You generate premium, time-sensitive annual readings grounded in Jyotish principles and interpretation.
@@ -549,8 +600,8 @@ If this reading could be reused for another person without feeling incorrect, re
 Output must follow the exact JSON schema provided by the user.
 Return valid JSON only.`;
 
-    const userPrompt = `
-Generate a Strategic Year Map for the target year.
+    const userPrompt = `Generate a Strategic Year Map for the target year.
+
 This is a personal, decision-oriented interpretation, not a general forecast.
 
 INPUTS:
@@ -558,6 +609,9 @@ INPUTS:
 - Birth moment (UTC): ${birthDateTimeUtc}
 - Birth location latitude: ${lat}
 - Birth location longitude: ${lon}
+- Sun sign: ${birthChartData.sunSign || "unknown"}
+- Moon sign: ${birthChartData.moonSign || "unknown"}
+- Nakshatra: ${birthChartData.nakshatra || "unknown"}
 - Target year: ${targetYear}
 - Prior year: ${priorYear}
 ${pivotalTheme ? `- Pivotal life theme (must be ranked #1): ${pivotalTheme}` : ""}
@@ -569,6 +623,13 @@ WRITING RULES:
 - No follow-up questions
 - Write for an intelligent adult who wants clarity, not reassurance
 - Be specific and opinionated without certainty
+
+INTERNAL INTERPRETATION RULES (DO NOT REVEAL):
+- Use Sun sign to shape strategic orientation and identity pressure this year.
+- Use Moon sign to shape emotional pacing, stress response, and relational friction.
+- Use Nakshatra to bias intensity, moral pressure, and where costs accumulate if mishandled.
+- Let these influences appear through stakes, tradeoffs, and constraints, not symbolism or explanation.
+- Do not mention astrology, signs, or systems explicitly.
 
 LENGTH:
 Total output: 700–900 words
@@ -587,7 +648,7 @@ Move the reader out of "good vs bad year" thinking.
 Explain what stopped working, what now works differently, and how pacing or judgment shifts.
 
 3) Why this year affects this person differently  
-Anchor this explanation in birth-time-sensitive interpretation without naming techniques.
+Anchor this explanation in identity orientation, emotional pacing, and intensity or moral pressure without naming techniques or systems.
 
 4) Life area prioritization  
 Rank these areas from most to least important for alignment this year:
@@ -613,6 +674,7 @@ For each phase include:
 6) Key tradeoffs  
 Name 3–5 personal tensions this person must navigate.
 Explain the cost of leaning too far in either direction.
+At least one tradeoff must reflect internal emotional strain rather than external circumstance.
 
 7) Crossroads moment  
 Describe exactly one inevitable internal crossroads.
@@ -665,8 +727,7 @@ Return valid JSON only using this schema:
     {"principle":"...","meaning":"..."}
   ],
   "deeper_arc": "..."
-}
-`;
+}`;
 
     const createPayload = (model: string) => ({
       model,
