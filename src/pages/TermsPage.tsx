@@ -30,11 +30,11 @@ const TermsPage = () => {
               Terms of Service
             </h1>
             <p className="text-cream-muted text-center mb-10">
-              <strong>Effective Date:</strong> [Insert Date]
+              <strong>Effective Date:</strong> January 1, 2026
             </p>
 
             <p className="text-cream/90 leading-relaxed">
-              These Terms of Service ("Terms") govern your access to and use of the services provided by [Your Company Name] ("we," "us," or "our"), including the website, applications, and any related content (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
+              These Terms of Service ("Terms") govern your access to and use of the services provided by Cosmic Brief ("we," "us," or "our"), including the website, applications, and any related content (collectively, the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
             </p>
 
             <h2 className="font-display text-xl text-cream mt-8 mb-4">1. Nature of the Service</h2>
@@ -128,7 +128,7 @@ const TermsPage = () => {
 
             <h2 className="font-display text-xl text-cream mt-8 mb-4">11. Governing Law</h2>
             <p className="text-cream/90 leading-relaxed">
-              These Terms are governed by the laws of the State of [Your State], without regard to conflict of law principles.
+              These Terms are governed by the laws of the State of California, without regard to conflict of law principles.
             </p>
 
             <h2 className="font-display text-xl text-cream mt-8 mb-4">12. Contact</h2>
@@ -136,7 +136,7 @@ const TermsPage = () => {
               For questions about these Terms, contact us at:
             </p>
             <p className="text-cream/90 leading-relaxed">
-              <strong>Email:</strong> support@[yourdomain].com
+              <strong>Email:</strong> contact@cosmicbrief.com
             </p>
           </article>
         </div>
