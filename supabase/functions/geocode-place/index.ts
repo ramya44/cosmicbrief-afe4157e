@@ -64,15 +64,19 @@ serve(async (req) => {
   try {
     const { query } = await req.json().catch(() => ({ query: "" }));
 
+    // Validate query - must be string between 2-200 characters
     if (typeof query !== "string" || query.trim().length < 2) {
       return new Response(JSON.stringify({ results: [] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    
+    // Add maximum length check
+    const sanitizedQuery = query.trim().slice(0, 200);
 
     const url = new URL("https://nominatim.openstreetmap.org/search");
     url.searchParams.set("format", "json");
-    url.searchParams.set("q", query.trim());
+    url.searchParams.set("q", sanitizedQuery);
     url.searchParams.set("limit", "10"); // Fetch more to allow for deduplication
     url.searchParams.set("addressdetails", "1");
     url.searchParams.set("featureType", "settlement"); // Only cities, towns, villages

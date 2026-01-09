@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
 
@@ -7,6 +8,15 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema
+const InputSchema = z.object({
+  birthDateTimeUtc: z.string().min(1, "Birth datetime is required"),
+  lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
+  lon: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
+  name: z.string().max(100).optional(),
+  pivotalTheme: z.string().max(50).optional(),
+});
 
 // Rate limiting: 3 requests per minute per IP (stricter for expensive API)
 const rateLimiter = new Map<string, { count: number; resetAt: number }>();
@@ -153,25 +163,26 @@ serve(async (req) => {
   }
 
   try {
-    const { birthDateTimeUtc, lat, lon, name, pivotalTheme } = await req.json();
-
-    if (!birthDateTimeUtc || lat === undefined || lon === undefined) {
+    // Parse and validate input
+    const rawInput = await req.json();
+    const parseResult = InputSchema.safeParse(rawInput);
+    
+    if (!parseResult.success) {
+      const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
       return new Response(
-        JSON.stringify({
-          error: "Missing required fields: birthDateTimeUtc, lat, lon",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        JSON.stringify({ error: `Invalid input: ${errorMessages}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    const { birthDateTimeUtc, lat, lon, name, pivotalTheme } = parseResult.data;
 
     if (!openAIApiKey) {
-      return new Response(JSON.stringify({ error: "Missing OPENAI_API_KEY env var" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("Missing OPENAI_API_KEY environment variable");
+      return new Response(
+        JSON.stringify({ error: "Service configuration error. Please try again later." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const userName = name || "the seeker";
@@ -407,33 +418,15 @@ Return valid JSON only using this schema:
           const errorText = await resp.text();
           console.error("Fallback model also failed:", resp.status, errorText);
           return new Response(
-            JSON.stringify({ 
-              error: "All generation attempts failed", 
-              details: errorText.slice(0, 500),
-              totalAttempts,
-              primaryModel: PRIMARY_MODEL,
-              fallbackModel: FALLBACK_MODEL,
-            }), 
-            {
-              status: 500,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            }
+            JSON.stringify({ error: "Unable to generate forecast. Please try again later." }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       } catch (fallbackError) {
         console.error("Fallback model network error:", fallbackError);
         return new Response(
-          JSON.stringify({ 
-            error: "All generation attempts failed",
-            details: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
-            totalAttempts,
-            primaryModel: PRIMARY_MODEL,
-            fallbackModel: FALLBACK_MODEL,
-          }), 
-          {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
+          JSON.stringify({ error: "Unable to generate forecast. Please try again later." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }
@@ -447,15 +440,10 @@ Return valid JSON only using this schema:
 
     if (!generatedContent.trim()) {
       console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
-      return new Response(JSON.stringify({ 
-        error: "Empty response from AI", 
-        raw: data,
-        modelUsed,
-        totalAttempts,
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     let forecast: unknown;
@@ -464,18 +452,9 @@ Return valid JSON only using this schema:
     } catch (parseError) {
       console.error("Failed to parse strategic forecast JSON:", parseError);
       console.error("Raw content:", generatedContent);
-
       return new Response(
-        JSON.stringify({
-          error: "Failed to parse strategic forecast response",
-          parseError: String(parseError),
-          rawContent: generatedContent,
-          finish_reason: data?.choices?.[0]?.finish_reason,
-          usage: data?.usage,
-          modelUsed,
-          totalAttempts,
-        }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ error: "Unable to process forecast response. Please try again." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -494,10 +473,9 @@ Return valid JSON only using this schema:
     });
   } catch (error) {
     console.error("Error in generate-strategic-forecast function:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });

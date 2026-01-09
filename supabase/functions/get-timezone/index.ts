@@ -1,9 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const InputSchema = z.object({
+  lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
+  lon: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
+  timestamp: z.number().int().positive("Timestamp must be a positive integer"),
+});
 
 // Rate limiting: 10 requests per minute per IP
 const rateLimiter = new Map<string, { count: number; resetAt: number }>();
@@ -56,21 +64,25 @@ serve(async (req) => {
   }
 
   try {
-    const { lat, lon, timestamp } = await req.json();
-
-    if (lat === undefined || lon === undefined || timestamp === undefined) {
-      console.error('Missing required parameters:', { lat, lon, timestamp });
+    // Parse and validate input
+    const rawInput = await req.json();
+    const parseResult = InputSchema.safeParse(rawInput);
+    
+    if (!parseResult.success) {
+      const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
       return new Response(
-        JSON.stringify({ error: 'Missing required parameters: lat, lon, timestamp' }),
+        JSON.stringify({ error: `Invalid input: ${errorMessages}` }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    const { lat, lon, timestamp } = parseResult.data;
 
     const apiKey = Deno.env.get('TIMEZONEDB_API_KEY');
     if (!apiKey) {
       console.error('TIMEZONEDB_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'Timezone API not configured' }),
+        JSON.stringify({ error: 'Service configuration error' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -88,7 +100,7 @@ serve(async (req) => {
     if (data.status !== 'OK') {
       console.error('TimeZoneDB API error:', data.message);
       return new Response(
-        JSON.stringify({ error: data.message || 'Timezone lookup failed' }),
+        JSON.stringify({ error: 'Unable to determine timezone. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -106,9 +118,8 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in get-timezone function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: 'Unable to determine timezone. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
