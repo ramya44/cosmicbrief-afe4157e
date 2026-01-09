@@ -23,6 +23,7 @@ export type Database = {
           created_at: string
           customer_email: string | null
           customer_name: string | null
+          device_id: string | null
           forecast_text: string
           guest_token: string | null
           id: string
@@ -37,6 +38,7 @@ export type Database = {
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
+          device_id?: string | null
           forecast_text: string
           guest_token?: string | null
           id?: string
@@ -51,6 +53,7 @@ export type Database = {
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
+          device_id?: string | null
           forecast_text?: string
           guest_token?: string | null
           id?: string
@@ -70,6 +73,7 @@ export type Database = {
           created_at: string | null
           customer_email: string
           customer_name: string | null
+          device_id: string | null
           free_forecast: string
           generation_error: string | null
           generation_status: string | null
@@ -94,6 +98,7 @@ export type Database = {
           created_at?: string | null
           customer_email: string
           customer_name?: string | null
+          device_id?: string | null
           free_forecast: string
           generation_error?: string | null
           generation_status?: string | null
@@ -118,6 +123,7 @@ export type Database = {
           created_at?: string | null
           customer_email?: string
           customer_name?: string | null
+          device_id?: string | null
           free_forecast?: string
           generation_error?: string | null
           generation_status?: string | null

@@ -575,6 +575,7 @@ Stop when finished.
           forecast_text: forecastText,
           pivotal_theme: pivotalLifeElement,
           zodiac_sign: zodiacSign,
+          device_id: deviceId || null,
         })
         .select("id, guest_token")
         .single();
