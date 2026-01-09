@@ -24,6 +24,7 @@ export type Database = {
           customer_email: string | null
           customer_name: string | null
           forecast_text: string
+          guest_token: string | null
           id: string
           pivotal_theme: string | null
           zodiac_sign: string | null
@@ -37,6 +38,7 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string | null
           forecast_text: string
+          guest_token?: string | null
           id?: string
           pivotal_theme?: string | null
           zodiac_sign?: string | null
@@ -50,6 +52,7 @@ export type Database = {
           customer_email?: string | null
           customer_name?: string | null
           forecast_text?: string
+          guest_token?: string | null
           id?: string
           pivotal_theme?: string | null
           zodiac_sign?: string | null
@@ -70,6 +73,7 @@ export type Database = {
           free_forecast: string
           generation_error: string | null
           generation_status: string | null
+          guest_token: string | null
           id: string
           model_used: string | null
           prompt_tokens: number | null
@@ -93,6 +97,7 @@ export type Database = {
           free_forecast: string
           generation_error?: string | null
           generation_status?: string | null
+          guest_token?: string | null
           id?: string
           model_used?: string | null
           prompt_tokens?: number | null
@@ -116,6 +121,7 @@ export type Database = {
           free_forecast?: string
           generation_error?: string | null
           generation_status?: string | null
+          guest_token?: string | null
           id?: string
           model_used?: string | null
           prompt_tokens?: number | null

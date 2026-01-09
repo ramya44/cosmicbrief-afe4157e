@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 const InputPage = () => {
   const navigate = useNavigate();
-  const { setBirthData, setForecast, setIsLoading, setIsPaid, setStrategicForecast } = useForecastStore();
+  const { setBirthData, setForecast, setIsLoading, setIsPaid, setStrategicForecast, setFreeGuestToken } = useForecastStore();
   
   const [formData, setFormData] = useState({
     birthDate: '',
@@ -108,6 +108,9 @@ const InputPage = () => {
       
       if (result.forecast) {
         setForecast(result.forecast, {});
+        if (result.guestToken) {
+          setFreeGuestToken(result.guestToken);
+        }
       }
     } catch (error) {
       console.error('Error generating forecast:', error);

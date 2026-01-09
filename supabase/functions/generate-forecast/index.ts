@@ -563,6 +563,7 @@ Stop when finished.
 
     // Save to free_forecasts table (non-blocking failure)
     let freeForecastId: string | undefined;
+    let guestToken: string | undefined;
     try {
       const { data: saveData, error: saveError } = await supabase
         .from("free_forecasts")
@@ -575,13 +576,14 @@ Stop when finished.
           pivotal_theme: pivotalLifeElement,
           zodiac_sign: zodiacSign,
         })
-        .select("id")
+        .select("id, guest_token")
         .single();
 
       if (saveError) {
         console.error("Error saving free forecast:", saveError);
       } else {
         freeForecastId = saveData?.id;
+        guestToken = saveData?.guest_token;
         console.log("Free forecast saved with ID:", freeForecastId);
       }
     } catch (saveErr) {
@@ -593,6 +595,7 @@ Stop when finished.
         forecast: forecastText,
         pivotalTheme: pivotalLifeElement,
         freeForecastId,
+        guestToken,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

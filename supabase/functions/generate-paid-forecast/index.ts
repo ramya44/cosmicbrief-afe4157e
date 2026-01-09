@@ -674,10 +674,18 @@ Return valid JSON only using this schema:
       }
     }
 
+    // Fetch guest token for the saved forecast
+    const { data: forecastData } = await supabase
+      .from('paid_forecasts')
+      .select('guest_token')
+      .eq('id', forecastId)
+      .single();
+
     return new Response(JSON.stringify({
       success: true,
       forecast,
       forecastId,
+      guestToken: forecastData?.guest_token,
       modelUsed,
       totalAttempts,
       tokenUsage,
@@ -748,7 +756,7 @@ async function saveForecastToDb(
     }, {
       onConflict: 'stripe_session_id',
     })
-    .select('id')
+    .select('id, guest_token')
     .single();
 
   if (error) {
