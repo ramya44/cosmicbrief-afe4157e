@@ -667,6 +667,9 @@ This preview should feel specific, grounded, and slightly unfinished in a way th
 INPUTS:
 - Age: ${age}
 - Zodiac sign: ${zodiacSign}
+- Moon sign: ${birthChartData.moonSign || "unknown"}
+- Sun sign: ${birthChartData.sunSign || "unknown"}
+- Nakshatra: ${birthChartData.nakshatra || "unknown"}
 - Date of birth: ${birthDate}
 - Time of birth: ${birthTime}
 - Place of birth: ${birthPlace}
