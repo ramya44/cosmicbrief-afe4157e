@@ -28,24 +28,56 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { stripeSessionId, userId } = await req.json();
+    const { stripeSessionId, userId, guestToken } = await req.json();
 
-    logStep("Received data", { stripeSessionId, userId });
+    logStep("Received data", { stripeSessionId, userId, hasGuestToken: !!guestToken });
 
     if (!stripeSessionId || !userId) {
       throw new Error("Missing stripeSessionId or userId");
+    }
+
+    // First, fetch the existing forecast to verify guest_token
+    const { data: existing, error: fetchError } = await supabase
+      .from('paid_forecasts')
+      .select('id, guest_token')
+      .eq('stripe_session_id', stripeSessionId)
+      .maybeSingle();
+
+    if (fetchError) {
+      logStep("Database fetch error", { error: fetchError.message });
+      throw new Error(`Failed to fetch forecast: ${fetchError.message}`);
+    }
+
+    if (!existing) {
+      logStep("Forecast not found", { stripeSessionId });
+      return new Response(JSON.stringify({ error: "Forecast not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+      });
+    }
+
+    // Verify guest_token matches
+    if (existing.guest_token && existing.guest_token !== guestToken) {
+      logStep("Guest token mismatch", { 
+        forecastId: existing.id, 
+        providedToken: guestToken ? 'provided' : 'missing' 
+      });
+      return new Response(JSON.stringify({ error: "Access denied" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
     }
 
     // Update the paid_forecasts record to link to the user
     const { data, error } = await supabase
       .from('paid_forecasts')
       .update({ user_id: userId })
-      .eq('stripe_session_id', stripeSessionId)
+      .eq('id', existing.id)
       .select()
       .single();
 
     if (error) {
-      logStep("Database error", { error: error.message });
+      logStep("Database update error", { error: error.message });
       throw new Error(`Failed to link forecast: ${error.message}`);
     }
 

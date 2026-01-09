@@ -130,8 +130,8 @@ const IP_BURST_WINDOW_MS = 60000;
 const IP_DAILY_LIMIT = 10;
 const IP_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// Tier 3: 3 requests per 24h per device_id
-const DEVICE_DAILY_LIMIT = 3;
+// Tier 3: 10 requests per 24h per device_id
+const DEVICE_DAILY_LIMIT = 10;
 const DEVICE_DAILY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 // CAPTCHA thresholds
