@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.generate-strategic-forecast]
 verify_jwt = false
 
+[functions.generate-paid-forecast]
+verify_jwt = false
+
 [functions.create-payment]
 verify_jwt = false
 
