@@ -1,10 +1,19 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Input validation schema
+const InputSchema = z.object({
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD"),
+  birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM"),
+  birthPlace: z.string().min(2, "Birth place too short").max(200, "Birth place too long"),
+  birthTimeUtc: z.string().optional(),
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -129,25 +138,26 @@ serve(async (req) => {
   }
 
   try {
-    const { birthDate, birthTime, birthPlace, birthTimeUtc } = await req.json();
-
-    if (!birthDate || !birthTime || !birthPlace) {
+    // Parse and validate input
+    const rawInput = await req.json();
+    const parseResult = InputSchema.safeParse(rawInput);
+    
+    if (!parseResult.success) {
+      const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
       return new Response(
-        JSON.stringify({
-          error: "Missing required fields: birthDate, birthTime, birthPlace",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        JSON.stringify({ error: `Invalid input: ${errorMessages}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    const { birthDate, birthTime, birthPlace, birthTimeUtc } = parseResult.data;
 
     if (!openAIApiKey) {
-      return new Response(JSON.stringify({ error: "Missing OPENAI_API_KEY env var" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.error("Missing OPENAI_API_KEY environment variable");
+      return new Response(
+        JSON.stringify({ error: "Service configuration error. Please try again later." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Require birthTimeUtc for proper theme caching
@@ -392,10 +402,10 @@ Stop when finished.
     if (!resp.ok) {
       const errorText = await resp.text();
       console.error("OpenAI API error:", resp.status, errorText);
-      return new Response(JSON.stringify({ error: "Failed to generate forecast", details: errorText }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const data = await resp.json();
@@ -406,10 +416,10 @@ Stop when finished.
 
     if (!generatedContent.trim()) {
       console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
-      return new Response(JSON.stringify({ error: "Empty response from AI", raw: data }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const forecastText = generatedContent.trim();
@@ -453,10 +463,9 @@ Stop when finished.
     );
   } catch (error) {
     console.error("Error in generate-forecast function:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });

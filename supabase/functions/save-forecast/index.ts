@@ -1,5 +1,29 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+// Input validation schema
+const InputSchema = z.object({
+  stripeSessionId: z.string().min(1, "Stripe session ID is required"),
+  customerEmail: z.string().email("Invalid email format").max(320),
+  customerName: z.string().max(100).optional(),
+  birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
+  birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
+  birthTimeUtc: z.string().optional(),
+  birthPlace: z.string().min(2).max(200),
+  freeForecast: z.string().optional(),
+  strategicForecast: z.any().optional(),
+  modelUsed: z.string().optional(),
+  generationStatus: z.string().optional(),
+  generationError: z.string().optional(),
+  retryCount: z.number().optional(),
+  tokenUsage: z.object({
+    promptTokens: z.number().optional(),
+    completionTokens: z.number().optional(),
+    totalTokens: z.number().optional(),
+  }).optional(),
+  userId: z.string().uuid().optional(),
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -49,6 +73,19 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Parse and validate input
+    const rawInput = await req.json();
+    const parseResult = InputSchema.safeParse(rawInput);
+    
+    if (!parseResult.success) {
+      const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
+      console.error("Validation error:", errorMessages);
+      return new Response(
+        JSON.stringify({ error: "Invalid input data" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
     const { 
       stripeSessionId, 
       customerEmail, 
@@ -65,7 +102,7 @@ serve(async (req) => {
       retryCount,
       tokenUsage,
       userId,
-    } = await req.json();
+    } = parseResult.data;
 
     logStep("Received data", { 
       stripeSessionId, 
@@ -82,13 +119,11 @@ serve(async (req) => {
     // For failed generation, we still save what we have
     const isFailed = generationStatus === 'failed';
 
-    // Validate required fields (allow missing strategicForecast if failed)
-    if (!stripeSessionId || !customerEmail || !birthDate || !birthTime || !birthPlace) {
-      throw new Error("Missing required fields");
-    }
-
     if (!isFailed && (!freeForecast || !strategicForecast)) {
-      throw new Error("Missing forecast data for successful generation");
+      return new Response(
+        JSON.stringify({ error: "Missing forecast data" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Compute zodiac sign
@@ -123,8 +158,11 @@ serve(async (req) => {
       .single();
 
     if (error) {
-      logStep("Database error", { error: error.message });
-      throw new Error(`Failed to save forecast: ${error.message}`);
+      console.error("Database error:", error.message);
+      return new Response(
+        JSON.stringify({ error: "Failed to save forecast. Please try again." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     logStep("Forecast saved successfully", { id: data.id, generationStatus: generationStatus || 'complete' });
@@ -137,11 +175,10 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    console.error("Error in save-forecast:", error);
+    return new Response(
+      JSON.stringify({ error: "Failed to save forecast. Please try again." }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
