@@ -507,8 +507,6 @@ serve(async (req) => {
     interface BirthChartData {
       moonSign?: string;
       moonSignId?: number;
-      risingSign?: string;
-      risingSignId?: number;
       sunSign?: string;
       sunSignId?: number;
       nakshatra?: string;
@@ -540,8 +538,6 @@ serve(async (req) => {
           birthChartData = {
             moonSign: chartResult.moonSign,
             moonSignId: chartResult.moonSignId,
-            risingSign: chartResult.risingSign,
-            risingSignId: chartResult.risingSignId,
             sunSign: chartResult.sunSign,
             sunSignId: chartResult.sunSignId,
             nakshatra: chartResult.nakshatra,
@@ -822,8 +818,6 @@ Stop when finished.
           longitude: longitude ?? null,
           moon_sign: birthChartData.moonSign ?? null,
           moon_sign_id: birthChartData.moonSignId ?? null,
-          rising_sign: birthChartData.risingSign ?? null,
-          rising_sign_id: birthChartData.risingSignId ?? null,
           sun_sign: birthChartData.sunSign ?? null,
           sun_sign_id: birthChartData.sunSignId ?? null,
           nakshatra: birthChartData.nakshatra ?? null,

@@ -71,23 +71,21 @@ async function getAccessToken(): Promise<string> {
 interface BirthChartResult {
   moonSign: string;
   moonSignId: number;
-  risingSign: string;
-  risingSignId: number;
-  sunSign?: string;
-  sunSignId?: number;
-  nakshatra?: string;
-  nakshatraId?: number;
-  nakshatraPada?: number;
+  sunSign: string;
+  sunSignId: number;
+  nakshatra: string;
+  nakshatraId: number;
+  nakshatraPada: number;
 }
 
-// Call Prokerala birth-details API to get moon sign and nakshatra
+// Call Prokerala birth-details API to get moon sign, sun sign, and nakshatra
 async function getBirthDetails(
   accessToken: string,
   datetime: string,
   latitude: number,
   longitude: number,
   ayanamsa: number
-): Promise<{ moonSign: string; moonSignId: number; sunSign: string; sunSignId: number; nakshatra: string; nakshatraId: number; nakshatraPada: number }> {
+): Promise<BirthChartResult> {
   const coordinates = `${latitude},${longitude}`;
   const url = new URL(`${PROKERALA_API_BASE}/astrology/birth-details`);
   url.searchParams.set("datetime", datetime);
@@ -114,7 +112,7 @@ async function getBirthDetails(
   const data = await response.json();
   logStep("Birth details received", { status: data.status });
 
-  // Extract moon sign (chandra_rasi) and sun sign (soorya_rasi)
+  // Extract moon sign (chandra_rasi), sun sign (soorya_rasi), and nakshatra
   const chandraRasi = data.data.chandra_rasi;
   const sooryaRasi = data.data.soorya_rasi;
   const nakshatra = data.data.nakshatra;
@@ -128,117 +126,6 @@ async function getBirthDetails(
     nakshatraId: nakshatra.id,
     nakshatraPada: nakshatra.pada,
   };
-}
-
-// Call Prokerala kundli API to get ascendant/lagna
-async function getKundli(
-  accessToken: string,
-  datetime: string,
-  latitude: number,
-  longitude: number,
-  ayanamsa: number
-): Promise<{ risingSign: string; risingSignId: number }> {
-  const coordinates = `${latitude},${longitude}`;
-  const url = new URL(`${PROKERALA_API_BASE}/astrology/kundli`);
-  url.searchParams.set("datetime", datetime);
-  url.searchParams.set("coordinates", coordinates);
-  url.searchParams.set("ayanamsa", ayanamsa.toString());
-  url.searchParams.set("la", "en");
-
-  logStep("Calling kundli API for ascendant", { url: url.toString() });
-
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Accept": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    logStep("Kundli API failed", { status: response.status, error: errorText });
-    throw new Error(`Kundli API failed: ${response.status}`);
-  }
-
-  const data = await response.json();
-  logStep("Kundli data received", { status: data.status });
-
-  // The kundli response includes chart_rasi which contains planet positions
-  // The lagna (ascendant) is typically represented by the first house
-  // In the Prokerala API, we need to find the ascendant from the chart data
-  
-  // Looking at the kundli response structure:
-  // - chart_rasi contains the rasi chart with planet positions
-  // - The ascendant should be in the nakshatra_details or we need to derive it
-  
-  // For now, let's check if there's a lagna field or derive from chart
-  // Based on API docs, the kundli endpoint might have lagna info in planet positions
-  
-  // Check for planet positions - Ascendant is often at index 0 or has special marker
-  const chartRasi = data.data?.chart_rasi;
-  
-  if (chartRasi) {
-    // In Vedic astrology chart, the house with "As" or Ascendant marker indicates rising sign
-    // The chart_rasi is typically an array of 12 houses
-    // Each house contains planets, and the first house (index 0) is the ascendant house
-    // The rasi of the first house IS the rising sign
-    
-    // Alternative: Check planet_positions for Ascendant
-    const planetPositions = data.data?.planet_position;
-    if (planetPositions) {
-      // Find the Ascendant entry
-      const ascendant = planetPositions.find(
-        (p: { id: number; name: string }) => p.name === "Ascendant" || p.id === 100
-      );
-      if (ascendant && ascendant.rasi) {
-        return {
-          risingSign: ascendant.rasi.name,
-          risingSignId: ascendant.rasi.id,
-        };
-      }
-    }
-  }
-
-  // Fallback: If we can't find ascendant in kundli, we need to use a different approach
-  // The kundli/advanced endpoint might have more details
-  logStep("Attempting kundli/advanced for ascendant");
-  
-  const advancedUrl = new URL(`${PROKERALA_API_BASE}/astrology/kundli/advanced`);
-  advancedUrl.searchParams.set("datetime", datetime);
-  advancedUrl.searchParams.set("coordinates", coordinates);
-  advancedUrl.searchParams.set("ayanamsa", ayanamsa.toString());
-  advancedUrl.searchParams.set("la", "en");
-
-  const advancedResponse = await fetch(advancedUrl.toString(), {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Accept": "application/json",
-    },
-  });
-
-  if (advancedResponse.ok) {
-    const advancedData = await advancedResponse.json();
-    logStep("Kundli advanced data received");
-    
-    // Check planet positions in advanced response
-    const planetPositions = advancedData.data?.planet_position;
-    if (planetPositions) {
-      const ascendant = planetPositions.find(
-        (p: { id: number; name: string }) => p.name === "Ascendant" || p.id === 100
-      );
-      if (ascendant && ascendant.rasi) {
-        return {
-          risingSign: ascendant.rasi.name,
-          risingSignId: ascendant.rasi.id,
-        };
-      }
-    }
-  }
-
-  // If still not found, throw error
-  throw new Error("Could not determine rising sign from Prokerala API");
 }
 
 serve(async (req) => {
@@ -275,31 +162,16 @@ serve(async (req) => {
     // Get access token
     const accessToken = await getAccessToken();
 
-    // Call both APIs in parallel for efficiency
-    const [birthDetails, kundliDetails] = await Promise.all([
-      getBirthDetails(accessToken, datetime, latitude, longitude, ayanamsa),
-      getKundli(accessToken, datetime, latitude, longitude, ayanamsa),
-    ]);
-
-    const result: BirthChartResult = {
-      moonSign: birthDetails.moonSign,
-      moonSignId: birthDetails.moonSignId,
-      risingSign: kundliDetails.risingSign,
-      risingSignId: kundliDetails.risingSignId,
-      sunSign: birthDetails.sunSign,
-      sunSignId: birthDetails.sunSignId,
-      nakshatra: birthDetails.nakshatra,
-      nakshatraId: birthDetails.nakshatraId,
-      nakshatraPada: birthDetails.nakshatraPada,
-    };
+    // Call birth-details API
+    const birthDetails = await getBirthDetails(accessToken, datetime, latitude, longitude, ayanamsa);
 
     logStep("Birth chart computed successfully", {
-      moonSign: result.moonSign,
-      risingSign: result.risingSign,
-      sunSign: result.sunSign,
+      moonSign: birthDetails.moonSign,
+      sunSign: birthDetails.sunSign,
+      nakshatra: birthDetails.nakshatra,
     });
 
-    return new Response(JSON.stringify(result), {
+    return new Response(JSON.stringify(birthDetails), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

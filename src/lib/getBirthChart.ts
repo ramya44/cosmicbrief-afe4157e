@@ -3,24 +3,22 @@ import { supabase } from '@/integrations/supabase/client';
 export interface BirthChartResult {
   moonSign: string;
   moonSignId: number;
-  risingSign: string;
-  risingSignId: number;
-  sunSign?: string;
-  sunSignId?: number;
-  nakshatra?: string;
-  nakshatraId?: number;
-  nakshatraPada?: number;
+  sunSign: string;
+  sunSignId: number;
+  nakshatra: string;
+  nakshatraId: number;
+  nakshatraPada: number;
 }
 
 /**
- * Fetches moon sign and rising sign (ascendant) from Prokerala API
+ * Fetches moon sign, sun sign, and nakshatra from Prokerala API
  * based on birth date, time, and location coordinates.
  * 
  * @param birthDateTimeUtc - ISO 8601 datetime with timezone (e.g., "2000-01-15T10:30:00+05:30")
  * @param latitude - Latitude of birth location
  * @param longitude - Longitude of birth location
  * @param ayanamsa - Ayanamsa system (1 = Lahiri, default for Vedic astrology)
- * @returns Birth chart data including moon sign and rising sign
+ * @returns Birth chart data including moon sign, sun sign, and nakshatra
  */
 export const getBirthChart = async (
   birthDateTimeUtc: string,
