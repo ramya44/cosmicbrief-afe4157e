@@ -136,17 +136,18 @@ serve(async (req) => {
       if (!isEmailMatch) {
         // Guest access requires valid guest_token
         if (!guest_token) {
+          console.warn(`No guest token provided for forecast ${id} from IP ${clientIP}`);
           return new Response(
-            JSON.stringify({ error: "Access denied. Guest token required." }),
-            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Forecast not found." }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
         
         if (forecast.guest_token !== guest_token) {
           console.warn(`Invalid guest token for forecast ${id} from IP ${clientIP}`);
           return new Response(
-            JSON.stringify({ error: "Access denied. Invalid credentials." }),
-            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Forecast not found." }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }
@@ -190,33 +191,35 @@ serve(async (req) => {
       if (forecast.user_id) {
         // User-linked forecast: require matching auth
         if (!userId) {
+          console.warn(`Unauthenticated access attempt to user-linked forecast ${id} from IP ${clientIP}`);
           return new Response(
-            JSON.stringify({ error: "Authentication required." }),
-            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Forecast not found." }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
         
         if (userId !== forecast.user_id) {
           console.warn(`User ${userId} attempted to access forecast ${id} owned by ${forecast.user_id}`);
           return new Response(
-            JSON.stringify({ error: "Access denied." }),
-            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Forecast not found." }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       } else {
         // Guest forecast: require valid guest_token
         if (!guest_token) {
+          console.warn(`No guest token provided for paid forecast ${id} from IP ${clientIP}`);
           return new Response(
-            JSON.stringify({ error: "Access denied. Guest token required." }),
-            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Forecast not found." }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
         
         if (forecast.guest_token !== guest_token) {
           console.warn(`Invalid guest token for paid forecast ${id} from IP ${clientIP}`);
           return new Response(
-            JSON.stringify({ error: "Access denied. Invalid credentials." }),
-            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({ error: "Forecast not found." }),
+            { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
       }

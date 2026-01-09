@@ -5,6 +5,7 @@ import { useForecastStore } from '@/store/forecastStore';
 import { Compass, CheckCircle, AlertTriangle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from '@/lib/deviceId';
 import type { User } from '@supabase/supabase-js';
 
 const GENERATING_STEPS = [
@@ -26,6 +27,7 @@ const PaymentSuccessPage = () => {
   const { 
     birthData, 
     freeForecast,
+    freeGuestToken,
     setIsPaid, 
     setStrategicForecast, 
     setIsStrategicLoading,
@@ -88,6 +90,8 @@ const PaymentSuccessPage = () => {
             pivotalTheme: freeForecast?.pivotalTheme,
             freeForecast: freeForecast?.forecast,
             freeForecastId: freeForecast?.id,
+            guestToken: freeGuestToken,
+            deviceId: getDeviceId(),
           },
         });
 

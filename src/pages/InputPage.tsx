@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StarField } from '@/components/StarField';
 import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplete';
+import { CaptchaModal } from '@/components/CaptchaModal';
 import { useForecastStore } from '@/store/forecastStore';
 import { generateForecast } from '@/lib/generateForecast';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
@@ -23,6 +24,17 @@ const InputPage = () => {
   });
   const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [pendingBirthData, setPendingBirthData] = useState<{
+    birthDate: string;
+    birthTime: string;
+    birthPlace: string;
+    email: string;
+    lat?: number;
+    lon?: number;
+    birthDateTimeUtc?: string;
+  } | null>(null);
+  const [showRateLimitMessage, setShowRateLimitMessage] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
   const minDate = '1900-01-01';
@@ -60,6 +72,63 @@ const InputPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleGenerateForecast = async (
+    birthData: {
+      birthDate: string;
+      birthTime: string;
+      birthPlace: string;
+      email: string;
+      lat?: number;
+      lon?: number;
+      birthDateTimeUtc?: string;
+    },
+    captchaToken?: string
+  ) => {
+    setIsLoading(true);
+    setShowRateLimitMessage(false);
+    
+    try {
+      const result = await generateForecast(birthData, captchaToken);
+      
+      // Handle rate limiting with friendly message
+      if (result.rateLimited) {
+        setIsLoading(false);
+        setShowRateLimitMessage(true);
+        return;
+      }
+      
+      // CAPTCHA required - show modal
+      if (result.captchaRequired) {
+        setIsLoading(false);
+        setPendingBirthData(birthData);
+        setShowCaptcha(true);
+        return;
+      }
+      
+      if (result.forecast) {
+        setForecast(result.forecast, {});
+        if (result.guestToken) {
+          setFreeGuestToken(result.guestToken);
+        }
+      }
+    } catch (error) {
+      console.error('Error generating forecast:', error);
+      toast.error('Failed to generate forecast. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCaptchaVerify = async (token: string) => {
+    setShowCaptcha(false);
+    
+    if (pendingBirthData) {
+      navigate('/results');
+      await handleGenerateForecast(pendingBirthData, token);
+      setPendingBirthData(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -68,6 +137,7 @@ const InputPage = () => {
     // Reset paid state for new forecast entry
     setIsPaid(false);
     setStrategicForecast(null);
+    setShowRateLimitMessage(false);
     
     // Convert birth time to UTC if we have coordinates
     let birthDateTimeUtc: string | undefined;
@@ -92,32 +162,9 @@ const InputPage = () => {
     };
     
     setBirthData(fullBirthData);
-    setIsLoading(true);
     navigate('/results');
 
-    try {
-      const result = await generateForecast(fullBirthData);
-      
-      if (result.captchaRequired) {
-        // CAPTCHA required - show message and stay on page
-        setIsLoading(false);
-        toast.error(result.message || 'Please complete verification to continue.');
-        navigate('/input');
-        return;
-      }
-      
-      if (result.forecast) {
-        setForecast(result.forecast, {});
-        if (result.guestToken) {
-          setFreeGuestToken(result.guestToken);
-        }
-      }
-    } catch (error) {
-      console.error('Error generating forecast:', error);
-      toast.error('Failed to generate forecast. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
+    await handleGenerateForecast(fullBirthData);
   };
 
   const handlePlaceSelect = (place: PlaceSelection) => {
@@ -138,6 +185,13 @@ const InputPage = () => {
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">
       <StarField />
+
+      {/* CAPTCHA Modal */}
+      <CaptchaModal
+        isOpen={showCaptcha}
+        onClose={() => setShowCaptcha(false)}
+        onVerify={handleCaptchaVerify}
+      />
 
       {/* Back button */}
       <div className="absolute top-6 left-6 z-20">
@@ -163,6 +217,29 @@ const InputPage = () => {
               Enter the moment you arrived into the world
             </p>
           </div>
+
+          {/* Rate Limit Message */}
+          {showRateLimitMessage && (
+            <div className="mb-6 p-4 rounded-xl border border-gold/30 bg-midnight/80 backdrop-blur-sm animate-fade-up">
+              <div className="text-center">
+                <h3 className="font-display text-lg text-cream mb-2">
+                  You've reached your free preview limit
+                </h3>
+                <p className="text-cream-muted text-sm mb-4">
+                  Unlock your complete Strategic Year Map for deeper insights into your 2026 journey.
+                </p>
+                <Button
+                  variant="hero"
+                  size="sm"
+                  onClick={() => navigate('/results')}
+                  className="group"
+                >
+                  View Strategic Upgrade
+                  <Sparkles className="w-4 h-4 ml-1 transition-transform group-hover:rotate-12" />
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6 overflow-visible">
