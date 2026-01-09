@@ -65,6 +65,15 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[GENERATE-PAID-FORECAST] ${step}${detailsStr}`);
 };
 
+// Hash token for logging (first 8 chars of SHA-256)
+async function hashToken(token: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 // OpenAI configuration
 const PRIMARY_MODEL = "gpt-5-2025-08-07";
 const FALLBACK_MODEL = "gpt-5-mini-2025-08-07";
@@ -175,6 +184,9 @@ function getZodiacSign(birthDateTimeUtc: string): string {
 }
 
 serve(async (req) => {
+  const requestStartTime = Date.now();
+  let deviceId: string | undefined;
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -183,7 +195,13 @@ serve(async (req) => {
   
   // Rate limiting check
   if (!checkRateLimit(clientIP)) {
-    console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+    logStep("REQUEST_COMPLETE", {
+      outcome: "fail",
+      reason: "rate_limit",
+      ip: clientIP,
+      deviceId: null,
+      latencyMs: Date.now() - requestStartTime,
+    });
     return new Response(
       JSON.stringify({ error: "Too many requests. Please try again later." }),
       { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -191,7 +209,7 @@ serve(async (req) => {
   }
 
   try {
-    logStep("Function started", { ip: clientIP });
+    logStep("Request started", { ip: clientIP });
 
     // Validate environment
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -200,7 +218,13 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!stripeKey || !openAIApiKey || !supabaseUrl || !supabaseServiceKey) {
-      logStep("ERROR: Missing environment variables");
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "missing_env_vars",
+        ip: clientIP,
+        deviceId: null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Service configuration error" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -213,21 +237,34 @@ serve(async (req) => {
     
     if (!parseResult.success) {
       const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
-      logStep("Validation error", { errors: errorMessages });
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "validation_error",
+        ip: clientIP,
+        deviceId: null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Invalid input data" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    const { sessionId, birthDateTimeUtc, lat, lon, name, pivotalTheme, freeForecast, freeForecastId, deviceId } = parseResult.data;
+    const { sessionId, birthDateTimeUtc, lat, lon, name, pivotalTheme, freeForecast, freeForecastId } = parseResult.data;
+    deviceId = parseResult.data.deviceId;
 
     // ========== CRITICAL: STRIPE PAYMENT VERIFICATION ==========
     logStep("Verifying Stripe payment", { sessionId: sessionId.slice(0, 20) + "..." });
 
     // Check for replay attack (session already used)
     if (usedSessionIds.has(sessionId)) {
-      logStep("SECURITY: Replay attack detected", { sessionId: sessionId.slice(0, 20) });
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "replay_attack",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "This payment session has already been processed" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -240,7 +277,13 @@ serve(async (req) => {
     try {
       session = await stripe.checkout.sessions.retrieve(sessionId);
     } catch (stripeError) {
-      logStep("ERROR: Invalid Stripe session", { error: stripeError instanceof Error ? stripeError.message : String(stripeError) });
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "invalid_stripe_session",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Invalid payment session" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -249,7 +292,14 @@ serve(async (req) => {
 
     // Verify payment status
     if (session.payment_status !== "paid") {
-      logStep("SECURITY: Payment not completed", { status: session.payment_status });
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "payment_not_completed",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        paymentStatus: session.payment_status,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Payment not completed" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -258,7 +308,15 @@ serve(async (req) => {
 
     // Verify amount received
     if (!session.amount_total || session.amount_total < EXPECTED_AMOUNT) {
-      logStep("SECURITY: Insufficient payment amount", { amount: session.amount_total, expected: EXPECTED_AMOUNT });
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "insufficient_payment",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        amount: session.amount_total,
+        expected: EXPECTED_AMOUNT,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Invalid payment amount" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -269,7 +327,14 @@ serve(async (req) => {
     const sessionCreated = session.created * 1000;
     const maxAge = 60 * 60 * 1000; // 1 hour
     if (Date.now() - sessionCreated > maxAge) {
-      logStep("SECURITY: Session expired", { created: new Date(sessionCreated).toISOString() });
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "session_expired",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        sessionAge: Math.round((Date.now() - sessionCreated) / 1000),
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Payment session expired. Please purchase again." }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -573,6 +638,17 @@ Return valid JSON only using this schema:
           deviceId,
         });
 
+        logStep("REQUEST_COMPLETE", {
+          outcome: "fail",
+          reason: "generation_failed_all_models",
+          ip: clientIP,
+          deviceId: deviceId || null,
+          model: modelUsed,
+          totalAttempts,
+          error: generationError,
+          latencyMs: Date.now() - requestStartTime,
+        });
+
         return new Response(
           JSON.stringify({ error: "Unable to generate forecast. Our team has been notified." }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -610,6 +686,17 @@ Return valid JSON only using this schema:
         deviceId,
       });
 
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "empty_response",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        model: modelUsed,
+        tokens: tokenUsage,
+        totalAttempts,
+        latencyMs: Date.now() - requestStartTime,
+      });
+
       return new Response(
         JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -638,6 +725,17 @@ Return valid JSON only using this schema:
         totalAttempts,
         tokenUsage,
         deviceId,
+      });
+
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "json_parse_error",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        model: modelUsed,
+        tokens: tokenUsage,
+        totalAttempts,
+        latencyMs: Date.now() - requestStartTime,
       });
 
       return new Response(
@@ -686,6 +784,20 @@ Return valid JSON only using this schema:
       .eq('id', forecastId)
       .single();
 
+    // Log successful completion
+    const guestTokenHash = forecastData?.guest_token ? await hashToken(forecastData.guest_token) : null;
+    logStep("REQUEST_COMPLETE", {
+      outcome: "success",
+      ip: clientIP,
+      deviceId: deviceId || null,
+      guestTokenHash,
+      forecastId,
+      model: modelUsed,
+      tokens: tokenUsage,
+      totalAttempts,
+      latencyMs: Date.now() - requestStartTime,
+    });
+
     return new Response(JSON.stringify({
       success: true,
       forecast,
@@ -699,7 +811,14 @@ Return valid JSON only using this schema:
     });
 
   } catch (error) {
-    console.error("Error in generate-paid-forecast:", error);
+    logStep("REQUEST_COMPLETE", {
+      outcome: "fail",
+      reason: "uncaught_exception",
+      ip: clientIP,
+      deviceId: deviceId || null,
+      error: error instanceof Error ? error.message : String(error),
+      latencyMs: Date.now() - requestStartTime,
+    });
     return new Response(
       JSON.stringify({ error: "Unable to process request" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

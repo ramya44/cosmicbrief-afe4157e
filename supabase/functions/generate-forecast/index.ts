@@ -7,6 +7,21 @@ const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+// Consistent logging helper
+const logStep = (step: string, details?: Record<string, unknown>) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[GENERATE-FORECAST] ${step}${detailsStr}`);
+};
+
+// Hash token for logging (first 8 chars of SHA-256)
+async function hashToken(token: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 // Input validation schema
 const InputSchema = z.object({
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD"),
@@ -227,12 +242,17 @@ function getZodiacSign(birthDate: string): string {
 }
 
 serve(async (req) => {
+  const requestStartTime = Date.now();
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   const clientIP = getClientIP(req);
   const userAgent = getUserAgent(req);
+  let deviceId: string | undefined;
+
+  logStep("Request started", { ip: clientIP });
 
   try {
     // Parse and validate input first to get deviceId
@@ -241,13 +261,21 @@ serve(async (req) => {
     
     if (!parseResult.success) {
       const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "validation_error",
+        ip: clientIP,
+        deviceId: null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: `Invalid input: ${errorMessages}` }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    const { birthDate, birthTime, birthPlace, birthTimeUtc, deviceId, captchaToken } = parseResult.data;
+    const { birthDate, birthTime, birthPlace, birthTimeUtc, captchaToken } = parseResult.data;
+    deviceId = parseResult.data.deviceId;
 
     // Check for traffic spike
     const isTrafficSpike = detectTrafficSpike();
@@ -257,7 +285,13 @@ serve(async (req) => {
     const rateLimitResult = checkRateLimits(clientIP, deviceId);
     
     if (!rateLimitResult.allowed) {
-      console.warn(`Rate limit exceeded for IP: ${clientIP}, device: ${deviceId || 'none'}`);
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "rate_limit",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: rateLimitResult.message }),
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -268,7 +302,13 @@ serve(async (req) => {
     const captchaRequired = rateLimitResult.requireCaptcha || isSuspiciousUA || isTrafficSpike;
     
     if (captchaRequired && !captchaToken) {
-      console.log(`CAPTCHA required for IP: ${clientIP}, reason: threshold=${rateLimitResult.requireCaptcha}, suspicious=${isSuspiciousUA}, spike=${isTrafficSpike}`);
+      logStep("REQUEST_COMPLETE", {
+        outcome: "captcha_required",
+        reason: `threshold=${rateLimitResult.requireCaptcha}, suspicious=${isSuspiciousUA}, spike=${isTrafficSpike}`,
+        ip: clientIP,
+        deviceId: deviceId || null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ 
           captcha_required: true,
@@ -282,6 +322,13 @@ serve(async (req) => {
     if (captchaToken) {
       const captchaValid = await verifyCaptchaToken(captchaToken, clientIP);
       if (!captchaValid) {
+        logStep("REQUEST_COMPLETE", {
+          outcome: "fail",
+          reason: "captcha_verification_failed",
+          ip: clientIP,
+          deviceId: deviceId || null,
+          latencyMs: Date.now() - requestStartTime,
+        });
         return new Response(
           JSON.stringify({ error: "CAPTCHA verification failed. Please try again." }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -290,7 +337,13 @@ serve(async (req) => {
     }
 
     if (!openAIApiKey) {
-      console.error("Missing OPENAI_API_KEY environment variable");
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "missing_openai_key",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Service configuration error. Please try again later." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -538,7 +591,15 @@ Stop when finished.
 
     if (!resp.ok) {
       const errorText = await resp.text();
-      console.error("OpenAI API error:", resp.status, errorText);
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "openai_error",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        model: "gpt-4.1-mini-2025-04-14",
+        errorStatus: resp.status,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -546,13 +607,21 @@ Stop when finished.
     }
 
     const data = await resp.json();
-    console.log("Full API response:", JSON.stringify(data));
-    console.log("Token usage:", JSON.stringify(data.usage));
+    const tokenUsage = data.usage || null;
 
     const generatedContent = data?.choices?.[0]?.message?.content ?? "";
 
     if (!generatedContent.trim()) {
-      console.error("Empty content in response. Finish reason:", data?.choices?.[0]?.finish_reason);
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "empty_response",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        model: "gpt-4.1-mini-2025-04-14",
+        tokens: tokenUsage,
+        finishReason: data?.choices?.[0]?.finish_reason,
+        latencyMs: Date.now() - requestStartTime,
+      });
       return new Response(
         JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -581,15 +650,27 @@ Stop when finished.
         .single();
 
       if (saveError) {
-        console.error("Error saving free forecast:", saveError);
+        logStep("Database save error", { error: saveError.message });
       } else {
         freeForecastId = saveData?.id;
         guestToken = saveData?.guest_token;
-        console.log("Free forecast saved with ID:", freeForecastId);
       }
     } catch (saveErr) {
-      console.error("Failed to save free forecast:", saveErr);
+      logStep("Database save exception", { error: saveErr instanceof Error ? saveErr.message : String(saveErr) });
     }
+
+    // Log successful completion
+    const guestTokenHash = guestToken ? await hashToken(guestToken) : null;
+    logStep("REQUEST_COMPLETE", {
+      outcome: "success",
+      ip: clientIP,
+      deviceId: deviceId || null,
+      guestTokenHash,
+      forecastId: freeForecastId || null,
+      model: "gpt-4.1-mini-2025-04-14",
+      tokens: tokenUsage,
+      latencyMs: Date.now() - requestStartTime,
+    });
 
     return new Response(
       JSON.stringify({
@@ -603,7 +684,14 @@ Stop when finished.
       },
     );
   } catch (error) {
-    console.error("Error in generate-forecast function:", error);
+    logStep("REQUEST_COMPLETE", {
+      outcome: "fail",
+      reason: "uncaught_exception",
+      ip: clientIP,
+      deviceId: deviceId || null,
+      error: error instanceof Error ? error.message : String(error),
+      latencyMs: Date.now() - requestStartTime,
+    });
     return new Response(
       JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
