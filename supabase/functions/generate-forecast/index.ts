@@ -22,20 +22,104 @@ async function hashToken(token: string): Promise<string> {
   return hashArray.slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Input validation schema
+// ============= INPUT VALIDATION & LIMITS =============
+const MAX_BIRTH_PLACE_LENGTH = 200;
+const MAX_CAPTCHA_TOKEN_LENGTH = 2000;
+const MAX_REQUEST_BODY_SIZE = 5000; // 5KB max for free forecast requests
+
+// Input validation schema with strict limits
 const InputSchema = z.object({
   birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD"),
   birthTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM"),
-  birthPlace: z.string().min(2, "Birth place too short").max(200, "Birth place too long"),
-  birthTimeUtc: z.string().optional(),
+  birthPlace: z.string().min(2, "Birth place too short").max(MAX_BIRTH_PLACE_LENGTH, `Birth place too long (max ${MAX_BIRTH_PLACE_LENGTH} chars)`),
+  birthTimeUtc: z.string().max(50).optional(),
   deviceId: z.string().uuid("Invalid device ID").optional(),
-  captchaToken: z.string().optional(),
+  captchaToken: z.string().max(MAX_CAPTCHA_TOKEN_LENGTH).optional(),
 });
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// ============= ABUSE DETECTION & ALERTING =============
+const ABUSE_ALERT_THRESHOLD = 50; // Alert if more than 50 forecasts per hour
+const hourlyGenerationCount = { count: 0, hourStart: Date.now() };
+const ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour between alerts
+let lastAlertTime = 0;
+
+// deno-lint-ignore no-explicit-any
+async function checkAndAlertAbuse(
+  supabase: any,
+  ip: string,
+  deviceId: string | undefined
+): Promise<void> {
+  const now = Date.now();
+  
+  // Reset hourly counter if hour has passed
+  if (now - hourlyGenerationCount.hourStart > 60 * 60 * 1000) {
+    hourlyGenerationCount.count = 0;
+    hourlyGenerationCount.hourStart = now;
+  }
+  
+  hourlyGenerationCount.count++;
+  
+  // Check if threshold exceeded and we haven't alerted recently
+  if (hourlyGenerationCount.count >= ABUSE_ALERT_THRESHOLD && now - lastAlertTime > ALERT_COOLDOWN_MS) {
+    lastAlertTime = now;
+    
+    logStep("ABUSE_THRESHOLD_EXCEEDED", { 
+      hourlyCount: hourlyGenerationCount.count, 
+      threshold: ABUSE_ALERT_THRESHOLD 
+    });
+    
+    // Write abuse event to database
+    try {
+      // Using 'any' cast since abuse_events table was just created
+      await (supabase as any).from("abuse_events").insert({
+        event_type: "hourly_threshold_exceeded",
+        ip_address: ip,
+        device_id: deviceId || null,
+        hourly_count: hourlyGenerationCount.count,
+        threshold: ABUSE_ALERT_THRESHOLD,
+        details: { function: "generate-forecast", timestamp: new Date().toISOString() },
+      });
+    } catch (err) {
+      console.error("Failed to write abuse event:", err);
+    }
+    
+    // Send email alert
+    try {
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Cosmic Brief Alerts <alerts@cosmicbrief.com>",
+            to: ["contact@cosmicbrief.com"],
+            subject: `⚠️ Abuse Alert: Free Forecast Threshold Exceeded`,
+            html: `
+              <h2>Abuse Threshold Exceeded</h2>
+              <p><strong>Function:</strong> generate-forecast</p>
+              <p><strong>Hourly Count:</strong> ${hourlyGenerationCount.count}</p>
+              <p><strong>Threshold:</strong> ${ABUSE_ALERT_THRESHOLD}</p>
+              <p><strong>Last IP:</strong> ${ip}</p>
+              <p><strong>Device ID:</strong> ${deviceId || "N/A"}</p>
+              <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+            `,
+          }),
+        });
+        logStep("Abuse alert email sent");
+      }
+    } catch (emailErr) {
+      console.error("Failed to send abuse alert email:", emailErr);
+    }
+  }
+}
 
 // ============= RATE LIMITING CONFIGURATION =============
 // Tier 1: 1 request per minute per IP (burst protection)
@@ -255,8 +339,40 @@ serve(async (req) => {
   logStep("Request started", { ip: clientIP });
 
   try {
-    // Parse and validate input first to get deviceId
-    const rawInput = await req.json();
+    // Check request body size
+    const rawBody = await req.text();
+    if (rawBody.length > MAX_REQUEST_BODY_SIZE) {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "request_too_large",
+        ip: clientIP,
+        bodySize: rawBody.length,
+        maxSize: MAX_REQUEST_BODY_SIZE,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Request too large" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    // Parse and validate input
+    let rawInput: unknown;
+    try {
+      rawInput = JSON.parse(rawBody);
+    } catch {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "invalid_json",
+        ip: clientIP,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
     const parseResult = InputSchema.safeParse(rawInput);
     
     if (!parseResult.success) {
@@ -658,6 +774,9 @@ Stop when finished.
     } catch (saveErr) {
       logStep("Database save exception", { error: saveErr instanceof Error ? saveErr.message : String(saveErr) });
     }
+
+    // Check for abuse and alert if threshold exceeded
+    await checkAndAlertAbuse(supabase, clientIP, deviceId);
 
     // Log successful completion
     const guestTokenHash = guestToken ? await hashToken(guestToken) : null;
