@@ -1,50 +1,41 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Fallback: Calculate UTC using longitude-based solar time offset.
- * Less accurate but works without external API.
+ * Converts offset seconds to ISO 8601 offset string (e.g., 19800 -> "+05:30")
  */
-function calculateUtcFallback(
-  birthDate: string,
-  birthTime: string,
-  lat: number,
-  lon: number
-): string {
-  console.warn('Using longitude-based UTC calculation (fallback)');
-  
-  const [year, month, day] = birthDate.split('-').map(Number);
-  const [hours, minutes] = birthTime.split(':').map(Number);
-  
-  // Calculate UTC offset based on longitude (15° per hour)
-  const offsetHours = lon / 15;
-  
-  const localTotalMinutes = hours * 60 + minutes;
-  const utcTotalMinutes = localTotalMinutes - (offsetHours * 60);
-  
-  let utcHours = Math.floor(utcTotalMinutes / 60);
-  let utcMinutes = Math.round(utcTotalMinutes % 60);
-  let utcDay = day;
-  
-  if (utcMinutes < 0) {
-    utcMinutes += 60;
-    utcHours -= 1;
-  }
-  
-  if (utcHours < 0) {
-    utcHours += 24;
-    utcDay -= 1;
-  } else if (utcHours >= 24) {
-    utcHours -= 24;
-    utcDay += 1;
-  }
-  
-  const utcDate = new Date(Date.UTC(year, month - 1, utcDay, utcHours, utcMinutes, 0));
-  return utcDate.toISOString();
+function formatOffsetString(offsetSeconds: number): string {
+  const sign = offsetSeconds >= 0 ? '+' : '-';
+  const absSeconds = Math.abs(offsetSeconds);
+  const hours = Math.floor(absSeconds / 3600);
+  const minutes = Math.floor((absSeconds % 3600) / 60);
+  return `${sign}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 /**
- * Converts a local birth date/time to UTC using proper timezone lookup.
- * Falls back to longitude-based calculation if API fails.
+ * Fallback: Calculate offset using longitude-based solar time.
+ * Less accurate but works without external API.
+ * Returns local time with approximate offset.
+ */
+function calculateFallback(
+  birthDate: string,
+  birthTime: string,
+  lon: number
+): string {
+  console.warn('Using longitude-based offset calculation (fallback)');
+  
+  // Calculate offset based on longitude (15° per hour)
+  const offsetHours = lon / 15;
+  const offsetSeconds = Math.round(offsetHours * 3600);
+  const offsetString = formatOffsetString(offsetSeconds);
+  
+  // Return local time with calculated offset
+  return `${birthDate}T${birthTime}:00${offsetString}`;
+}
+
+/**
+ * Formats birth date/time with proper timezone offset for Prokerala API.
+ * Returns ISO 8601 format with local time and offset (e.g., "2000-01-15T10:30:00+05:30")
+ * Falls back to longitude-based calculation if timezone API fails.
  */
 export async function convertBirthTimeToUtc(
   birthDate: string,  // YYYY-MM-DD
@@ -66,44 +57,32 @@ export async function convertBirthTimeToUtc(
 
     if (error || !data || data.error) {
       console.error('Timezone lookup failed:', error || data?.error);
-      return calculateUtcFallback(birthDate, birthTime, lat, lon);
+      return calculateFallback(birthDate, birthTime, lon);
     }
 
     const gmtOffsetSeconds = data.gmtOffset;
+    const offsetString = formatOffsetString(gmtOffsetSeconds);
     
     console.log('Timezone lookup result:', {
       zoneName: data.zoneName,
       abbreviation: data.abbreviation,
       gmtOffset: gmtOffsetSeconds,
+      offsetString,
       dst: data.dst
     });
 
-    const localTotalSeconds = (hours * 3600) + (minutes * 60);
-    const utcTotalSeconds = localTotalSeconds - gmtOffsetSeconds;
+    // Format as local time with timezone offset (ISO 8601)
+    const formattedDateTime = `${birthDate}T${birthTime}:00${offsetString}`;
     
-    let utcHours = Math.floor(utcTotalSeconds / 3600);
-    let utcMinutes = Math.floor((utcTotalSeconds % 3600) / 60);
-    let utcDay = day;
-    
-    if (utcHours < 0) {
-      utcHours += 24;
-      utcDay -= 1;
-    } else if (utcHours >= 24) {
-      utcHours -= 24;
-      utcDay += 1;
-    }
-    
-    const utcDate = new Date(Date.UTC(year, month - 1, utcDay, utcHours, utcMinutes, 0));
-    
-    console.log('UTC conversion:', {
+    console.log('Formatted birth datetime:', {
       input: `${birthDate} ${birthTime}`,
-      localOffset: `${gmtOffsetSeconds / 3600} hours`,
-      output: utcDate.toISOString()
+      localOffset: offsetString,
+      output: formattedDateTime
     });
     
-    return utcDate.toISOString();
+    return formattedDateTime;
   } catch (error) {
-    console.error('Error converting birth time to UTC:', error);
-    return calculateUtcFallback(birthDate, birthTime, lat, lon);
+    console.error('Error formatting birth time:', error);
+    return calculateFallback(birthDate, birthTime, lon);
   }
 }
