@@ -22,6 +22,7 @@ const PaymentSuccessPage = () => {
   const [status, setStatus] = useState<'verifying' | 'generating' | 'complete' | 'failed' | 'error'>('verifying');
   const [failedEmail, setFailedEmail] = useState<string>('');
   const [messageIndex, setMessageIndex] = useState(0);
+  const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const { 
@@ -43,11 +44,19 @@ const PaymentSuccessPage = () => {
   useEffect(() => {
     if (status !== 'generating') return;
     
-    const interval = setInterval(() => {
+    const stepInterval = setInterval(() => {
       setMessageIndex((prev) => Math.min(prev + 1, GENERATING_STEPS.length - 1));
     }, 12000);
+
+    // Show timeout message after 90 seconds
+    const timeoutTimer = setTimeout(() => {
+      setShowTimeoutMessage(true);
+    }, 90000);
     
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(stepInterval);
+      clearTimeout(timeoutTimer);
+    };
   }, [status]);
 
   useEffect(() => {
@@ -162,27 +171,47 @@ const PaymentSuccessPage = () => {
               <h2 className="font-display text-2xl text-cream mb-3">
                 Generating your Strategic Forecast
               </h2>
-              <p className="text-cream/50 text-sm mb-6">
-                You'll receive an email with your full report.
-              </p>
-              <p className="font-display text-lg italic text-cream tracking-wide mb-6">
-                <span key={messageIndex} className="animate-fade-in">
-                  {GENERATING_STEPS[messageIndex]}...
-                </span>
-              </p>
-              {/* Progress dots */}
-              <div className="flex items-center justify-center gap-2">
-                {GENERATING_STEPS.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full transition-all duration-500 ${
-                      index <= messageIndex
-                        ? 'bg-gold'
-                        : 'bg-gold/30'
-                    }`}
-                  />
-                ))}
-              </div>
+              
+              {showTimeoutMessage ? (
+                <>
+                  <p className="text-cream/70 text-sm mb-4">
+                    This is taking a bit longer than expected. We'll email you a link when it's ready.
+                  </p>
+                  <div className="bg-midnight/60 rounded-lg p-4 border border-gold/20">
+                    <div className="flex items-center justify-center gap-2 text-gold mb-2">
+                      <Mail className="w-5 h-5" />
+                      <span className="font-medium text-sm">Check your inbox</span>
+                    </div>
+                    <p className="text-cream-muted text-xs">
+                      If you don't see it, check your spam folder.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-cream/50 text-sm mb-6">
+                    You'll receive an email with your full report.
+                  </p>
+                  <p className="font-display text-lg italic text-cream tracking-wide mb-6">
+                    <span key={messageIndex} className="animate-fade-in">
+                      {GENERATING_STEPS[messageIndex]}...
+                    </span>
+                  </p>
+                  {/* Progress dots */}
+                  <div className="flex items-center justify-center gap-2">
+                    {GENERATING_STEPS.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                          index <= messageIndex
+                            ? 'bg-gold'
+                            : 'bg-gold/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
 
