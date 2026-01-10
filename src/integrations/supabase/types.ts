@@ -145,6 +145,7 @@ export type Database = {
           model_used: string | null
           prompt_tokens: number | null
           retry_count: number | null
+          shareable_link: string | null
           strategic_forecast: Json
           stripe_session_id: string
           total_tokens: number | null
@@ -170,6 +171,7 @@ export type Database = {
           model_used?: string | null
           prompt_tokens?: number | null
           retry_count?: number | null
+          shareable_link?: string | null
           strategic_forecast: Json
           stripe_session_id: string
           total_tokens?: number | null
@@ -195,6 +197,7 @@ export type Database = {
           model_used?: string | null
           prompt_tokens?: number | null
           retry_count?: number | null
+          shareable_link?: string | null
           strategic_forecast?: Json
           stripe_session_id?: string
           total_tokens?: number | null
