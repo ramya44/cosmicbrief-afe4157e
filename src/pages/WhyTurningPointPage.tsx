@@ -51,7 +51,7 @@ const WhyTurningPointPage = () => {
         "name": "How is 2026 different from 2025 astrologically?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "2025 still carried heavy Pisces energy (Saturn and Neptune both in Pisces), creating confusion and dissolution. 2026 shifts to Aries energy, demanding action, clarity, and forward movement. The focus moves from processing what's ending to building what's beginning."
+          "text": "While 2025 introduced us to Aries energy through brief previews (Saturn and Neptune both dipped into Aries before retrograding back to Pisces), 2026 is when these planets settle permanently in Aries. The difference is between getting a taste of something and fully committing to it. Additionally, Jupiter's presence in Cancer through June 2026 provides emotional grounding."
         }
       },
       {
@@ -129,20 +129,20 @@ const WhyTurningPointPage = () => {
               <tbody className="text-cream/70">
                 <tr className="border-b border-cream/10">
                   <td className="py-3 px-4">Saturn</td>
-                  <td className="py-3 px-4">Pisces → Aries</td>
-                  <td className="py-3 px-4">May 2026</td>
+                  <td className="py-3 px-4">Re-enters Aries</td>
+                  <td className="py-3 px-4">February 2026</td>
                   <td className="py-3 px-4">Structures shift from dissolution to action</td>
                 </tr>
                 <tr className="border-b border-cream/10">
                   <td className="py-3 px-4">Neptune</td>
-                  <td className="py-3 px-4">Pisces → Aries</td>
-                  <td className="py-3 px-4">March 2026</td>
+                  <td className="py-3 px-4">Re-enters Aries</td>
+                  <td className="py-3 px-4">January 2026</td>
                   <td className="py-3 px-4">Dreams shift from escape to inspiration</td>
                 </tr>
                 <tr className="border-b border-cream/10">
                   <td className="py-3 px-4">Jupiter</td>
-                  <td className="py-3 px-4">Cancer</td>
-                  <td className="py-3 px-4">Jan-June 2026</td>
+                  <td className="py-3 px-4">Cancer (ongoing)</td>
+                  <td className="py-3 px-4">Through June 2026</td>
                   <td className="py-3 px-4">Emotional security and nurturing favored</td>
                 </tr>
                 <tr className="border-b border-cream/10">
@@ -207,7 +207,7 @@ const WhyTurningPointPage = () => {
             What Neptune in Aries Means
           </h3>
           <p>
-            When Neptune enters Aries in March 2026, I interpret the collective dream as shifting from escapism to inspiration. The focus appears to move from fantasizing about change to romanticizing action itself.
+            When Neptune re-enters Aries in January 2026 (after previewing this energy in early 2025), I interpret the collective dream as shifting from escapism to inspiration. The focus appears to move from fantasizing about change to romanticizing action itself.
           </p>
           <p className="text-cream"><strong>This suggests:</strong></p>
           <ul className="list-disc pl-6 space-y-2 text-cream/70">
@@ -247,7 +247,7 @@ const WhyTurningPointPage = () => {
             Jupiter in Cancer: The Emotional Counterbalance
           </h2>
           <p>
-            Jupiter spends most of 2026 in Cancer, which I read as a significant counterbalance after its transit through Gemini in 2025. Jupiter in Cancer tends to be generous, protective, and deeply concerned with emotional security and home.
+            Jupiter has been in Cancer since June 2025 and continues through June 2026, which I read as a significant counterbalance to the aggressive Aries energy dominating the year. Jupiter in Cancer tends to be generous, protective, and deeply concerned with emotional security and home.
           </p>
           <p className="text-cream">
             <strong>This transit appears to bring softness to the otherwise aggressive Aries energy dominating the year.</strong>
@@ -339,7 +339,7 @@ const WhyTurningPointPage = () => {
             How is 2026 different from 2025 astrologically?
           </h3>
           <p>
-            2025 still carried heavy Pisces energy (Saturn and Neptune both in Pisces), creating confusion and dissolution. 2026 shifts to Aries energy, demanding action, clarity, and forward movement. The focus moves from processing what's ending to building what's beginning.
+            While 2025 introduced us to Aries energy through brief previews (Saturn and Neptune both dipped into Aries before retrograding back to Pisces), 2026 is when these planets settle permanently in Aries. The difference is between getting a taste of something and fully committing to it. Additionally, Jupiter's presence in Cancer through June 2026 (having entered in June 2025) provides emotional grounding that wasn't available during 2025's more scattered energy.
           </p>
 
           <h3 className="font-display text-xl text-gold mt-8 mb-3">
