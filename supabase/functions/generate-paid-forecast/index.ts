@@ -14,9 +14,16 @@ const MAX_NAME_LENGTH = 100;
 const MAX_FREE_FORECAST_LENGTH = 5000;
 const MAX_REQUEST_BODY_SIZE = 10000; // 10KB max for paid forecast requests
 
-// Input validation schema - sessionId required, birth data fetched from database
+// Input validation schema - strict and narrow
 const InputSchema = z.object({
   sessionId: z.string().min(10, "Valid Stripe session ID required").max(200),
+  birthDateTimeUtc: z.string().min(1, "Birth datetime is required").max(50),
+  lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
+  lon: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
+  name: z.string().max(MAX_NAME_LENGTH).optional(),
+  pivotalTheme: z.string().max(50).optional(),
+  freeForecast: z.string().max(MAX_FREE_FORECAST_LENGTH).optional(),
+  freeForecastId: z.string().uuid().optional(),
   deviceId: z.string().max(100).optional(),
 });
 
@@ -27,30 +34,29 @@ const PAID_ALERT_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour between alerts
 let paidLastAlertTime = 0;
 
 // deno-lint-ignore no-explicit-any
-async function checkAndAlertPaidAbuse(
-  supabase: any,
-  ip: string,
-  deviceId: string | undefined
-): Promise<void> {
+async function checkAndAlertPaidAbuse(supabase: any, ip: string, deviceId: string | undefined): Promise<void> {
   const now = Date.now();
-  
+
   // Reset hourly counter if hour has passed
   if (now - paidHourlyGenerationCount.hourStart > 60 * 60 * 1000) {
     paidHourlyGenerationCount.count = 0;
     paidHourlyGenerationCount.hourStart = now;
   }
-  
+
   paidHourlyGenerationCount.count++;
-  
+
   // Check if threshold exceeded and we haven't alerted recently
-  if (paidHourlyGenerationCount.count >= PAID_ABUSE_ALERT_THRESHOLD && now - paidLastAlertTime > PAID_ALERT_COOLDOWN_MS) {
+  if (
+    paidHourlyGenerationCount.count >= PAID_ABUSE_ALERT_THRESHOLD &&
+    now - paidLastAlertTime > PAID_ALERT_COOLDOWN_MS
+  ) {
     paidLastAlertTime = now;
-    
-    logStep("ABUSE_THRESHOLD_EXCEEDED", { 
-      hourlyCount: paidHourlyGenerationCount.count, 
-      threshold: PAID_ABUSE_ALERT_THRESHOLD 
+
+    logStep("ABUSE_THRESHOLD_EXCEEDED", {
+      hourlyCount: paidHourlyGenerationCount.count,
+      threshold: PAID_ABUSE_ALERT_THRESHOLD,
     });
-    
+
     // Write abuse event to database
     try {
       await supabase.from("abuse_events").insert({
@@ -64,7 +70,7 @@ async function checkAndAlertPaidAbuse(
     } catch (err) {
       console.error("Failed to write abuse event:", err);
     }
-    
+
     // Send email alert
     try {
       const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -108,37 +114,35 @@ const RATE_LIMIT_WINDOW_MS = 60000;
 const usedSessionIds = new Set<string>();
 
 function getClientIP(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
-         req.headers.get("x-real-ip") || 
-         "unknown";
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   const record = rateLimiter.get(ip);
-  
+
   // Cleanup old entries
   if (rateLimiter.size > 10000) {
     for (const [key, value] of rateLimiter.entries()) {
       if (now > value.resetAt) rateLimiter.delete(key);
     }
   }
-  
+
   if (!record || now > record.resetAt) {
     rateLimiter.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
     return true;
   }
-  
+
   if (record.count >= RATE_LIMIT_MAX) {
     return false;
   }
-  
+
   record.count++;
   return true;
 }
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[GENERATE-PAID-FORECAST] ${step}${detailsStr}`);
 };
 
@@ -148,7 +152,10 @@ async function hashToken(token: string): Promise<string> {
   const data = encoder.encode(token);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+  return hashArray
+    .slice(0, 4)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 // OpenAI configuration
@@ -198,7 +205,7 @@ async function fetchWithRetry(
   url: string,
   options: RequestInit,
   modelName: string,
-  maxRetries: number = MAX_RETRIES
+  maxRetries: number = MAX_RETRIES,
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null;
   let attempts = 0;
@@ -206,14 +213,14 @@ async function fetchWithRetry(
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     attempts = attempt;
     const backoffMs = INITIAL_BACKOFF_MS * Math.pow(2, attempt - 1);
-    
+
     try {
       logStep(`[${modelName}] Attempt ${attempt}/${maxRetries}`);
       const startTime = Date.now();
-      
+
       const response = await fetch(url, options);
       const elapsed = Date.now() - startTime;
-      
+
       logStep(`[${modelName}] Attempt ${attempt} completed`, { elapsed, status: response.status });
 
       if (response.ok || !RETRYABLE_STATUS_CODES.includes(response.status)) {
@@ -263,13 +270,13 @@ function getZodiacSign(birthDateTimeUtc: string): string {
 serve(async (req) => {
   const requestStartTime = Date.now();
   let deviceId: string | undefined;
-  
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   const clientIP = getClientIP(req);
-  
+
   // Rate limiting check
   if (!checkRateLimit(clientIP)) {
     logStep("REQUEST_COMPLETE", {
@@ -279,10 +286,10 @@ serve(async (req) => {
       deviceId: null,
       latencyMs: Date.now() - requestStartTime,
     });
-    return new Response(
-      JSON.stringify({ error: "Too many requests. Please try again later." }),
-      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -302,10 +309,10 @@ serve(async (req) => {
         deviceId: null,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Service configuration error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Service configuration error" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Check request body size
@@ -319,12 +326,12 @@ serve(async (req) => {
         maxSize: MAX_REQUEST_BODY_SIZE,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Request too large" }),
-        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Request too large" }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
+
     // Parse and validate input
     let rawInput: unknown;
     try {
@@ -336,15 +343,16 @@ serve(async (req) => {
         ip: clientIP,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Invalid JSON" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
+
     const parseResult = InputSchema.safeParse(rawInput);
-    
+
     if (!parseResult.success) {
+      const errorMessages = parseResult.error.errors.map((e) => e.message).join(", ");
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
         reason: "validation_error",
@@ -352,13 +360,14 @@ serve(async (req) => {
         deviceId: null,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Invalid input data" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid input data" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
-    const { sessionId } = parseResult.data;
+
+    const { sessionId, birthDateTimeUtc, lat, lon, name, pivotalTheme, freeForecast, freeForecastId } =
+      parseResult.data;
     deviceId = parseResult.data.deviceId;
 
     // ========== CRITICAL: STRIPE PAYMENT VERIFICATION ==========
@@ -373,14 +382,14 @@ serve(async (req) => {
         deviceId: deviceId || null,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "This payment session has already been processed" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "This payment session has already been processed" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    
+
     let session;
     try {
       session = await stripe.checkout.sessions.retrieve(sessionId);
@@ -392,10 +401,10 @@ serve(async (req) => {
         deviceId: deviceId || null,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Invalid payment session" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid payment session" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Verify payment status
@@ -408,10 +417,10 @@ serve(async (req) => {
         paymentStatus: session.payment_status,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Payment not completed" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Payment not completed" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Verify amount received
@@ -425,10 +434,10 @@ serve(async (req) => {
         expected: EXPECTED_AMOUNT,
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Invalid payment amount" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid payment amount" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Verify session is not too old (max 1 hour)
@@ -443,153 +452,62 @@ serve(async (req) => {
         sessionAge: Math.round((Date.now() - sessionCreated) / 1000),
         latencyMs: Date.now() - requestStartTime,
       });
-      return new Response(
-        JSON.stringify({ error: "Payment session expired. Please purchase again." }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Payment session expired. Please purchase again." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Mark session as used (prevent replay)
     usedSessionIds.add(sessionId);
-    
+
     // Cleanup old session IDs (keep last 1000)
     if (usedSessionIds.size > 1000) {
       const toDelete = Array.from(usedSessionIds).slice(0, 500);
-      toDelete.forEach(id => usedSessionIds.delete(id));
+      toDelete.forEach((id) => usedSessionIds.delete(id));
     }
 
     const customerEmail = session.customer_details?.email || "";
     const sessionMetadata = session.metadata || {};
 
-    logStep("Payment verified", { 
+    logStep("Payment verified", {
       amount: session.amount_total,
       email: customerEmail ? customerEmail.slice(0, 3) + "***" : "none",
-      sessionAge: Math.round((Date.now() - sessionCreated) / 1000) + "s"
+      sessionAge: Math.round((Date.now() - sessionCreated) / 1000) + "s",
     });
 
-    // Initialize Supabase client
+    // Check if forecast already exists for this session (idempotency)
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Check if forecast already exists for this session (idempotency)
     const { data: existingForecast } = await supabase
-      .from('paid_forecasts')
-      .select('id, generation_status, strategic_forecast')
-      .eq('stripe_session_id', sessionId)
+      .from("paid_forecasts")
+      .select("id, generation_status, strategic_forecast")
+      .eq("stripe_session_id", sessionId)
       .single();
 
     if (existingForecast) {
-      if (existingForecast.generation_status === 'complete' && existingForecast.strategic_forecast) {
+      if (existingForecast.generation_status === "complete" && existingForecast.strategic_forecast) {
         logStep("Returning existing forecast", { id: existingForecast.id });
-        return new Response(JSON.stringify({
-          success: true,
-          forecast: existingForecast.strategic_forecast,
-          forecastId: existingForecast.id,
-          customerEmail,
-          cached: true,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            success: true,
+            forecast: existingForecast.strategic_forecast,
+            forecastId: existingForecast.id,
+            cached: true,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
       // If previous attempt failed, we'll regenerate
       logStep("Previous attempt found, regenerating", { status: existingForecast.generation_status });
     }
 
-    // ========== DATABASE-FIRST: FETCH BIRTH DATA FROM FREE_FORECASTS ==========
-    const freeForecastId = sessionMetadata.freeForecastId;
-    const storedGuestToken = sessionMetadata.guestToken;
-    const storedFreeForecast = sessionMetadata.freeForecast || "";
-
-    if (!freeForecastId || !storedGuestToken) {
-      logStep("REQUEST_COMPLETE", {
-        outcome: "fail",
-        reason: "missing_forecast_reference",
-        ip: clientIP,
-        deviceId: deviceId || null,
-        hasFreeForecastId: !!freeForecastId,
-        hasGuestToken: !!storedGuestToken,
-        latencyMs: Date.now() - requestStartTime,
-      });
-      return new Response(
-        JSON.stringify({ error: "Missing forecast reference. Please start a new forecast." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    logStep("Fetching birth data from database", { freeForecastId: freeForecastId.slice(0, 8) + "..." });
-
-    // Fetch birth data from free_forecasts table
-    const { data: freeForecastRecord, error: fetchError } = await supabase
-      .from('free_forecasts')
-      .select('id, guest_token, birth_time_utc, latitude, longitude, customer_name, birth_date, birth_time, birth_place, forecast_text, pivotal_theme')
-      .eq('id', freeForecastId)
-      .single();
-
-    if (fetchError || !freeForecastRecord) {
-      logStep("REQUEST_COMPLETE", {
-        outcome: "fail",
-        reason: "free_forecast_not_found",
-        ip: clientIP,
-        deviceId: deviceId || null,
-        freeForecastId,
-        latencyMs: Date.now() - requestStartTime,
-      });
-      return new Response(
-        JSON.stringify({ error: "Forecast record not found. Please generate a new forecast." }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Validate guest token for security
-    if (freeForecastRecord.guest_token !== storedGuestToken) {
-      logStep("REQUEST_COMPLETE", {
-        outcome: "fail",
-        reason: "guest_token_mismatch",
-        ip: clientIP,
-        deviceId: deviceId || null,
-        latencyMs: Date.now() - requestStartTime,
-      });
-      return new Response(
-        JSON.stringify({ error: "Invalid access token. Please generate a new forecast." }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Extract birth data from database record
-    const birthDateTimeUtc = freeForecastRecord.birth_time_utc;
-    const lat = freeForecastRecord.latitude;
-    const lon = freeForecastRecord.longitude;
-    const userName = freeForecastRecord.customer_name || "the seeker";
-    const pivotalTheme = freeForecastRecord.pivotal_theme;
-    const freeForecast = storedFreeForecast || freeForecastRecord.forecast_text || "";
-
-    // Validate required birth data
-    if (!birthDateTimeUtc || lat === null || lon === null) {
-      logStep("REQUEST_COMPLETE", {
-        outcome: "fail",
-        reason: "incomplete_birth_data",
-        ip: clientIP,
-        deviceId: deviceId || null,
-        hasUtc: !!birthDateTimeUtc,
-        hasLat: lat !== null,
-        hasLon: lon !== null,
-        latencyMs: Date.now() - requestStartTime,
-      });
-      return new Response(
-        JSON.stringify({ error: "Incomplete birth data in record. Please generate a new forecast." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    logStep("Birth data retrieved from database", {
-      name: userName,
-      hasUtc: !!birthDateTimeUtc,
-      lat,
-      lon,
-    });
-
     // ========== GENERATE FORECAST ==========
     logStep("Starting forecast generation");
 
+    const userName = name || sessionMetadata.name || "the seeker";
     const targetYear = "2026";
     const priorYear = "2025";
 
@@ -762,7 +680,13 @@ Rank these areas from most to least important for alignment this year:
 Explain why each ranks where it does and what over- or under-investment looks like.
 If a pivotal theme is provided, it must be ranked #1.
 
-5) Seasonal map  
+5) Deeper arc  
+Place this year within a three-year arc:
+why the prior year felt the way it did,
+why this year is pivotal,
+what it quietly prepares for next year.
+
+6) Seasonal map  
 Describe four human seasons as phases of lived experience.
 Do not reference months, quarters, or business cycles.
 
@@ -771,11 +695,6 @@ For each phase include:
 - what to lean into
 - what to protect
 - what to watch for
-
-6) Key tradeoffs  
-Name 3–5 personal tensions this person must navigate.
-Explain the cost of leaning too far in either direction.
-At least one tradeoff must reflect internal emotional strain rather than external circumstance.
 
 7) Crossroads moment  
 Describe exactly one inevitable internal crossroads.
@@ -792,12 +711,6 @@ No dates, no advice, no generic temptations.
 8) Operating principles  
 Provide 4–6 short principles written specifically for this person.
 Each followed by 1–2 sentences explaining lived meaning.
-
-9) Deeper arc  
-Place this year within a three-year arc:
-why the prior year felt the way it did,
-why this year is pivotal,
-what it quietly prepares for next year.
 
 OUTPUT FORMAT:
 Return valid JSON only using this schema:
@@ -859,37 +772,37 @@ Return valid JSON only using this schema:
     try {
       logStep(`Starting generation with primary model: ${PRIMARY_MODEL}`);
       const payload = createPayload(PRIMARY_MODEL);
-      
+
       const result = await fetchWithRetry(
         "https://api.openai.com/v1/chat/completions",
         fetchOptions(payload),
-        PRIMARY_MODEL
+        PRIMARY_MODEL,
       );
       resp = result.response;
       totalAttempts = result.attempts;
-      
+
       if (!resp.ok) {
         throw new Error(`Primary model failed with status ${resp.status}`);
       }
     } catch (primaryError) {
       console.error(`Primary model ${PRIMARY_MODEL} failed after retries:`, primaryError);
-      
+
       // Try fallback model once
       logStep(`Attempting fallback model: ${FALLBACK_MODEL}`);
       modelUsed = FALLBACK_MODEL;
       usedFallback = true;
-      
+
       try {
         const fallbackPayload = createPayload(FALLBACK_MODEL);
         const fallbackResult = await fetchWithRetry(
           "https://api.openai.com/v1/chat/completions",
           fetchOptions(fallbackPayload),
           FALLBACK_MODEL,
-          1
+          1,
         );
         resp = fallbackResult.response;
         totalAttempts += fallbackResult.attempts;
-        
+
         if (!resp.ok) {
           const errorText = await resp.text();
           generationError = `Fallback model failed: ${resp.status}`;
@@ -897,7 +810,7 @@ Return valid JSON only using this schema:
         }
       } catch (fallbackError) {
         generationError = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-        
+
         // Save failed attempt
         await saveForecastToDb(supabase, {
           sessionId,
@@ -909,7 +822,7 @@ Return valid JSON only using this schema:
           freeForecast,
           strategicForecast: null,
           modelUsed,
-          generationStatus: 'failed',
+          generationStatus: "failed",
           generationError,
           totalAttempts,
           tokenUsage: null,
@@ -927,21 +840,23 @@ Return valid JSON only using this schema:
           latencyMs: Date.now() - requestStartTime,
         });
 
-        return new Response(
-          JSON.stringify({ error: "Unable to generate forecast. Our team has been notified." }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        return new Response(JSON.stringify({ error: "Unable to generate forecast. Our team has been notified." }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
 
     logStep(`Generation succeeded`, { model: modelUsed, attempts: totalAttempts, usedFallback });
 
     const data = await resp.json();
-    const tokenUsage = data.usage ? {
-      promptTokens: data.usage.prompt_tokens,
-      completionTokens: data.usage.completion_tokens,
-      totalTokens: data.usage.total_tokens,
-    } : null;
+    const tokenUsage = data.usage
+      ? {
+          promptTokens: data.usage.prompt_tokens,
+          completionTokens: data.usage.completion_tokens,
+          totalTokens: data.usage.total_tokens,
+        }
+      : null;
 
     const generatedContent = data?.choices?.[0]?.message?.content ?? "";
 
@@ -957,7 +872,7 @@ Return valid JSON only using this schema:
         freeForecast,
         strategicForecast: null,
         modelUsed,
-        generationStatus: 'failed',
+        generationStatus: "failed",
         generationError,
         totalAttempts,
         tokenUsage,
@@ -975,10 +890,10 @@ Return valid JSON only using this schema:
         latencyMs: Date.now() - requestStartTime,
       });
 
-      return new Response(
-        JSON.stringify({ error: "Unable to generate forecast. Please try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unable to generate forecast. Please try again." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     let forecast: unknown;
@@ -987,7 +902,7 @@ Return valid JSON only using this schema:
     } catch (parseError) {
       console.error("Failed to parse strategic forecast JSON:", parseError);
       generationError = "JSON parse error";
-      
+
       await saveForecastToDb(supabase, {
         sessionId,
         customerEmail,
@@ -998,7 +913,7 @@ Return valid JSON only using this schema:
         freeForecast,
         strategicForecast: null,
         modelUsed,
-        generationStatus: 'failed',
+        generationStatus: "failed",
         generationError,
         totalAttempts,
         tokenUsage,
@@ -1016,10 +931,10 @@ Return valid JSON only using this schema:
         latencyMs: Date.now() - requestStartTime,
       });
 
-      return new Response(
-        JSON.stringify({ error: "Unable to process forecast response. Please try again." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Unable to process forecast response. Please try again." }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // ========== SAVE TO DATABASE ==========
@@ -1033,7 +948,7 @@ Return valid JSON only using this schema:
       freeForecast,
       strategicForecast: forecast,
       modelUsed,
-      generationStatus: 'complete',
+      generationStatus: "complete",
       generationError: null,
       totalAttempts,
       tokenUsage,
@@ -1045,10 +960,7 @@ Return valid JSON only using this schema:
     // Update free forecast email if provided
     if (freeForecastId && customerEmail) {
       try {
-        await supabase
-          .from('free_forecasts')
-          .update({ customer_email: customerEmail })
-          .eq('id', freeForecastId);
+        await supabase.from("free_forecasts").update({ email: customerEmail }).eq("id", freeForecastId);
         logStep("Free forecast email updated");
       } catch (updateErr) {
         console.error("Failed to update free forecast email:", updateErr);
@@ -1057,9 +969,9 @@ Return valid JSON only using this schema:
 
     // Fetch guest token for the saved forecast
     const { data: forecastData } = await supabase
-      .from('paid_forecasts')
-      .select('guest_token')
-      .eq('id', forecastId)
+      .from("paid_forecasts")
+      .select("guest_token")
+      .eq("id", forecastId)
       .single();
 
     // ========== SEND CONFIRMATION EMAIL ==========
@@ -1073,7 +985,7 @@ Return valid JSON only using this schema:
           const tokenPart = guestToken ? `&guestToken=${encodeURIComponent(guestToken)}` : "";
           // Use hash-based URL for reliable routing on custom domains
           const resultsUrl = `${appUrl}/#/results?forecastId=${forecastId}${tokenPart}`;
-          
+
           await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -1100,7 +1012,7 @@ Return valid JSON only using this schema:
                             <td style="padding: 40px 40px 20px; text-align: center;">
                               <div style="font-size: 48px; margin-bottom: 16px;">✨</div>
                               <h1 style="color: #f5f5dc; font-size: 28px; margin: 0; font-weight: normal;">
-                                ${userName && userName !== "the seeker" ? `Dear ${userName},` : 'Dear Stargazer,'}
+                                ${userName && userName !== "the seeker" ? `Dear ${userName},` : "Dear Stargazer,"}
                               </h1>
                             </td>
                           </tr>
@@ -1175,19 +1087,21 @@ Return valid JSON only using this schema:
       latencyMs: Date.now() - requestStartTime,
     });
 
-    return new Response(JSON.stringify({
-      success: true,
-      forecast,
-      forecastId,
-      customerEmail,
-      guestToken: forecastData?.guest_token,
-      modelUsed,
-      totalAttempts,
-      tokenUsage,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-
+    return new Response(
+      JSON.stringify({
+        success: true,
+        forecast,
+        forecastId,
+        customerEmail,
+        guestToken: forecastData?.guest_token,
+        modelUsed,
+        totalAttempts,
+        tokenUsage,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (error) {
     logStep("REQUEST_COMPLETE", {
       outcome: "fail",
@@ -1197,10 +1111,10 @@ Return valid JSON only using this schema:
       error: error instanceof Error ? error.message : String(error),
       latencyMs: Date.now() - requestStartTime,
     });
-    return new Response(
-      JSON.stringify({ error: "Unable to process request" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Unable to process request" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
 
@@ -1223,40 +1137,43 @@ async function saveForecastToDb(
     totalAttempts: number;
     tokenUsage: { promptTokens?: number; completionTokens?: number; totalTokens?: number } | null;
     deviceId?: string;
-  }
+  },
 ): Promise<string | null> {
   // Extract birth date/time from UTC string
-  const birthDate = params.birthDateTimeUtc.split('T')[0];
-  const birthTime = params.birthDateTimeUtc.split('T')[1]?.slice(0, 5) || "00:00";
+  const birthDate = params.birthDateTimeUtc.split("T")[0];
+  const birthTime = params.birthDateTimeUtc.split("T")[1]?.slice(0, 5) || "00:00";
   const zodiacSign = getZodiacSign(params.birthDateTimeUtc);
 
   // Upsert to handle both new inserts and updates for failed retries
   const { data, error } = await supabase
-    .from('paid_forecasts')
-    .upsert({
-      stripe_session_id: params.sessionId,
-      customer_email: params.customerEmail,
-      customer_name: params.name !== "the seeker" ? params.name : null,
-      birth_date: birthDate,
-      birth_time: birthTime,
-      birth_time_utc: params.birthDateTimeUtc,
-      birth_place: `${params.lat},${params.lon}`, // Store coords as fallback
-      free_forecast: params.freeForecast || "",
-      strategic_forecast: params.strategicForecast || {},
-      amount_paid: EXPECTED_AMOUNT,
-      model_used: params.modelUsed,
-      generation_status: params.generationStatus,
-      generation_error: params.generationError,
-      retry_count: params.totalAttempts,
-      prompt_tokens: params.tokenUsage?.promptTokens || null,
-      completion_tokens: params.tokenUsage?.completionTokens || null,
-      total_tokens: params.tokenUsage?.totalTokens || null,
-      zodiac_sign: zodiacSign,
-      device_id: params.deviceId || null,
-    }, {
-      onConflict: 'stripe_session_id',
-    })
-    .select('id, guest_token')
+    .from("paid_forecasts")
+    .upsert(
+      {
+        stripe_session_id: params.sessionId,
+        customer_email: params.customerEmail,
+        customer_name: params.name !== "the seeker" ? params.name : null,
+        birth_date: birthDate,
+        birth_time: birthTime,
+        birth_time_utc: params.birthDateTimeUtc,
+        birth_place: `${params.lat},${params.lon}`, // Store coords as fallback
+        free_forecast: params.freeForecast || "",
+        strategic_forecast: params.strategicForecast || {},
+        amount_paid: EXPECTED_AMOUNT,
+        model_used: params.modelUsed,
+        generation_status: params.generationStatus,
+        generation_error: params.generationError,
+        retry_count: params.totalAttempts,
+        prompt_tokens: params.tokenUsage?.promptTokens || null,
+        completion_tokens: params.tokenUsage?.completionTokens || null,
+        total_tokens: params.tokenUsage?.totalTokens || null,
+        zodiac_sign: zodiacSign,
+        device_id: params.deviceId || null,
+      },
+      {
+        onConflict: "stripe_session_id",
+      },
+    )
+    .select("id, guest_token")
     .single();
 
   if (error) {
