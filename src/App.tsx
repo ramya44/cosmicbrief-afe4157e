@@ -14,6 +14,7 @@ import AstrologyForecast2026Page from "./pages/AstrologyForecast2026Page";
 import WhyTurningPointPage from "./pages/WhyTurningPointPage";
 import PoliticsGlobalEventsPage from "./pages/PoliticsGlobalEventsPage";
 import NotFound from "./pages/NotFound";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <HashRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/input" element={<InputPage />} />
