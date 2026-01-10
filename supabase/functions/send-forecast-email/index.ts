@@ -51,6 +51,7 @@ interface ForecastEmailRequest {
   customerEmail: string;
   customerName?: string;
   forecastId: string;
+  guestToken?: string;
 }
 
 serve(async (req) => {
@@ -72,17 +73,18 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { customerEmail, customerName, forecastId }: ForecastEmailRequest = await req.json();
+    const { customerEmail, customerName, forecastId, guestToken }: ForecastEmailRequest = await req.json();
 
-    logStep("Received request", { customerEmail, customerName, forecastId });
+    logStep("Received request", { customerEmail, customerName, forecastId, guestToken: guestToken ? guestToken.slice(0, 8) + "..." : null });
 
     if (!customerEmail || !forecastId) {
       throw new Error("Missing required fields: customerEmail or forecastId");
     }
 
-    // Build the results URL
+    // Build the results URL (include guest token when available for secure access)
     const appUrl = Deno.env.get("APP_URL") || "https://astroyearcompass.lovable.app";
-    const resultsUrl = `${appUrl}/results?forecastId=${forecastId}`;
+    const tokenPart = guestToken ? `&guestToken=${encodeURIComponent(guestToken)}` : "";
+    const resultsUrl = `${appUrl}/results?forecastId=${forecastId}${tokenPart}`;
 
     logStep("Sending email", { to: customerEmail, resultsUrl });
 
