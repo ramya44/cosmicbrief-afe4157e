@@ -11,6 +11,7 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import AstrologyForecast2026Page from "./pages/AstrologyForecast2026Page";
 import WhyTurningPointPage from "./pages/WhyTurningPointPage";
+import PoliticsGlobalEventsPage from "./pages/PoliticsGlobalEventsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/2026-astrology-forecast" element={<AstrologyForecast2026Page />} />
           <Route path="/2026-astrology-forecast/why-2026-is-a-turning-point" element={<WhyTurningPointPage />} />
+          <Route path="/2026-astrology-forecast/politics-and-global-events" element={<PoliticsGlobalEventsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
