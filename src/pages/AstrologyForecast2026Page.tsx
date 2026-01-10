@@ -2,10 +2,39 @@ import { Link } from "react-router-dom";
 import { StarField } from "@/components/StarField";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet-async";
 
 const Horoscope2026Page = () => {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "The Astrological Shift: Why 2026 Marks a Turning Point",
+    "description": "If 2025 felt like standing at the edge of something, 2026 is the year we finally jump. Discover the cosmic difference between these two years and how major planetary transits will shape the collective experience.",
+    "datePublished": "2025-01-01",
+    "dateModified": "2025-01-10",
+    "author": {
+      "@type": "Organization",
+      "name": "2026 Astrology Forecast"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "2026 Astrology Forecast"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://2026forecast.com/2026-astrology-forecast"
+    },
+    "keywords": ["astrology 2026", "saturn in aries", "neptune in aries", "jupiter in cancer", "pluto in aquarius", "uranus in gemini", "2026 horoscope", "planetary transits 2026"]
+  };
+
   return (
     <div className="min-h-screen bg-midnight text-cream relative overflow-hidden">
+      <Helmet>
+        <title>The Astrological Shift: Why 2026 Marks a Turning Point | 2026 Forecast</title>
+        <meta name="description" content="Discover why 2026 marks a major astrological turning point. Saturn and Neptune enter Aries, Jupiter in Cancer, Uranus in Gemini—major transits explained." />
+        <link rel="canonical" href="https://2026forecast.com/2026-astrology-forecast" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+      </Helmet>
       <StarField />
       
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
