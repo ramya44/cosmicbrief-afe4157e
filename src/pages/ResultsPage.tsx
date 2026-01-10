@@ -35,6 +35,7 @@ const ResultsPage = () => {
     setPaidGuestToken,
     setBirthData,
     setFreeForecast,
+    reset,
   } = useForecastStore();
 
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -56,7 +57,7 @@ const ResultsPage = () => {
     const loadPaidForecast = async () => {
       try {
         // Immediately clear any cached state to prevent stale data from rendering
-        setStrategicForecast(null);
+        reset();
         setIsPaid(true);
         setIsStrategicLoading(true);
         setPaidGuestToken(deepLinkGuestToken);
@@ -113,7 +114,7 @@ const ResultsPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [isDeepLinkPaid, deepLinkForecastId, deepLinkGuestToken, setIsPaid, setIsStrategicLoading, setPaidGuestToken, setStrategicForecast, setBirthData, setFreeForecast]);
+  }, [isDeepLinkPaid, deepLinkForecastId, deepLinkGuestToken, setIsPaid, setIsStrategicLoading, setPaidGuestToken, setStrategicForecast, setBirthData, setFreeForecast, reset]);
 
   useEffect(() => {
     if (!isDeepLinkPaid && !birthData && !isLoading) {
