@@ -44,12 +44,6 @@ export interface SeasonMap {
   watch_for: string;
 }
 
-export interface Tradeoff {
-  tension: string;
-  explanation: string;
-}
-
-
 export interface OperatingPrinciple {
   principle: string;
   meaning: string;
@@ -61,11 +55,10 @@ export interface StrategicForecast {
   comparison_to_prior_year: string;
   why_this_year_affects_you_differently?: string;
   life_area_prioritization: LifeAreaPriority[];
+  deeper_arc: string;
   seasonal_map: SeasonMap[];
-  key_tradeoffs: Tradeoff[];
   crossroads_moment?: string;
   operating_principles: OperatingPrinciple[];
-  deeper_arc: string;
 }
 
 export interface ForecastState {

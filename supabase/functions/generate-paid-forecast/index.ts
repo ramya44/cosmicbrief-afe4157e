@@ -727,20 +727,17 @@ Return valid JSON only using this schema:
     {"area":"Health and energy","priority":4,"explanation":"..."},
     {"area":"Personal growth and identity","priority":5,"explanation":"..."}
   ],
+  "deeper_arc": "...",
   "seasonal_map": [
     {"what_matters":"...","lean_into":"...","protect":"...","watch_for":"..."},
     {"what_matters":"...","lean_into":"...","protect":"...","watch_for":"..."},
     {"what_matters":"...","lean_into":"...","protect":"...","watch_for":"..."},
     {"what_matters":"...","lean_into":"...","protect":"...","watch_for":"..."}
   ],
-  "key_tradeoffs": [
-    {"tension":"...","explanation":"..."}
-  ],
   "crossroads_moment": "...",
   "operating_principles": [
     {"principle":"...","meaning":"..."}
-  ],
-  "deeper_arc": "..."
+  ]
 }`;
 
     const createPayload = (model: string) => ({
