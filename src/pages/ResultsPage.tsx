@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { ForecastSection } from '@/components/ForecastSection';
 import { SeasonalMapAccordion } from '@/components/SeasonalMapAccordion';
+import { ShareButton } from '@/components/ShareButton';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 import { stripLeadingHeaders } from '@/lib/utils';
-import { ArrowLeft, Sparkles, Calendar, Lock, ArrowLeftRight, Target, TrendingUp, Compass, BookOpen } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Lock, ArrowLeftRight, Target, TrendingUp, Compass, BookOpen, Share2, Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -36,6 +37,7 @@ const ResultsPage = () => {
     setPaidGuestToken,
     setBirthData,
     setFreeForecast,
+    paidGuestToken,
     reset,
   } = useForecastStore();
 
@@ -647,6 +649,9 @@ const ResultsPage = () => {
                 ))}
               </div>
             </ForecastSection>
+
+            {/* Share Button */}
+            <ShareButton forecastId={deepLinkForecastId} guestToken={deepLinkGuestToken || paidGuestToken} />
 
           </div>
         )}
