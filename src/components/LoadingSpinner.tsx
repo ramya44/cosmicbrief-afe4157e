@@ -14,7 +14,7 @@ export const LoadingSpinner = () => {
         Reading Your Patterns
       </h2>
       <p className="text-cream-muted text-center max-w-md">
-        Analyzing the unique rhythms of your birth moment to craft your personalized 2026 forecast...
+        Analyzing the sky at your birth moment to craft your personalized 2026 Cosmic Brief...
       </p>
     </div>
   );
