@@ -95,15 +95,20 @@ const PaymentSuccessPage = () => {
             hasLon: !!recovered.lon 
           });
 
+          // Treat empty strings as missing values
+          const hasLat = recovered.lat && String(recovered.lat).trim() !== '';
+          const hasLon = recovered.lon && String(recovered.lon).trim() !== '';
+          const hasUtc = recovered.birthDateTimeUtc && String(recovered.birthDateTimeUtc).trim() !== '';
+
           effectiveBirthData = {
             name: recovered.name || '',
             birthDate: recovered.birthDate || '',
             birthTime: recovered.birthTime || '',
             birthPlace: recovered.birthPlace || '',
             email: recovered.email || '',
-            birthDateTimeUtc: recovered.birthDateTimeUtc || '',
-            lat: recovered.lat ? parseFloat(recovered.lat) : undefined,
-            lon: recovered.lon ? parseFloat(recovered.lon) : undefined,
+            birthDateTimeUtc: hasUtc ? recovered.birthDateTimeUtc : '',
+            lat: hasLat ? parseFloat(recovered.lat) : undefined,
+            lon: hasLon ? parseFloat(recovered.lon) : undefined,
           };
 
           // If still missing critical data, we can't proceed
@@ -113,8 +118,8 @@ const PaymentSuccessPage = () => {
         } catch (recoveryError) {
           console.error('Failed to recover birth data:', recoveryError);
           setStatus('error');
-          toast.error('Birth data not found. Please contact support.');
-          setTimeout(() => navigate('/input'), 2000);
+          toast.error('Session expired. Please re-enter your birth details and try again.');
+          setTimeout(() => navigate('/input'), 3000);
           return;
         }
       }

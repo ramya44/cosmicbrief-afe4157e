@@ -71,7 +71,18 @@ serve(async (req) => {
     const { birthData, freeForecast } = await req.json();
     if (!birthData) throw new Error("Birth data is required");
     if (!freeForecast) throw new Error("Free forecast is required");
-    logStep("Received birth data and forecast", { birthDate: birthData.birthDate, birthPlace: birthData.birthPlace });
+    
+    // Validate required fields for reliable recovery after Stripe redirect
+    if (!birthData.birthDateTimeUtc || !birthData.lat || !birthData.lon) {
+      throw new Error("Incomplete birth data - missing coordinates or UTC time. Please re-enter your birth details.");
+    }
+    
+    logStep("Received birth data and forecast", { 
+      birthDate: birthData.birthDate, 
+      birthPlace: birthData.birthPlace,
+      hasUtc: !!birthData.birthDateTimeUtc,
+      hasCoords: !!(birthData.lat && birthData.lon)
+    });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
