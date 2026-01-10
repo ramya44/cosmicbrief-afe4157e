@@ -171,8 +171,21 @@ const Horoscope2026Page = () => {
           </p>
         </div>
 
+        {/* Related Content */}
+        <div className="mt-16 pt-12 border-t border-cream/10">
+          <p className="text-cream/60 mb-6 text-sm">Continue reading:</p>
+          <Link 
+            to="/2026-astrology-forecast/why-2026-is-a-turning-point" 
+            className="block p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors"
+          >
+            <p className="text-gold text-sm mb-1">Deep Dive</p>
+            <p className="text-cream">Why 2026 Is a Turning Point in Astrology</p>
+            <p className="text-cream/60 text-sm mt-1">Major planetary transits explained</p>
+          </Link>
+        </div>
+
         {/* CTA */}
-        <div className="mt-16 pt-12 border-t border-cream/10 text-center">
+        <div className="mt-12 pt-12 border-t border-cream/10 text-center">
           <p className="text-cream/60 mb-6">
             Discover how these transits affect your personal chart
           </p>
