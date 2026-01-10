@@ -25,9 +25,6 @@ const PaymentSuccessPage = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const { 
-    birthData, 
-    freeForecast,
-    freeGuestToken,
     setIsPaid, 
     setStrategicForecast, 
     setIsStrategicLoading,
@@ -64,67 +61,10 @@ const PaymentSuccessPage = () => {
         return;
       }
 
-      // Try to get birth data from store first
-      let effectiveBirthData = birthData;
-
-      // If birth data is missing from store, recover from Stripe session metadata
-      if (!effectiveBirthData || !effectiveBirthData.birthDateTimeUtc || !effectiveBirthData.lat || !effectiveBirthData.lon) {
-        console.log('Birth data missing from store, attempting to recover from Stripe session...');
-        
-        try {
-          const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
-            body: { sessionId },
-          });
-
-          if (verifyError) {
-            console.error('Verify payment error:', verifyError);
-            throw new Error('Could not verify payment session');
-          }
-
-          if (!verifyData?.success || !verifyData?.birthData) {
-            console.error('No birth data in Stripe session');
-            throw new Error('Birth data not found in payment session');
-          }
-
-          // Reconstruct birth data from Stripe metadata
-          const recovered = verifyData.birthData;
-          console.log('Recovered birth data from Stripe:', { 
-            name: recovered.name, 
-            birthDate: recovered.birthDate,
-            hasLat: !!recovered.lat,
-            hasLon: !!recovered.lon 
-          });
-
-          // Treat empty strings as missing values
-          const hasLat = recovered.lat && String(recovered.lat).trim() !== '';
-          const hasLon = recovered.lon && String(recovered.lon).trim() !== '';
-          const hasUtc = recovered.birthDateTimeUtc && String(recovered.birthDateTimeUtc).trim() !== '';
-
-          effectiveBirthData = {
-            name: recovered.name || '',
-            birthDate: recovered.birthDate || '',
-            birthTime: recovered.birthTime || '',
-            birthPlace: recovered.birthPlace || '',
-            email: recovered.email || '',
-            birthDateTimeUtc: hasUtc ? recovered.birthDateTimeUtc : '',
-            lat: hasLat ? parseFloat(recovered.lat) : undefined,
-            lon: hasLon ? parseFloat(recovered.lon) : undefined,
-          };
-
-          // If still missing critical data, we can't proceed
-          if (!effectiveBirthData.birthDateTimeUtc || !effectiveBirthData.lat || !effectiveBirthData.lon) {
-            throw new Error('Incomplete birth data in payment session');
-          }
-        } catch (recoveryError) {
-          console.error('Failed to recover birth data:', recoveryError);
-          setStatus('error');
-          toast.error('Session expired. Please re-enter your birth details and try again.');
-          setTimeout(() => navigate('/input'), 3000);
-          return;
-        }
-      }
-
-      // Start generation immediately - the secure endpoint handles payment verification
+      // Database-first approach: No need to recover birth data from localStorage
+      // The generate-paid-forecast function fetches all data from free_forecasts table
+      
+      // Start generation immediately - the secure endpoint handles everything
       setStatus('generating');
       setIsPaid(true);
       setIsStrategicLoading(true);
@@ -132,17 +72,10 @@ const PaymentSuccessPage = () => {
 
       try {
         // Single secure call that verifies payment AND generates forecast
+        // Birth data is fetched from database using freeForecastId from Stripe metadata
         const { data, error } = await supabase.functions.invoke('generate-paid-forecast', {
           body: {
             sessionId,
-            birthDateTimeUtc: effectiveBirthData.birthDateTimeUtc,
-            lat: effectiveBirthData.lat,
-            lon: effectiveBirthData.lon,
-            name: effectiveBirthData.name,
-            pivotalTheme: freeForecast?.pivotalTheme,
-            freeForecast: freeForecast?.forecast,
-            freeForecastId: freeForecast?.id,
-            guestToken: freeGuestToken,
             deviceId: getDeviceId(),
           },
         });
@@ -177,19 +110,11 @@ const PaymentSuccessPage = () => {
       } catch (error) {
         console.error('Failed to generate strategic forecast:', error);
         
-        // Extract email for failure display
-        const forecastEmail = effectiveBirthData.email || '';
-        setFailedEmail(forecastEmail);
-
         // Notify support team about the failure
         try {
           await supabase.functions.invoke('notify-support', {
             body: {
-              customerEmail: forecastEmail,
-              customerName: effectiveBirthData.name,
-              birthDate: effectiveBirthData.birthDate,
-              birthTime: effectiveBirthData.birthTime,
-              birthPlace: effectiveBirthData.birthPlace,
+              customerEmail: failedEmail,
               errorMessage: error instanceof Error ? error.message : 'Unknown error',
               stripeSessionId: sessionId,
               totalAttempts: 4,
@@ -207,7 +132,7 @@ const PaymentSuccessPage = () => {
     };
 
     processPayment();
-  }, [searchParams, birthData, freeForecast, navigate, setIsPaid, setStrategicForecast, setIsStrategicLoading, setStripeSessionId, setCustomerEmail]);
+  }, [searchParams, navigate, setIsPaid, setStrategicForecast, setIsStrategicLoading, setStripeSessionId, setCustomerEmail, failedEmail]);
 
   return (
     <div className="relative min-h-screen bg-celestial flex items-center justify-center">

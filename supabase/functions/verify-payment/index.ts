@@ -42,26 +42,24 @@ serve(async (req) => {
       throw new Error("Payment not completed");
     }
 
-    // Extract birth data from metadata and email from customer details
-    const birthData = {
-      birthDate: session.metadata?.birthDate || "",
-      birthTime: session.metadata?.birthTime || "",
-      birthPlace: session.metadata?.birthPlace || "",
-      birthDateTimeUtc: session.metadata?.birthDateTimeUtc || "",
-      lat: session.metadata?.lat || "",
-      lon: session.metadata?.lon || "",
-      name: session.metadata?.name || "",
-      email: session.customer_details?.email || "",
-    };
-
+    // Database-first approach: return only IDs from metadata
+    // The generate-paid-forecast function will fetch birth data from free_forecasts table
+    const freeForecastId = session.metadata?.freeForecastId || "";
+    const guestToken = session.metadata?.guestToken || "";
     const freeForecast = session.metadata?.freeForecast || "";
 
-    logStep("Data extracted", { birthData, hasFreeForecast: !!freeForecast });
+    logStep("Data extracted", { 
+      hasFreeForecastId: !!freeForecastId, 
+      hasGuestToken: !!guestToken,
+      hasFreeForecast: !!freeForecast 
+    });
 
     return new Response(JSON.stringify({ 
       success: true,
-      birthData,
+      freeForecastId,
+      guestToken,
       freeForecast,
+      customerEmail: session.customer_details?.email || "",
       sessionId: session.id,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -14,16 +14,9 @@ const MAX_NAME_LENGTH = 100;
 const MAX_FREE_FORECAST_LENGTH = 5000;
 const MAX_REQUEST_BODY_SIZE = 10000; // 10KB max for paid forecast requests
 
-// Input validation schema - strict and narrow
+// Input validation schema - sessionId required, birth data fetched from database
 const InputSchema = z.object({
   sessionId: z.string().min(10, "Valid Stripe session ID required").max(200),
-  birthDateTimeUtc: z.string().min(1, "Birth datetime is required").max(50),
-  lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
-  lon: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
-  name: z.string().max(MAX_NAME_LENGTH).optional(),
-  pivotalTheme: z.string().max(50).optional(),
-  freeForecast: z.string().max(MAX_FREE_FORECAST_LENGTH).optional(),
-  freeForecastId: z.string().uuid().optional(),
   deviceId: z.string().max(100).optional(),
 });
 
@@ -352,7 +345,6 @@ serve(async (req) => {
     const parseResult = InputSchema.safeParse(rawInput);
     
     if (!parseResult.success) {
-      const errorMessages = parseResult.error.errors.map(e => e.message).join(", ");
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
         reason: "validation_error",
@@ -366,7 +358,7 @@ serve(async (req) => {
       );
     }
     
-    const { sessionId, birthDateTimeUtc, lat, lon, name, pivotalTheme, freeForecast, freeForecastId } = parseResult.data;
+    const { sessionId } = parseResult.data;
     deviceId = parseResult.data.deviceId;
 
     // ========== CRITICAL: STRIPE PAYMENT VERIFICATION ==========
@@ -475,9 +467,10 @@ serve(async (req) => {
       sessionAge: Math.round((Date.now() - sessionCreated) / 1000) + "s"
     });
 
-    // Check if forecast already exists for this session (idempotency)
+    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
+
+    // Check if forecast already exists for this session (idempotency)
     const { data: existingForecast } = await supabase
       .from('paid_forecasts')
       .select('id, generation_status, strategic_forecast')
@@ -491,6 +484,7 @@ serve(async (req) => {
           success: true,
           forecast: existingForecast.strategic_forecast,
           forecastId: existingForecast.id,
+          customerEmail,
           cached: true,
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -500,10 +494,102 @@ serve(async (req) => {
       logStep("Previous attempt found, regenerating", { status: existingForecast.generation_status });
     }
 
+    // ========== DATABASE-FIRST: FETCH BIRTH DATA FROM FREE_FORECASTS ==========
+    const freeForecastId = sessionMetadata.freeForecastId;
+    const storedGuestToken = sessionMetadata.guestToken;
+    const storedFreeForecast = sessionMetadata.freeForecast || "";
+
+    if (!freeForecastId || !storedGuestToken) {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "missing_forecast_reference",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        hasFreeForecastId: !!freeForecastId,
+        hasGuestToken: !!storedGuestToken,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Missing forecast reference. Please start a new forecast." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    logStep("Fetching birth data from database", { freeForecastId: freeForecastId.slice(0, 8) + "..." });
+
+    // Fetch birth data from free_forecasts table
+    const { data: freeForecastRecord, error: fetchError } = await supabase
+      .from('free_forecasts')
+      .select('id, guest_token, birth_time_utc, latitude, longitude, customer_name, birth_date, birth_time, birth_place, forecast_text, pivotal_theme')
+      .eq('id', freeForecastId)
+      .single();
+
+    if (fetchError || !freeForecastRecord) {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "free_forecast_not_found",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        freeForecastId,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Forecast record not found. Please generate a new forecast." }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate guest token for security
+    if (freeForecastRecord.guest_token !== storedGuestToken) {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "guest_token_mismatch",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Invalid access token. Please generate a new forecast." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Extract birth data from database record
+    const birthDateTimeUtc = freeForecastRecord.birth_time_utc;
+    const lat = freeForecastRecord.latitude;
+    const lon = freeForecastRecord.longitude;
+    const userName = freeForecastRecord.customer_name || "the seeker";
+    const pivotalTheme = freeForecastRecord.pivotal_theme;
+    const freeForecast = storedFreeForecast || freeForecastRecord.forecast_text || "";
+
+    // Validate required birth data
+    if (!birthDateTimeUtc || lat === null || lon === null) {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "incomplete_birth_data",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        hasUtc: !!birthDateTimeUtc,
+        hasLat: lat !== null,
+        hasLon: lon !== null,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(
+        JSON.stringify({ error: "Incomplete birth data in record. Please generate a new forecast." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    logStep("Birth data retrieved from database", {
+      name: userName,
+      hasUtc: !!birthDateTimeUtc,
+      lat,
+      lon,
+    });
+
     // ========== GENERATE FORECAST ==========
     logStep("Starting forecast generation");
 
-    const userName = name || sessionMetadata.name || "the seeker";
     const targetYear = "2026";
     const priorYear = "2025";
 
@@ -961,7 +1047,7 @@ Return valid JSON only using this schema:
       try {
         await supabase
           .from('free_forecasts')
-          .update({ email: customerEmail })
+          .update({ customer_email: customerEmail })
           .eq('id', freeForecastId);
         logStep("Free forecast email updated");
       } catch (updateErr) {

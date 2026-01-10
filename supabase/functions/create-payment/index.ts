@@ -68,20 +68,15 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
     logStep("Stripe key verified");
 
-    const { birthData, freeForecast } = await req.json();
-    if (!birthData) throw new Error("Birth data is required");
-    if (!freeForecast) throw new Error("Free forecast is required");
+    const { freeForecastId, guestToken, freeForecastText } = await req.json();
     
-    // Validate required fields for reliable recovery after Stripe redirect
-    if (!birthData.birthDateTimeUtc || !birthData.lat || !birthData.lon) {
-      throw new Error("Incomplete birth data - missing coordinates or UTC time. Please re-enter your birth details.");
-    }
+    // Database-first approach: only require IDs, not full birth data
+    if (!freeForecastId) throw new Error("Free forecast ID is required");
+    if (!guestToken) throw new Error("Guest token is required");
     
-    logStep("Received birth data and forecast", { 
-      birthDate: birthData.birthDate, 
-      birthPlace: birthData.birthPlace,
-      hasUtc: !!birthData.birthDateTimeUtc,
-      hasCoords: !!(birthData.lat && birthData.lon)
+    logStep("Received forecast reference", { 
+      freeForecastId: freeForecastId.slice(0, 8) + "...",
+      hasGuestToken: !!guestToken,
     });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -93,12 +88,13 @@ serve(async (req) => {
     const successUrl = `${origin}/#/payment-success?session_id={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${origin}/#/results`;
 
-    // Truncate free forecast to fit Stripe's 500 char metadata limit
-    const truncatedForecast = freeForecast.length > 500 
-      ? freeForecast.substring(0, 497) + "..." 
-      : freeForecast;
+    // Truncate free forecast text for Stripe display (500 char metadata limit)
+    const truncatedForecast = freeForecastText && freeForecastText.length > 500 
+      ? freeForecastText.substring(0, 497) + "..." 
+      : (freeForecastText || "");
 
-    // Create a one-time payment session
+    // Database-first: Store only IDs in Stripe metadata
+    // The generate-paid-forecast function will fetch all birth data from free_forecasts table
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
@@ -110,13 +106,8 @@ serve(async (req) => {
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
-        birthDate: birthData.birthDate,
-        birthTime: birthData.birthTime,
-        birthPlace: birthData.birthPlace,
-        birthDateTimeUtc: birthData.birthDateTimeUtc || "",
-        lat: birthData.lat ? String(birthData.lat) : "",
-        lon: birthData.lon ? String(birthData.lon) : "",
-        name: birthData.name || "",
+        freeForecastId,
+        guestToken,
         freeForecast: truncatedForecast,
       },
     });
