@@ -1070,7 +1070,7 @@ Return valid JSON only using this schema:
           // Use hash-based URL for reliable routing on custom domains
           const resultsUrl = `${appUrl}/#/results?forecastId=${forecastId}${tokenPart}`;
 
-          await fetch("https://api.resend.com/emails", {
+          const emailResponse = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
               Authorization: `Bearer ${resendApiKey}`,
@@ -1145,7 +1145,14 @@ Return valid JSON only using this schema:
               `,
             }),
           });
-          logStep("Confirmation email sent", { email: customerEmail.slice(0, 3) + "***" });
+          
+          // Check if email actually sent successfully
+          const emailResult = await emailResponse.json();
+          if (!emailResponse.ok) {
+            logStep("Email API error", { status: emailResponse.status, error: emailResult });
+          } else {
+            logStep("Confirmation email sent", { email: customerEmail.slice(0, 3) + "***", id: emailResult.id });
+          }
         }
       } catch (emailErr) {
         // Log but don't fail the request for email errors
