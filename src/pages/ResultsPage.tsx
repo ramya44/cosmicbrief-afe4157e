@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { ForecastSection } from '@/components/ForecastSection';
@@ -13,6 +13,12 @@ import { toast } from 'sonner';
 
 const ResultsPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const deepLinkForecastId = searchParams.get('forecastId') || searchParams.get('id');
+  const deepLinkGuestToken = searchParams.get('guestToken') || searchParams.get('guest_token');
+  const isDeepLinkPaid = !!deepLinkForecastId;
+
   const { 
     birthData, 
     freeForecast, 
@@ -25,18 +31,111 @@ const ResultsPage = () => {
     customerEmail,
     setIsPaid,
     setStrategicForecast,
-    setIsStrategicLoading
+    setIsStrategicLoading,
+    setPaidGuestToken,
   } = useForecastStore();
 
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Deep-link support: load paid forecast via secure backend function when forecastId is present.
   useEffect(() => {
-    if (!birthData && !isLoading) {
+    if (!isDeepLinkPaid) return;
+    if (!deepLinkForecastId) return;
+
+    // Guest access requires guest token (by design)
+    if (!deepLinkGuestToken) {
+      setIsStrategicLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadPaidForecast = async () => {
+      try {
+        setIsPaid(true);
+        setIsStrategicLoading(true);
+        setPaidGuestToken(deepLinkGuestToken);
+
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-forecast?id=${encodeURIComponent(deepLinkForecastId)}&type=paid&guest_token=${encodeURIComponent(deepLinkGuestToken)}`;
+
+        const res = await fetch(url, {
+          method: 'GET',
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        });
+
+        const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json?.error || 'Unable to retrieve forecast');
+        }
+
+        if (!cancelled) {
+          setStrategicForecast(json?.strategicForecast ?? null);
+        }
+      } catch (e) {
+        console.error('Failed to load paid forecast from deep link:', e);
+        if (!cancelled) {
+          setStrategicForecast(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsStrategicLoading(false);
+        }
+      }
+    };
+
+    loadPaidForecast();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDeepLinkPaid, deepLinkForecastId, deepLinkGuestToken, setIsPaid, setIsStrategicLoading, setPaidGuestToken, setStrategicForecast]);
+
+  useEffect(() => {
+    if (!isDeepLinkPaid && !birthData && !isLoading) {
       navigate('/input');
     }
-  }, [birthData, isLoading, navigate]);
+  }, [birthData, isLoading, navigate, isDeepLinkPaid]);
 
-  if (isLoading || !freeForecast) {
+  if (isLoading || (!isDeepLinkPaid && !freeForecast)) {
     return <LoadingSpinner />;
+  }
+
+  if (isDeepLinkPaid && isStrategicLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (isDeepLinkPaid && deepLinkForecastId && !deepLinkGuestToken) {
+    return (
+      <div className="relative min-h-screen bg-celestial flex items-center justify-center">
+        <StarField />
+        <div className="relative z-10 max-w-md mx-auto px-4 text-center">
+          <div className="rounded-2xl border border-border/30 bg-midnight/80 backdrop-blur-sm p-8">
+            <h1 className="font-display text-2xl text-cream mb-2">Forecast link incomplete</h1>
+            <p className="text-cream-muted">This report link is missing its access token. Please use the full link from your email.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isDeepLinkPaid && deepLinkForecastId && deepLinkGuestToken && !strategicForecast) {
+    return (
+      <div className="relative min-h-screen bg-celestial flex items-center justify-center">
+        <StarField />
+        <div className="relative z-10 max-w-md mx-auto px-4 text-center">
+          <div className="rounded-2xl border border-border/30 bg-midnight/80 backdrop-blur-sm p-8">
+            <h1 className="font-display text-2xl text-cream mb-2">We can’t open that report</h1>
+            <p className="text-cream-muted">For security, reports require the exact link with its access token.</p>
+            <div className="mt-6">
+              <Button variant="hero" onClick={() => navigate('/input')}>Create a new forecast</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleUnlock = async () => {
