@@ -165,10 +165,10 @@ serve(async (req) => {
       );
 
     } else {
-      // Fetch paid forecast with minimal fields
+      // Fetch paid forecast with fields needed for self-contained deep-link rendering
       const { data: forecast, error } = await supabase
         .from("paid_forecasts")
-        .select("id, strategic_forecast, zodiac_sign, created_at, user_id, guest_token, customer_email")
+        .select("id, strategic_forecast, zodiac_sign, created_at, user_id, guest_token, customer_email, customer_name, birth_date, birth_time, birth_place, free_forecast")
         .eq("id", id)
         .maybeSingle();
 
@@ -224,15 +224,26 @@ serve(async (req) => {
         }
       }
 
-      // Return minimal data
+      // Return data needed for self-contained deep-link rendering (no stale cache dependency)
       return new Response(
         JSON.stringify({
           id: forecast.id,
           strategicForecast: forecast.strategic_forecast,
+          freeForecast: forecast.free_forecast,
+          customerName: forecast.customer_name,
+          birthDate: forecast.birth_date,
+          birthTime: forecast.birth_time,
+          birthPlace: forecast.birth_place,
           zodiacSign: forecast.zodiac_sign,
           createdAt: forecast.created_at,
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { 
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+          } 
+        }
       );
     }
 
