@@ -505,11 +505,26 @@ serve(async (req) => {
     interface BirthChartData {
       moonSign?: string;
       moonSignId?: number;
+      moonSignLord?: string;
       sunSign?: string;
       sunSignId?: number;
+      sunSignLord?: string;
       nakshatra?: string;
       nakshatraId?: number;
       nakshatraPada?: number;
+      nakshatraLord?: string;
+      nakshatraGender?: string;
+      // Additional info from birth-details
+      deity?: string;
+      ganam?: string;
+      birthSymbol?: string;
+      animalSign?: string;
+      nadi?: string;
+      luckyColor?: string;
+      bestDirection?: string;
+      syllables?: string;
+      birthStone?: string;
+      westernZodiac?: string;
     }
     let birthChartData: BirthChartData = {};
 
@@ -536,13 +551,34 @@ serve(async (req) => {
           birthChartData = {
             moonSign: chartResult.moonSign,
             moonSignId: chartResult.moonSignId,
+            moonSignLord: chartResult.moonSignLord,
             sunSign: chartResult.sunSign,
             sunSignId: chartResult.sunSignId,
+            sunSignLord: chartResult.sunSignLord,
             nakshatra: chartResult.nakshatra,
             nakshatraId: chartResult.nakshatraId,
             nakshatraPada: chartResult.nakshatraPada,
+            nakshatraLord: chartResult.nakshatraLord,
+            nakshatraGender: chartResult.nakshatraGender,
+            deity: chartResult.deity,
+            ganam: chartResult.ganam,
+            birthSymbol: chartResult.birthSymbol,
+            animalSign: chartResult.animalSign,
+            nadi: chartResult.nadi,
+            luckyColor: chartResult.luckyColor,
+            bestDirection: chartResult.bestDirection,
+            syllables: chartResult.syllables,
+            birthStone: chartResult.birthStone,
+            westernZodiac: chartResult.westernZodiac,
           };
-          logStep("Birth chart fetched successfully", { ...birthChartData });
+          logStep("Birth chart fetched successfully", { 
+            moonSign: birthChartData.moonSign,
+            sunSign: birthChartData.sunSign, 
+            nakshatra: birthChartData.nakshatra,
+            nakshatraLord: birthChartData.nakshatraLord,
+            ganam: birthChartData.ganam,
+            nadi: birthChartData.nadi,
+          });
         } else {
           const errorText = await birthChartResponse.text();
           logStep("Birth chart fetch failed", { status: birthChartResponse.status, error: errorText });
@@ -806,11 +842,24 @@ Stop when finished.
           longitude: longitude ?? null,
           moon_sign: birthChartData.moonSign ?? null,
           moon_sign_id: birthChartData.moonSignId ?? null,
+          moon_sign_lord: birthChartData.moonSignLord ?? null,
           sun_sign: birthChartData.sunSign ?? null,
           sun_sign_id: birthChartData.sunSignId ?? null,
+          sun_sign_lord: birthChartData.sunSignLord ?? null,
           nakshatra: birthChartData.nakshatra ?? null,
           nakshatra_id: birthChartData.nakshatraId ?? null,
           nakshatra_pada: birthChartData.nakshatraPada ?? null,
+          nakshatra_lord: birthChartData.nakshatraLord ?? null,
+          nakshatra_gender: birthChartData.nakshatraGender ?? null,
+          deity: birthChartData.deity ?? null,
+          ganam: birthChartData.ganam ?? null,
+          birth_symbol: birthChartData.birthSymbol ?? null,
+          animal_sign: birthChartData.animalSign ?? null,
+          nadi: birthChartData.nadi ?? null,
+          lucky_color: birthChartData.luckyColor ?? null,
+          best_direction: birthChartData.bestDirection ?? null,
+          syllables: birthChartData.syllables ?? null,
+          birth_stone: birthChartData.birthStone ?? null,
         })
         .select("id, guest_token")
         .single();

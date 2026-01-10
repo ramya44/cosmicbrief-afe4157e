@@ -71,14 +71,29 @@ async function getAccessToken(): Promise<string> {
 interface BirthChartResult {
   moonSign: string;
   moonSignId: number;
+  moonSignLord: string;
   sunSign: string;
   sunSignId: number;
+  sunSignLord: string;
   nakshatra: string;
   nakshatraId: number;
   nakshatraPada: number;
+  nakshatraLord: string;
+  nakshatraGender: string;
+  // Additional info from birth-details
+  deity: string;
+  ganam: string;
+  birthSymbol: string;
+  animalSign: string;
+  nadi: string;
+  luckyColor: string;
+  bestDirection: string;
+  syllables: string;
+  birthStone: string;
+  westernZodiac: string;
 }
 
-// Call Prokerala birth-details API to get moon sign, sun sign, and nakshatra
+// Call Prokerala birth-details API to get moon sign, sun sign, nakshatra, and additional info
 async function getBirthDetails(
   accessToken: string,
   datetime: string,
@@ -112,19 +127,36 @@ async function getBirthDetails(
   const data = await response.json();
   logStep("Birth details received", { status: data.status });
 
-  // Extract moon sign (chandra_rasi), sun sign (soorya_rasi), and nakshatra
+  // Extract all available data from the response
   const chandraRasi = data.data.chandra_rasi;
   const sooryaRasi = data.data.soorya_rasi;
   const nakshatra = data.data.nakshatra;
+  const additionalInfo = data.data.additional_info || {};
+  const zodiac = data.data.zodiac;
 
   return {
     moonSign: chandraRasi.name,
     moonSignId: chandraRasi.id,
+    moonSignLord: chandraRasi.lord?.vedic_name || chandraRasi.lord?.name || "",
     sunSign: sooryaRasi.name,
     sunSignId: sooryaRasi.id,
+    sunSignLord: sooryaRasi.lord?.vedic_name || sooryaRasi.lord?.name || "",
     nakshatra: nakshatra.name,
     nakshatraId: nakshatra.id,
     nakshatraPada: nakshatra.pada,
+    nakshatraLord: nakshatra.lord?.vedic_name || nakshatra.lord?.name || "",
+    nakshatraGender: additionalInfo.gender || "",
+    // Additional info
+    deity: additionalInfo.deity || "",
+    ganam: additionalInfo.ganam || "",
+    birthSymbol: additionalInfo.symbol || "",
+    animalSign: additionalInfo.animal_sign || "",
+    nadi: additionalInfo.nadi || "",
+    luckyColor: additionalInfo.color || "",
+    bestDirection: additionalInfo.best_direction || "",
+    syllables: additionalInfo.syllables || "",
+    birthStone: additionalInfo.birth_stone || "",
+    westernZodiac: zodiac?.name || "",
   };
 }
 
@@ -169,6 +201,9 @@ serve(async (req) => {
       moonSign: birthDetails.moonSign,
       sunSign: birthDetails.sunSign,
       nakshatra: birthDetails.nakshatra,
+      nakshatraLord: birthDetails.nakshatraLord,
+      ganam: birthDetails.ganam,
+      nadi: birthDetails.nadi,
     });
 
     return new Response(JSON.stringify(birthDetails), {

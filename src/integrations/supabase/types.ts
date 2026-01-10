@@ -52,75 +52,114 @@ export type Database = {
       }
       free_forecasts: {
         Row: {
+          animal_sign: string | null
+          best_direction: string | null
           birth_date: string
           birth_place: string
+          birth_stone: string | null
+          birth_symbol: string | null
           birth_time: string
           birth_time_utc: string | null
           created_at: string
           customer_email: string | null
           customer_name: string | null
+          deity: string | null
           device_id: string | null
           forecast_text: string
+          ganam: string | null
           guest_token: string | null
           id: string
           latitude: number | null
           longitude: number | null
+          lucky_color: string | null
           moon_sign: string | null
           moon_sign_id: number | null
+          moon_sign_lord: string | null
+          nadi: string | null
           nakshatra: string | null
+          nakshatra_gender: string | null
           nakshatra_id: number | null
+          nakshatra_lord: string | null
           nakshatra_pada: number | null
           pivotal_theme: string | null
           sun_sign: string | null
           sun_sign_id: number | null
+          sun_sign_lord: string | null
+          syllables: string | null
           zodiac_sign: string | null
         }
         Insert: {
+          animal_sign?: string | null
+          best_direction?: string | null
           birth_date: string
           birth_place: string
+          birth_stone?: string | null
+          birth_symbol?: string | null
           birth_time: string
           birth_time_utc?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
+          deity?: string | null
           device_id?: string | null
           forecast_text: string
+          ganam?: string | null
           guest_token?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          lucky_color?: string | null
           moon_sign?: string | null
           moon_sign_id?: number | null
+          moon_sign_lord?: string | null
+          nadi?: string | null
           nakshatra?: string | null
+          nakshatra_gender?: string | null
           nakshatra_id?: number | null
+          nakshatra_lord?: string | null
           nakshatra_pada?: number | null
           pivotal_theme?: string | null
           sun_sign?: string | null
           sun_sign_id?: number | null
+          sun_sign_lord?: string | null
+          syllables?: string | null
           zodiac_sign?: string | null
         }
         Update: {
+          animal_sign?: string | null
+          best_direction?: string | null
           birth_date?: string
           birth_place?: string
+          birth_stone?: string | null
+          birth_symbol?: string | null
           birth_time?: string
           birth_time_utc?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string | null
+          deity?: string | null
           device_id?: string | null
           forecast_text?: string
+          ganam?: string | null
           guest_token?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
+          lucky_color?: string | null
           moon_sign?: string | null
           moon_sign_id?: number | null
+          moon_sign_lord?: string | null
+          nadi?: string | null
           nakshatra?: string | null
+          nakshatra_gender?: string | null
           nakshatra_id?: number | null
+          nakshatra_lord?: string | null
           nakshatra_pada?: number | null
           pivotal_theme?: string | null
           sun_sign?: string | null
           sun_sign_id?: number | null
+          sun_sign_lord?: string | null
+          syllables?: string | null
           zodiac_sign?: string | null
         }
         Relationships: []
@@ -128,78 +167,117 @@ export type Database = {
       paid_forecasts: {
         Row: {
           amount_paid: number | null
+          animal_sign: string | null
+          best_direction: string | null
           birth_date: string
           birth_place: string
+          birth_stone: string | null
+          birth_symbol: string | null
           birth_time: string
           birth_time_utc: string | null
           completion_tokens: number | null
           created_at: string | null
           customer_email: string
           customer_name: string | null
+          deity: string | null
           device_id: string | null
           free_forecast: string
+          ganam: string | null
           generation_error: string | null
           generation_status: string | null
           guest_token: string | null
           id: string
+          lucky_color: string | null
           model_used: string | null
+          moon_sign_lord: string | null
+          nadi: string | null
+          nakshatra_gender: string | null
+          nakshatra_lord: string | null
           prompt_tokens: number | null
           retry_count: number | null
           shareable_link: string | null
           strategic_forecast: Json
           stripe_session_id: string
+          sun_sign_lord: string | null
+          syllables: string | null
           total_tokens: number | null
           user_id: string | null
           zodiac_sign: string | null
         }
         Insert: {
           amount_paid?: number | null
+          animal_sign?: string | null
+          best_direction?: string | null
           birth_date: string
           birth_place: string
+          birth_stone?: string | null
+          birth_symbol?: string | null
           birth_time: string
           birth_time_utc?: string | null
           completion_tokens?: number | null
           created_at?: string | null
           customer_email: string
           customer_name?: string | null
+          deity?: string | null
           device_id?: string | null
           free_forecast: string
+          ganam?: string | null
           generation_error?: string | null
           generation_status?: string | null
           guest_token?: string | null
           id?: string
+          lucky_color?: string | null
           model_used?: string | null
+          moon_sign_lord?: string | null
+          nadi?: string | null
+          nakshatra_gender?: string | null
+          nakshatra_lord?: string | null
           prompt_tokens?: number | null
           retry_count?: number | null
           shareable_link?: string | null
           strategic_forecast: Json
           stripe_session_id: string
+          sun_sign_lord?: string | null
+          syllables?: string | null
           total_tokens?: number | null
           user_id?: string | null
           zodiac_sign?: string | null
         }
         Update: {
           amount_paid?: number | null
+          animal_sign?: string | null
+          best_direction?: string | null
           birth_date?: string
           birth_place?: string
+          birth_stone?: string | null
+          birth_symbol?: string | null
           birth_time?: string
           birth_time_utc?: string | null
           completion_tokens?: number | null
           created_at?: string | null
           customer_email?: string
           customer_name?: string | null
+          deity?: string | null
           device_id?: string | null
           free_forecast?: string
+          ganam?: string | null
           generation_error?: string | null
           generation_status?: string | null
           guest_token?: string | null
           id?: string
+          lucky_color?: string | null
           model_used?: string | null
+          moon_sign_lord?: string | null
+          nadi?: string | null
+          nakshatra_gender?: string | null
+          nakshatra_lord?: string | null
           prompt_tokens?: number | null
           retry_count?: number | null
           shareable_link?: string | null
           strategic_forecast?: Json
           stripe_session_id?: string
+          sun_sign_lord?: string | null
+          syllables?: string | null
           total_tokens?: number | null
           user_id?: string | null
           zodiac_sign?: string | null
