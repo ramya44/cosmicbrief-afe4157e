@@ -7,7 +7,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 import { stripLeadingHeaders } from '@/lib/utils';
-import { ArrowLeft, Sparkles, Calendar, Lock, ArrowLeftRight, Target, TrendingUp, Scale, Compass, BookOpen } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Lock, ArrowLeftRight, Target, TrendingUp, Compass, BookOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -480,24 +480,22 @@ const ResultsPage = () => {
                 </div>
               </div>
 
-              {/* Key Trade-Offs - Short with tension headers */}
+              {/* The Deeper Arc - Longer prose */}
               <div 
                 className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
                 style={{ animationDelay: '1200ms', animationFillMode: 'both' }}
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <Scale className="w-5 h-5 text-gold" />
-                  <h3 className="font-display text-xl text-cream">Key Trade-Offs and Tensions</h3>
+                  <Sparkles className="w-5 h-5 text-gold" />
+                  <h3 className="font-display text-xl text-cream">The Deeper Arc</h3>
                 </div>
-                <div className="space-y-4 mb-4">
-                  <div className="blur-[5px] select-none">
-                    <h4 className="text-cream font-medium text-lg mb-1">Ambition vs. Sustainability</h4>
-                    <div className="h-4 rounded bg-cream/10" style={{ width: '82%' }} />
-                  </div>
-                  <div className="blur-[6px] select-none space-y-2">
-                    <div className="h-4 rounded bg-cream/8" style={{ width: '70%' }} />
-                    <div className="h-4 rounded bg-cream/8" style={{ width: '88%' }} />
-                  </div>
+                <div className="space-y-3 mb-4 blur-[6px] select-none">
+                  <div className="h-4 rounded bg-cream/14" style={{ width: '94%' }} />
+                  <div className="h-4 rounded bg-cream/12" style={{ width: '87%' }} />
+                  <div className="h-4 rounded bg-cream/10" style={{ width: '91%' }} />
+                  <div className="h-4 rounded bg-cream/12" style={{ width: '78%' }} />
+                  <div className="h-4 rounded bg-cream/10" style={{ width: '84%' }} />
+                  <div className="h-4 rounded bg-cream/8" style={{ width: '62%' }} />
                 </div>
                 <div className="flex justify-center">
                   <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
@@ -526,31 +524,6 @@ const ResultsPage = () => {
                     <div className="h-4 rounded bg-cream/8" style={{ width: '65%' }} />
                     <div className="h-4 rounded bg-cream/8" style={{ width: '80%' }} />
                   </div>
-                </div>
-                <div className="flex justify-center">
-                  <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
-                    <Lock className="w-3.5 h-3.5 mr-1" />
-                    Unlock Detailed Analysis
-                  </Button>
-                </div>
-              </div>
-
-              {/* The Deeper Arc - Longer prose */}
-              <div 
-                className="rounded-xl border border-border/50 bg-midnight/30 p-6 animate-fade-up"
-                style={{ animationDelay: '1400ms', animationFillMode: 'both' }}
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="w-5 h-5 text-gold" />
-                  <h3 className="font-display text-xl text-cream">The Deeper Arc</h3>
-                </div>
-                <div className="space-y-3 mb-4 blur-[6px] select-none">
-                  <div className="h-4 rounded bg-cream/14" style={{ width: '94%' }} />
-                  <div className="h-4 rounded bg-cream/12" style={{ width: '87%' }} />
-                  <div className="h-4 rounded bg-cream/10" style={{ width: '91%' }} />
-                  <div className="h-4 rounded bg-cream/12" style={{ width: '78%' }} />
-                  <div className="h-4 rounded bg-cream/10" style={{ width: '84%' }} />
-                  <div className="h-4 rounded bg-cream/8" style={{ width: '62%' }} />
                 </div>
                 <div className="flex justify-center">
                   <Button variant="unlock" size="sm" onClick={handleUnlock} disabled={isRedirecting}>
@@ -601,7 +574,7 @@ const ResultsPage = () => {
             {/* Strategic Title */}
             <div className="text-center py-8 border-t border-b border-gold/30">
               <h2 className="font-display text-3xl md:text-4xl text-cream">
-                Strategic Plan for 2026
+                Detailed Brief for 2026
               </h2>
             </div>
 
@@ -641,21 +614,16 @@ const ResultsPage = () => {
               </div>
             </ForecastSection>
 
-            {/* The Year in Phases */}
-            <ForecastSection title="The Year in Phases" delay={400} icon={<Calendar className="w-5 h-5 text-gold" />}>
-              <SeasonalMapAccordion phases={strategicForecast.seasonal_map} />
+            {/* Deeper Arc */}
+            <ForecastSection title="The Deeper Arc: Your Past, Present, and Future" delay={400} icon={<Sparkles className="w-5 h-5 text-gold" />}>
+              <p className="text-cream/90 leading-relaxed whitespace-pre-line">
+                {stripLeadingHeaders(strategicForecast.deeper_arc)}
+              </p>
             </ForecastSection>
 
-            {/* Key Trade-offs */}
-            <ForecastSection title="Key Trade-Offs and Tensions" delay={500} icon={<Scale className="w-5 h-5 text-gold" />}>
-              <div className="space-y-4">
-                {strategicForecast.key_tradeoffs.map((tradeoff, index) => (
-                  <div key={index}>
-                    <h4 className="text-cream font-medium text-lg mb-1">{tradeoff.tension}</h4>
-                    <p className="text-cream/70">{stripLeadingHeaders(tradeoff.explanation)}</p>
-                  </div>
-                ))}
-              </div>
+            {/* The Year in Phases */}
+            <ForecastSection title="The Year in Phases" delay={500} icon={<Calendar className="w-5 h-5 text-gold" />}>
+              <SeasonalMapAccordion phases={strategicForecast.seasonal_map} />
             </ForecastSection>
 
             {/* Crossroads Moment - Only show if not empty */}
@@ -678,13 +646,6 @@ const ResultsPage = () => {
                   </div>
                 ))}
               </div>
-            </ForecastSection>
-
-            {/* Deeper Arc */}
-            <ForecastSection title="The Deeper Arc: Your Past, Present, and Future" delay={800} icon={<Sparkles className="w-5 h-5 text-gold" />}>
-              <p className="text-cream/90 leading-relaxed whitespace-pre-line">
-                {stripLeadingHeaders(strategicForecast.deeper_arc)}
-              </p>
             </ForecastSection>
 
           </div>
