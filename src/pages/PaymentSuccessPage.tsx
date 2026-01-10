@@ -48,10 +48,10 @@ const PaymentSuccessPage = () => {
       setMessageIndex((prev) => Math.min(prev + 1, GENERATING_STEPS.length - 1));
     }, 12000);
 
-    // Show timeout message after 90 seconds
+    // Show timeout message after 3 minutes (180 seconds)
     const timeoutTimer = setTimeout(() => {
       setShowTimeoutMessage(true);
-    }, 90000);
+    }, 180000);
     
     return () => {
       clearInterval(stepInterval);
@@ -190,7 +190,7 @@ const PaymentSuccessPage = () => {
               ) : (
                 <>
                   <p className="text-cream/50 text-sm mb-6">
-                    You'll receive an email with your full report.
+                    This may take up to 3 minutes. You'll receive an email with your full report.
                   </p>
                   <p className="font-display text-lg italic text-cream tracking-wide mb-6">
                     <span key={messageIndex} className="animate-fade-in">
