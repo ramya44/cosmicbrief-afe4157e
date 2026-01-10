@@ -804,6 +804,11 @@ Return valid JSON only using this schema:
   ]
 }`;
 
+    // Generate a stable cache key based on the static system prompt version
+    // This helps OpenAI route requests to servers with cached prompts
+    const SYSTEM_PROMPT_VERSION = "v1.0"; // Increment when system prompt changes
+    const promptCacheKey = `strategic-year-map-${SYSTEM_PROMPT_VERSION}`;
+
     const createPayload = (model: string) => ({
       model,
       messages: [
@@ -812,6 +817,10 @@ Return valid JSON only using this schema:
       ],
       response_format: { type: "json_object" },
       max_completion_tokens: 8000,
+      // Enable extended prompt caching (24h retention) for cost/latency savings
+      prompt_cache_retention: "24h",
+      // Consistent cache key helps route to servers with cached prompts
+      prompt_cache_key: promptCacheKey,
     });
 
     const fetchOptions = (payload: object) => ({
@@ -911,11 +920,25 @@ Return valid JSON only using this schema:
     logStep(`Generation succeeded`, { model: modelUsed, attempts: totalAttempts, usedFallback });
 
     const data = await resp.json();
+
+    // Extract cache metrics from OpenAI response
+    const cachedTokens = data.usage?.prompt_tokens_details?.cached_tokens ?? 0;
+    const promptTokens = data.usage?.prompt_tokens ?? 0;
+    const cacheHitRate = promptTokens > 0 ? Math.round((cachedTokens / promptTokens) * 100) : 0;
+
+    logStep("Prompt cache metrics", {
+      cachedTokens,
+      promptTokens,
+      cacheHitRate: `${cacheHitRate}%`,
+      completionTokens: data.usage?.completion_tokens ?? 0,
+    });
+
     const tokenUsage = data.usage
       ? {
           promptTokens: data.usage.prompt_tokens,
           completionTokens: data.usage.completion_tokens,
           totalTokens: data.usage.total_tokens,
+          cachedTokens: cachedTokens, // Track cached tokens
         }
       : null;
 
