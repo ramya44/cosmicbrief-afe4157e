@@ -512,6 +512,30 @@ serve(async (req) => {
     let finalFreeForecast = freeForecast;
     let finalPivotalTheme = pivotalTheme;
 
+    // Store cached birth chart data from free_forecasts if available
+    let cachedBirthChartData: {
+      moonSign?: string;
+      moonSignId?: number;
+      moonSignLord?: string;
+      sunSign?: string;
+      sunSignId?: number;
+      sunSignLord?: string;
+      nakshatra?: string;
+      nakshatraId?: number;
+      nakshatraPada?: number;
+      nakshatraLord?: string;
+      nakshatraGender?: string;
+      deity?: string;
+      ganam?: string;
+      birthSymbol?: string;
+      animalSign?: string;
+      nadi?: string;
+      luckyColor?: string;
+      bestDirection?: string;
+      syllables?: string;
+      birthStone?: string;
+    } | null = null;
+
     // Get freeForecastId from request or Stripe metadata
     const freeForecastIdToUse = freeForecastId || sessionMetadata.freeForecastId;
 
@@ -521,7 +545,7 @@ serve(async (req) => {
 
       const { data: freeForecastRow, error: ffError } = await supabase
         .from("free_forecasts")
-        .select("birth_time_utc, latitude, longitude, birth_place, forecast_text, pivotal_theme, customer_name")
+        .select("birth_time_utc, latitude, longitude, birth_place, forecast_text, pivotal_theme, customer_name, moon_sign, moon_sign_id, moon_sign_lord, sun_sign, sun_sign_id, sun_sign_lord, nakshatra, nakshatra_id, nakshatra_pada, nakshatra_lord, nakshatra_gender, deity, ganam, birth_symbol, animal_sign, nadi, lucky_color, best_direction, syllables, birth_stone")
         .eq("id", freeForecastIdToUse)
         .maybeSingle();
 
@@ -547,9 +571,36 @@ serve(async (req) => {
       finalFreeForecast = finalFreeForecast || freeForecastRow.forecast_text;
       finalPivotalTheme = finalPivotalTheme || freeForecastRow.pivotal_theme;
 
+      // Cache birth chart data from free_forecasts if available
+      if (freeForecastRow.moon_sign) {
+        cachedBirthChartData = {
+          moonSign: freeForecastRow.moon_sign,
+          moonSignId: freeForecastRow.moon_sign_id,
+          moonSignLord: freeForecastRow.moon_sign_lord,
+          sunSign: freeForecastRow.sun_sign,
+          sunSignId: freeForecastRow.sun_sign_id,
+          sunSignLord: freeForecastRow.sun_sign_lord,
+          nakshatra: freeForecastRow.nakshatra,
+          nakshatraId: freeForecastRow.nakshatra_id,
+          nakshatraPada: freeForecastRow.nakshatra_pada,
+          nakshatraLord: freeForecastRow.nakshatra_lord,
+          nakshatraGender: freeForecastRow.nakshatra_gender,
+          deity: freeForecastRow.deity,
+          ganam: freeForecastRow.ganam,
+          birthSymbol: freeForecastRow.birth_symbol,
+          animalSign: freeForecastRow.animal_sign,
+          nadi: freeForecastRow.nadi,
+          luckyColor: freeForecastRow.lucky_color,
+          bestDirection: freeForecastRow.best_direction,
+          syllables: freeForecastRow.syllables,
+          birthStone: freeForecastRow.birth_stone,
+        };
+      }
+
       logStep("Birth data retrieved from database", {
         hasDateTime: !!finalBirthDateTimeUtc,
         hasCoords: finalLat !== undefined && finalLon !== undefined,
+        hasBirthChart: !!cachedBirthChartData,
       });
     }
 
@@ -575,55 +626,97 @@ serve(async (req) => {
     const targetYear = "2026";
     const priorYear = "2025";
 
-    // Fetch birth chart data from Prokerala API
+    // Birth chart data interface with all additional info fields
     interface BirthChartData {
       moonSign?: string;
       moonSignId?: number;
+      moonSignLord?: string;
       sunSign?: string;
       sunSignId?: number;
+      sunSignLord?: string;
       nakshatra?: string;
       nakshatraId?: number;
       nakshatraPada?: number;
+      nakshatraLord?: string;
+      nakshatraGender?: string;
+      deity?: string;
+      ganam?: string;
+      birthSymbol?: string;
+      animalSign?: string;
+      nadi?: string;
+      luckyColor?: string;
+      bestDirection?: string;
+      syllables?: string;
+      birthStone?: string;
     }
     let birthChartData: BirthChartData = {};
 
-    try {
-      logStep("Fetching birth chart", { datetime: finalBirthDateTimeUtc, lat: finalLat, lon: finalLon });
-
-      const birthChartResponse = await fetch(`${supabaseUrl}/functions/v1/get-birth-chart`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({
-          datetime: finalBirthDateTimeUtc,
-          latitude: finalLat,
-          longitude: finalLon,
-          ayanamsa: 1, // Lahiri
-        }),
+    // First try to use cached data from free_forecasts if available
+    if (cachedBirthChartData) {
+      birthChartData = cachedBirthChartData;
+      logStep("Using cached birth chart from free_forecasts", { 
+        moonSign: birthChartData.moonSign, 
+        sunSign: birthChartData.sunSign, 
+        nakshatra: birthChartData.nakshatra 
       });
+    } else {
+      // Fetch fresh from Prokerala API
+      try {
+        logStep("Fetching birth chart", { datetime: finalBirthDateTimeUtc, lat: finalLat, lon: finalLon });
 
-      if (birthChartResponse.ok) {
-        const chartResult = await birthChartResponse.json();
-        birthChartData = {
-          moonSign: chartResult.moonSign,
-          moonSignId: chartResult.moonSignId,
-          sunSign: chartResult.sunSign,
-          sunSignId: chartResult.sunSignId,
-          nakshatra: chartResult.nakshatra,
-          nakshatraId: chartResult.nakshatraId,
-          nakshatraPada: chartResult.nakshatraPada,
-        };
-        logStep("Birth chart fetched successfully", { ...birthChartData });
-      } else {
-        const errorText = await birthChartResponse.text();
-        logStep("Birth chart fetch failed", { status: birthChartResponse.status, error: errorText });
+        const birthChartResponse = await fetch(`${supabaseUrl}/functions/v1/get-birth-chart`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            datetime: finalBirthDateTimeUtc,
+            latitude: finalLat,
+            longitude: finalLon,
+            ayanamsa: 1, // Lahiri
+          }),
+        });
+
+        if (birthChartResponse.ok) {
+          const chartResult = await birthChartResponse.json();
+          birthChartData = {
+            moonSign: chartResult.moonSign,
+            moonSignId: chartResult.moonSignId,
+            moonSignLord: chartResult.moonSignLord,
+            sunSign: chartResult.sunSign,
+            sunSignId: chartResult.sunSignId,
+            sunSignLord: chartResult.sunSignLord,
+            nakshatra: chartResult.nakshatra,
+            nakshatraId: chartResult.nakshatraId,
+            nakshatraPada: chartResult.nakshatraPada,
+            nakshatraLord: chartResult.nakshatraLord,
+            nakshatraGender: chartResult.nakshatraGender,
+            deity: chartResult.deity,
+            ganam: chartResult.ganam,
+            birthSymbol: chartResult.birthSymbol,
+            animalSign: chartResult.animalSign,
+            nadi: chartResult.nadi,
+            luckyColor: chartResult.luckyColor,
+            bestDirection: chartResult.bestDirection,
+            syllables: chartResult.syllables,
+            birthStone: chartResult.birthStone,
+          };
+          logStep("Birth chart fetched successfully", { 
+            moonSign: birthChartData.moonSign, 
+            sunSign: birthChartData.sunSign, 
+            nakshatra: birthChartData.nakshatra,
+            nakshatraLord: birthChartData.nakshatraLord,
+          });
+        } else {
+          const errorText = await birthChartResponse.text();
+          logStep("Birth chart fetch failed", { status: birthChartResponse.status, error: errorText });
+        }
+      } catch (chartError) {
+        logStep("Birth chart fetch exception", {
+          error: chartError instanceof Error ? chartError.message : String(chartError),
+        });
       }
-    } catch (chartError) {
-      logStep("Birth chart fetch exception", {
-        error: chartError instanceof Error ? chartError.message : String(chartError),
-      });
     }
 
     const systemPrompt = `You generate premium, decision-oriented annual readings inspired by Indian Jyotish.
