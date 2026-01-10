@@ -977,7 +977,7 @@ Return valid JSON only using this schema:
       try {
         const resendApiKey = Deno.env.get("RESEND_API_KEY");
         if (resendApiKey) {
-          const appUrl = Deno.env.get("APP_URL") || "https://astroyearcompass.lovable.app";
+          const appUrl = "https://cosmicbrief.com";
           const guestToken = forecastData?.guest_token;
           const tokenPart = guestToken ? `&guestToken=${encodeURIComponent(guestToken)}` : "";
           // Use hash-based URL for reliable routing on custom domains
@@ -990,9 +990,9 @@ Return valid JSON only using this schema:
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: "AstroYear Compass <onboarding@resend.dev>",
+              from: "Cosmic Brief <noreply@cosmicbrief.com>",
               to: [customerEmail],
-              subject: "Your Strategic Year Map is Ready! ✨",
+              subject: "Your Cosmic Brief is Ready! ✨",
               html: `
                 <!DOCTYPE html>
                 <html>
@@ -1016,17 +1016,17 @@ Return valid JSON only using this schema:
                           <tr>
                             <td style="padding: 20px 40px;">
                               <p style="color: #d4d4c4; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
-                                Your personalized <strong style="color: #daa520;">Strategic Year Map</strong> has been crafted and is ready for you to explore.
+                                Your personalized <strong style="color: #daa520;">Cosmic Brief</strong> has been crafted and is ready for you to explore.
                               </p>
                               <p style="color: #d4d4c4; font-size: 16px; line-height: 1.8; margin: 0 0 32px;">
-                                This comprehensive guide includes your complete astrological analysis with monthly guidance, key planetary influences, and strategic recommendations for the year ahead.
+                                This comprehensive guide includes your complete astrological analysis with seasonal guidance, key planetary influences, and strategic recommendations for the year ahead.
                               </p>
                             </td>
                           </tr>
                           <tr>
                             <td style="padding: 0 40px 32px; text-align: center;">
                               <a href="${resultsUrl}" style="display: inline-block; background: linear-gradient(135deg, #daa520 0%, #b8860b 100%); color: #0a0a1a; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);">
-                                View Your Strategic Year Map
+                                View Your Cosmic Brief
                               </a>
                             </td>
                           </tr>
@@ -1045,7 +1045,7 @@ Return valid JSON only using this schema:
                                 May the stars guide your path ✨
                               </p>
                               <p style="color: #666; font-size: 11px; margin: 12px 0 0;">
-                                AstroYear Compass
+                                Cosmic Brief
                               </p>
                             </td>
                           </tr>
