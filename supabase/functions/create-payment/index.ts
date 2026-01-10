@@ -78,6 +78,10 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://lovable.dev";
     logStep("Creating checkout session", { origin });
 
+    // HashRouter compatibility: Stripe must redirect to a hash-based route on static hosts.
+    const successUrl = `${origin}/#/payment-success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${origin}/#/results`;
+
     // Truncate free forecast to fit Stripe's 500 char metadata limit
     const truncatedForecast = freeForecast.length > 500 
       ? freeForecast.substring(0, 497) + "..." 
@@ -92,8 +96,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/results`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         birthDate: birthData.birthDate,
         birthTime: birthData.birthTime,
