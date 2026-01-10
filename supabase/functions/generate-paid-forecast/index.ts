@@ -976,6 +976,99 @@ Return valid JSON only using this schema:
       .eq('id', forecastId)
       .single();
 
+    // ========== SEND CONFIRMATION EMAIL ==========
+    // Send email from backend for resilience (client may lose state)
+    if (forecastId && customerEmail) {
+      try {
+        const resendApiKey = Deno.env.get("RESEND_API_KEY");
+        if (resendApiKey) {
+          const appUrl = Deno.env.get("APP_URL") || "https://astroyearcompass.lovable.app";
+          const resultsUrl = `${appUrl}/results?forecastId=${forecastId}`;
+          
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${resendApiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "AstroYear Compass <onboarding@resend.dev>",
+              to: [customerEmail],
+              subject: "Your Strategic Year Map is Ready! ✨",
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 0; background-color: #0a0a1a; font-family: Georgia, 'Times New Roman', serif;">
+                  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0a0a1a; padding: 40px 20px;">
+                    <tr>
+                      <td align="center">
+                        <table width="600" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; border: 1px solid rgba(218, 165, 32, 0.3); overflow: hidden;">
+                          <tr>
+                            <td style="padding: 40px 40px 20px; text-align: center;">
+                              <div style="font-size: 48px; margin-bottom: 16px;">✨</div>
+                              <h1 style="color: #f5f5dc; font-size: 28px; margin: 0; font-weight: normal;">
+                                ${userName && userName !== "the seeker" ? `Dear ${userName},` : 'Dear Stargazer,'}
+                              </h1>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 20px 40px;">
+                              <p style="color: #d4d4c4; font-size: 16px; line-height: 1.8; margin: 0 0 24px;">
+                                Your personalized <strong style="color: #daa520;">Strategic Year Map</strong> has been crafted and is ready for you to explore.
+                              </p>
+                              <p style="color: #d4d4c4; font-size: 16px; line-height: 1.8; margin: 0 0 32px;">
+                                This comprehensive guide includes your complete astrological analysis with monthly guidance, key planetary influences, and strategic recommendations for the year ahead.
+                              </p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 0 40px 32px; text-align: center;">
+                              <a href="${resultsUrl}" style="display: inline-block; background: linear-gradient(135deg, #daa520 0%, #b8860b 100%); color: #0a0a1a; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(218, 165, 32, 0.3);">
+                                View Your Strategic Year Map
+                              </a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 0 40px 32px;">
+                              <div style="background: rgba(218, 165, 32, 0.1); border: 1px solid rgba(218, 165, 32, 0.2); border-radius: 8px; padding: 20px;">
+                                <p style="color: #daa520; font-size: 14px; margin: 0; text-align: center;">
+                                  💡 <strong>Tip:</strong> Bookmark this link to access your forecast anytime!
+                                </p>
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 24px 40px; border-top: 1px solid rgba(218, 165, 32, 0.2); text-align: center;">
+                              <p style="color: #888; font-size: 12px; margin: 0;">
+                                May the stars guide your path ✨
+                              </p>
+                              <p style="color: #666; font-size: 11px; margin: 12px 0 0;">
+                                AstroYear Compass
+                              </p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                </html>
+              `,
+            }),
+          });
+          logStep("Confirmation email sent", { email: customerEmail.slice(0, 3) + "***" });
+        }
+      } catch (emailErr) {
+        // Log but don't fail the request for email errors
+        console.error("Failed to send confirmation email:", emailErr);
+        logStep("Email send failed (non-fatal)", { error: String(emailErr) });
+      }
+    }
+
     // Check for abuse and alert if threshold exceeded
     await checkAndAlertPaidAbuse(supabase, clientIP, deviceId);
 
@@ -997,6 +1090,7 @@ Return valid JSON only using this schema:
       success: true,
       forecast,
       forecastId,
+      customerEmail,
       guestToken: forecastData?.guest_token,
       modelUsed,
       totalAttempts,
