@@ -33,11 +33,14 @@ const ResultsPage = () => {
     setStrategicForecast,
     setIsStrategicLoading,
     setPaidGuestToken,
+    setBirthData,
+    setFreeForecast,
   } = useForecastStore();
 
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Deep-link support: load paid forecast via secure backend function when forecastId is present.
+  // CRITICAL: Clear stale cached state before rendering to prevent showing wrong person's report.
   useEffect(() => {
     if (!isDeepLinkPaid) return;
     if (!deepLinkForecastId) return;
@@ -52,11 +55,14 @@ const ResultsPage = () => {
 
     const loadPaidForecast = async () => {
       try {
+        // Immediately clear any cached state to prevent stale data from rendering
+        setStrategicForecast(null);
         setIsPaid(true);
         setIsStrategicLoading(true);
         setPaidGuestToken(deepLinkGuestToken);
 
-        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-forecast?id=${encodeURIComponent(deepLinkForecastId)}&type=paid&guest_token=${encodeURIComponent(deepLinkGuestToken)}`;
+        // Add cache-busting timestamp to prevent any intermediary caching
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-forecast?id=${encodeURIComponent(deepLinkForecastId)}&type=paid&guest_token=${encodeURIComponent(deepLinkGuestToken)}&ts=${Date.now()}`;
 
         const res = await fetch(url, {
           method: 'GET',
@@ -64,6 +70,7 @@ const ResultsPage = () => {
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
+          cache: 'no-store',
         });
 
         const json = await res.json();
@@ -72,6 +79,21 @@ const ResultsPage = () => {
         }
 
         if (!cancelled) {
+          // Set birth data from the authoritative backend response (overrides any stale localStorage)
+          if (json.birthDate && json.birthPlace) {
+            setBirthData({
+              birthDate: json.birthDate,
+              birthTime: json.birthTime || '',
+              birthPlace: json.birthPlace,
+              name: json.customerName || undefined,
+            });
+          }
+          
+          // Set free forecast from backend response (overrides any stale localStorage)
+          if (json.freeForecast) {
+            setFreeForecast({ forecast: json.freeForecast });
+          }
+          
           setStrategicForecast(json?.strategicForecast ?? null);
         }
       } catch (e) {
@@ -91,7 +113,7 @@ const ResultsPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [isDeepLinkPaid, deepLinkForecastId, deepLinkGuestToken, setIsPaid, setIsStrategicLoading, setPaidGuestToken, setStrategicForecast]);
+  }, [isDeepLinkPaid, deepLinkForecastId, deepLinkGuestToken, setIsPaid, setIsStrategicLoading, setPaidGuestToken, setStrategicForecast, setBirthData, setFreeForecast]);
 
   useEffect(() => {
     if (!isDeepLinkPaid && !birthData && !isLoading) {
@@ -212,78 +234,80 @@ const ResultsPage = () => {
         </div>
 
         {/* Free Forecast - Formatted Sections */}
-        <div className="max-w-3xl mx-auto space-y-8 mb-12">
-          <ForecastSection title="Your Year at a Glance" delay={100}>
-            {(() => {
-              const text = freeForecast.forecast;
-              const priorYear = new Date().getFullYear() - 1;
-              // Parse sections from the forecast text using more flexible regex
-              const sections: { header: string; content: string }[] = [];
-              // Updated headers to match new prompt structure, including dynamic prior year
-              const sectionHeaders = [
-                'Your Natural Orientation',
-                `Your ${priorYear}`,
-                'Looking Ahead',
-                'Your Pivotal Life Theme', 
-                'The Quiet Undercurrent'
-              ];
-              
-              sectionHeaders.forEach((header, index) => {
-                // Escape special regex characters in header (for dynamic year like "Your 2025")
-                const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                // Match header with optional markdown formatting (**, ##, etc.) and colon
-                const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${escapedHeader}(?:\\*\\*)?:?\\s*\\n?`, 'i');
+        {freeForecast && (
+          <div className="max-w-3xl mx-auto space-y-8 mb-12">
+            <ForecastSection title="Your Year at a Glance" delay={100}>
+              {(() => {
+                const text = freeForecast.forecast;
+                const priorYear = new Date().getFullYear() - 1;
+                // Parse sections from the forecast text using more flexible regex
+                const sections: { header: string; content: string }[] = [];
+                // Updated headers to match new prompt structure, including dynamic prior year
+                const sectionHeaders = [
+                  'Your Natural Orientation',
+                  `Your ${priorYear}`,
+                  'Looking Ahead',
+                  'Your Pivotal Life Theme', 
+                  'The Quiet Undercurrent'
+                ];
                 
-                // For finding the end, we need to check ALL remaining headers (not just the next one)
-                const remainingHeaders = sectionHeaders.slice(index + 1);
-                
-                const headerMatch = text.match(headerPattern);
-                if (headerMatch && headerMatch.index !== undefined) {
-                  const startIndex = headerMatch.index + headerMatch[0].length;
-                  let endIndex = text.length;
+                sectionHeaders.forEach((header, index) => {
+                  // Escape special regex characters in header (for dynamic year like "Your 2025")
+                  const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                  // Match header with optional markdown formatting (**, ##, etc.) and colon
+                  const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${escapedHeader}(?:\\*\\*)?:?\\s*\\n?`, 'i');
                   
-                  // Find the earliest match of any remaining header
-                  for (const nextHeader of remainingHeaders) {
-                    const escapedNextHeader = nextHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const nextPattern = new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${escapedNextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i');
-                    const nextMatch = text.slice(startIndex).match(nextPattern);
-                    if (nextMatch && nextMatch.index !== undefined) {
-                      const potentialEnd = startIndex + nextMatch.index;
-                      if (potentialEnd < endIndex) {
-                        endIndex = potentialEnd;
+                  // For finding the end, we need to check ALL remaining headers (not just the next one)
+                  const remainingHeaders = sectionHeaders.slice(index + 1);
+                  
+                  const headerMatch = text.match(headerPattern);
+                  if (headerMatch && headerMatch.index !== undefined) {
+                    const startIndex = headerMatch.index + headerMatch[0].length;
+                    let endIndex = text.length;
+                    
+                    // Find the earliest match of any remaining header
+                    for (const nextHeader of remainingHeaders) {
+                      const escapedNextHeader = nextHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                      const nextPattern = new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${escapedNextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i');
+                      const nextMatch = text.slice(startIndex).match(nextPattern);
+                      if (nextMatch && nextMatch.index !== undefined) {
+                        const potentialEnd = startIndex + nextMatch.index;
+                        if (potentialEnd < endIndex) {
+                          endIndex = potentialEnd;
+                        }
                       }
                     }
+                    
+                    const content = text.slice(startIndex, endIndex).trim();
+                    if (content) {
+                      sections.push({ header, content });
+                    }
                   }
-                  
-                  const content = text.slice(startIndex, endIndex).trim();
-                  if (content) {
-                    sections.push({ header, content });
-                  }
+                });
+
+                // If parsing didn't work, show as plain text
+                if (sections.length === 0) {
+                  return (
+                    <p className="text-cream/70 leading-relaxed text-lg whitespace-pre-line">
+                      {text}
+                    </p>
+                  );
                 }
-              });
 
-              // If parsing didn't work, show as plain text
-              if (sections.length === 0) {
                 return (
-                  <p className="text-cream/70 leading-relaxed text-lg whitespace-pre-line">
-                    {text}
-                  </p>
+                  <div className="space-y-6">
+                    {sections.map((section, index) => (
+                      <div key={index}>
+                        <h4 className="text-cream font-medium text-lg mb-1">{section.header}</h4>
+                        <p className="text-cream/70 leading-relaxed">{section.content}</p>
+                      </div>
+                    ))}
+                  </div>
                 );
-              }
-
-              return (
-                <div className="space-y-6">
-                  {sections.map((section, index) => (
-                    <div key={index}>
-                      <h4 className="text-cream font-medium text-lg mb-1">{section.header}</h4>
-                      <p className="text-cream/70 leading-relaxed">{section.content}</p>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()}
-          </ForecastSection>
-        </div>
+              })()}
+            </ForecastSection>
+          </div>
+        )}
 
         {/* Unlock CTA - Only show if not paid */}
         {!isPaid && (
