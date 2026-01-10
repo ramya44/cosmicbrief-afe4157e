@@ -2,10 +2,86 @@ import { Link } from "react-router-dom";
 import { StarField } from "@/components/StarField";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet-async";
 
 const WhyTurningPointPage = () => {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Why 2026 Is a Turning Point in Astrology: Major Planetary Transits Explained",
+    "description": "A comprehensive analysis of the major planetary transits in 2026 including Saturn and Neptune entering Aries, Jupiter in Cancer, Uranus in Gemini, and Pluto in Aquarius.",
+    "datePublished": "2025-01-01",
+    "dateModified": "2025-01-10",
+    "author": {
+      "@type": "Organization",
+      "name": "2026 Astrology Forecast"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "2026 Astrology Forecast"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://2026forecast.com/2026-astrology-forecast/why-2026-is-a-turning-point"
+    },
+    "keywords": ["astrology 2026", "saturn in aries 2026", "neptune in aries 2026", "jupiter in cancer", "uranus in gemini", "pluto in aquarius", "2026 planetary transits", "astrological turning point"],
+    "about": [
+      {"@type": "Thing", "name": "Saturn in Aries"},
+      {"@type": "Thing", "name": "Neptune in Aries"},
+      {"@type": "Thing", "name": "Jupiter in Cancer"},
+      {"@type": "Thing", "name": "Uranus in Gemini"},
+      {"@type": "Thing", "name": "Pluto in Aquarius"}
+    ]
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the most important astrological event in 2026?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The most significant shift is Saturn leaving Pisces for Aries in May 2026, combined with Neptune making the same move in March. This double transition from water to fire changes the entire energetic landscape from passive to active."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is 2026 different from 2025 astrologically?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "2025 still carried heavy Pisces energy (Saturn and Neptune both in Pisces), creating confusion and dissolution. 2026 shifts to Aries energy, demanding action, clarity, and forward movement. The focus moves from processing what's ending to building what's beginning."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Will 2026 be a good year?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "'Good' depends on your relationship with change and action. 2026 appears to favor those ready to take risks, start new ventures, and embrace discomfort. It may be challenging for those who prefer stability, careful planning, or waiting for perfect conditions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What sign will be most affected in 2026?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cardinal signs (Aries, Cancer, Libra, Capricorn) will feel these transits most intensely, as Saturn and Neptune in Aries will aspect their Sun signs directly. However, everyone will experience the shift in collective energy."
+        }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-midnight text-cream relative overflow-hidden">
+      <Helmet>
+        <title>Why 2026 Is a Turning Point in Astrology | Major Transits Explained</title>
+        <meta name="description" content="Deep dive into 2026's major planetary transits: Saturn and Neptune in Aries, Jupiter in Cancer, Uranus in Gemini, Pluto in Aquarius. Understand the cosmic shift." />
+        <link rel="canonical" href="https://2026forecast.com/2026-astrology-forecast/why-2026-is-a-turning-point" />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
+      </Helmet>
       <StarField />
       
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
