@@ -164,6 +164,13 @@ const ResultsPage = () => {
   const handleUnlock = async () => {
     if (!birthData || isRedirecting) return;
     
+    // Validate all required fields exist before checkout
+    if (!birthData.birthDateTimeUtc || !birthData.lat || !birthData.lon) {
+      toast.error('Birth data incomplete. Please re-enter your details.');
+      navigate('/input');
+      return;
+    }
+    
     setIsRedirecting(true);
     
     try {
