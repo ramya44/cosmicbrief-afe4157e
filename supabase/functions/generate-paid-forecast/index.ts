@@ -985,7 +985,8 @@ Return valid JSON only using this schema:
           const appUrl = Deno.env.get("APP_URL") || "https://astroyearcompass.lovable.app";
           const guestToken = forecastData?.guest_token;
           const tokenPart = guestToken ? `&guestToken=${encodeURIComponent(guestToken)}` : "";
-          const resultsUrl = `${appUrl}/results?forecastId=${forecastId}${tokenPart}`;
+          // Use hash-based URL for reliable routing on custom domains
+          const resultsUrl = `${appUrl}/#/results?forecastId=${forecastId}${tokenPart}`;
           
           await fetch("https://api.resend.com/emails", {
             method: "POST",

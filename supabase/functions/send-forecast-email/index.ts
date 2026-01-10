@@ -81,10 +81,10 @@ serve(async (req) => {
       throw new Error("Missing required fields: customerEmail or forecastId");
     }
 
-    // Build the results URL (include guest token when available for secure access)
+    // Build the results URL with hash routing for reliable custom domain support
     const appUrl = Deno.env.get("APP_URL") || "https://astroyearcompass.lovable.app";
     const tokenPart = guestToken ? `&guestToken=${encodeURIComponent(guestToken)}` : "";
-    const resultsUrl = `${appUrl}/results?forecastId=${forecastId}${tokenPart}`;
+    const resultsUrl = `${appUrl}/#/results?forecastId=${forecastId}${tokenPart}`;
 
     logStep("Sending email", { to: customerEmail, resultsUrl });
 
