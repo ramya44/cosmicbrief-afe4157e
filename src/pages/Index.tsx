@@ -31,7 +31,7 @@ const Index = () => {
             <span className="text-cream">Your </span>
             <span className="text-gradient-gold">2026</span>
             <br />
-            <span className="text-cream">Annual Forecast</span>
+            <span className="text-cream">Cosmic Brief</span>
           </h1>
 
           {/* Subheadline */}
@@ -54,7 +54,7 @@ const Index = () => {
               onClick={() => navigate('/input')}
               className="group"
             >
-              Get My Forecast
+              Get My Brief
               <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
             </Button>
           </div>
@@ -72,7 +72,7 @@ const Index = () => {
             className="mt-6 text-xs text-muted-foreground animate-fade-up"
             style={{ animationDelay: '600ms', animationFillMode: 'both' }}
           >
-            <a href="/2026-horoscope" className="text-gold hover:underline">Blog</a>
+            <a href="/2026-horoscope" className="text-gold hover:underline">2026 Forecast</a>
             {' · '}
             <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
             {' · '}
