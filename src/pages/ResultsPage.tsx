@@ -22,6 +22,7 @@ const ResultsPage = () => {
   const { 
     birthData, 
     freeForecast, 
+    freeGuestToken,
     paidForecast, 
     strategicForecast,
     isPaid, 
@@ -162,11 +163,11 @@ const ResultsPage = () => {
   }
 
   const handleUnlock = async () => {
-    if (!birthData || isRedirecting) return;
+    if (isRedirecting) return;
     
-    // Validate all required fields exist before checkout
-    if (!birthData.birthDateTimeUtc || !birthData.lat || !birthData.lon) {
-      toast.error('Birth data incomplete. Please re-enter your details.');
+    // Validate we have a free forecast to link to
+    if (!freeForecast?.id) {
+      toast.error('Forecast data incomplete. Please generate a new forecast.');
       navigate('/input');
       return;
     }
@@ -174,8 +175,14 @@ const ResultsPage = () => {
     setIsRedirecting(true);
     
     try {
+      // Database-first approach: only pass IDs, not full birth data
+      // The generate-paid-forecast function will fetch birth data from free_forecasts table
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { birthData, freeForecast: freeForecast?.forecast },
+        body: { 
+          freeForecastId: freeForecast.id,
+          guestToken: freeGuestToken,
+          freeForecastText: freeForecast.forecast, // For Stripe display only (truncated)
+        },
       });
 
       if (error) throw error;
