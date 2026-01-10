@@ -253,8 +253,8 @@ const PaymentSuccessPage = () => {
               </div>
               <p className="text-cream-muted text-sm">
                 Questions? Contact{' '}
-                <a href="mailto:support@yourdomain.com" className="text-gold hover:underline">
-                  support@yourdomain.com
+                <a href="mailto:support@cosmicbrief.com" className="text-gold hover:underline">
+                  support@cosmicbrief.com
                 </a>
               </p>
             </>
