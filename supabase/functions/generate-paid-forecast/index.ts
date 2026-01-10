@@ -14,12 +14,12 @@ const MAX_NAME_LENGTH = 100;
 const MAX_FREE_FORECAST_LENGTH = 5000;
 const MAX_REQUEST_BODY_SIZE = 10000; // 10KB max for paid forecast requests
 
-// Input validation schema - strict and narrow
+// Input validation schema - birth data now optional (fetched from DB)
 const InputSchema = z.object({
   sessionId: z.string().min(10, "Valid Stripe session ID required").max(200),
-  birthDateTimeUtc: z.string().min(1, "Birth datetime is required").max(50),
-  lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
-  lon: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
+  birthDateTimeUtc: z.string().max(50).optional(),
+  lat: z.number().min(-90).max(90).optional(),
+  lon: z.number().min(-180).max(180).optional(),
   name: z.string().max(MAX_NAME_LENGTH).optional(),
   pivotalTheme: z.string().max(50).optional(),
   freeForecast: z.string().max(MAX_FREE_FORECAST_LENGTH).optional(),
@@ -504,10 +504,74 @@ serve(async (req) => {
       logStep("Previous attempt found, regenerating", { status: existingForecast.generation_status });
     }
 
+    // ========== FETCH BIRTH DATA FROM DATABASE IF NOT PROVIDED ==========
+    let finalBirthDateTimeUtc = birthDateTimeUtc;
+    let finalLat = lat;
+    let finalLon = lon;
+    let finalName = name;
+    let finalFreeForecast = freeForecast;
+    let finalPivotalTheme = pivotalTheme;
+
+    // Get freeForecastId from request or Stripe metadata
+    const freeForecastIdToUse = freeForecastId || sessionMetadata.freeForecastId;
+
+    // If birth data not provided, fetch from free_forecasts table
+    if ((!finalBirthDateTimeUtc || finalLat === undefined || finalLon === undefined) && freeForecastIdToUse) {
+      logStep("Fetching birth data from database", { freeForecastId: freeForecastIdToUse });
+
+      const { data: freeForecastRow, error: ffError } = await supabase
+        .from("free_forecasts")
+        .select("birth_time_utc, latitude, longitude, birth_place, forecast_text, pivotal_theme, customer_name")
+        .eq("id", freeForecastIdToUse)
+        .maybeSingle();
+
+      if (ffError || !freeForecastRow) {
+        logStep("REQUEST_COMPLETE", {
+          outcome: "fail",
+          reason: "free_forecast_not_found",
+          ip: clientIP,
+          deviceId: deviceId || null,
+          freeForecastId: freeForecastIdToUse,
+          latencyMs: Date.now() - requestStartTime,
+        });
+        return new Response(JSON.stringify({ error: "Birth data not found. Please contact support." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      finalBirthDateTimeUtc = finalBirthDateTimeUtc || freeForecastRow.birth_time_utc;
+      finalLat = finalLat ?? freeForecastRow.latitude;
+      finalLon = finalLon ?? freeForecastRow.longitude;
+      finalName = finalName || freeForecastRow.customer_name || freeForecastRow.birth_place;
+      finalFreeForecast = finalFreeForecast || freeForecastRow.forecast_text;
+      finalPivotalTheme = finalPivotalTheme || freeForecastRow.pivotal_theme;
+
+      logStep("Birth data retrieved from database", {
+        hasDateTime: !!finalBirthDateTimeUtc,
+        hasCoords: finalLat !== undefined && finalLon !== undefined,
+      });
+    }
+
+    // Validate we have required birth data
+    if (!finalBirthDateTimeUtc || finalLat === undefined || finalLon === undefined) {
+      logStep("REQUEST_COMPLETE", {
+        outcome: "fail",
+        reason: "missing_birth_data",
+        ip: clientIP,
+        deviceId: deviceId || null,
+        latencyMs: Date.now() - requestStartTime,
+      });
+      return new Response(JSON.stringify({ error: "Birth data is required. Please contact support." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ========== GENERATE FORECAST ==========
     logStep("Starting forecast generation");
 
-    const userName = name || sessionMetadata.name || "the seeker";
+    const userName = finalName || sessionMetadata.name || "the seeker";
     const targetYear = "2026";
     const priorYear = "2025";
 
@@ -524,7 +588,7 @@ serve(async (req) => {
     let birthChartData: BirthChartData = {};
 
     try {
-      logStep("Fetching birth chart", { datetime: birthDateTimeUtc, lat, lon });
+      logStep("Fetching birth chart", { datetime: finalBirthDateTimeUtc, lat: finalLat, lon: finalLon });
 
       const birthChartResponse = await fetch(`${supabaseUrl}/functions/v1/get-birth-chart`, {
         method: "POST",
@@ -533,9 +597,9 @@ serve(async (req) => {
           Authorization: `Bearer ${supabaseServiceKey}`,
         },
         body: JSON.stringify({
-          datetime: birthDateTimeUtc,
-          latitude: lat,
-          longitude: lon,
+          datetime: finalBirthDateTimeUtc,
+          latitude: finalLat,
+          longitude: finalLon,
           ayanamsa: 1, // Lahiri
         }),
       });
@@ -625,15 +689,15 @@ This is a personal, decision-oriented interpretation, not a general forecast.
 
 INPUTS:
 - Name (optional): ${userName}
-- Birth moment (UTC): ${birthDateTimeUtc}
-- Birth location latitude: ${lat}
-- Birth location longitude: ${lon}
+- Birth moment (UTC): ${finalBirthDateTimeUtc}
+- Birth location latitude: ${finalLat}
+- Birth location longitude: ${finalLon}
 - Sun sign: ${birthChartData.sunSign || "unknown"}
 - Moon sign: ${birthChartData.moonSign || "unknown"}
 - Nakshatra: ${birthChartData.nakshatra || "unknown"}
 - Target year: ${targetYear}
 - Prior year: ${priorYear}
-${pivotalTheme ? `- Pivotal life theme (must be ranked #1): ${pivotalTheme}` : ""}
+${finalPivotalTheme ? `- Pivotal life theme (must be ranked #1): ${finalPivotalTheme}` : ""}
 
 WRITING RULES:
 - Plain human language only
@@ -812,11 +876,11 @@ Return valid JSON only using this schema:
         await saveForecastToDb(supabase, {
           sessionId,
           customerEmail,
-          birthDateTimeUtc,
-          lat,
-          lon,
+          birthDateTimeUtc: finalBirthDateTimeUtc,
+          lat: finalLat,
+          lon: finalLon,
           name: userName,
-          freeForecast,
+          freeForecast: finalFreeForecast,
           strategicForecast: null,
           modelUsed,
           generationStatus: "failed",
@@ -862,11 +926,11 @@ Return valid JSON only using this schema:
       await saveForecastToDb(supabase, {
         sessionId,
         customerEmail,
-        birthDateTimeUtc,
-        lat,
-        lon,
+        birthDateTimeUtc: finalBirthDateTimeUtc,
+        lat: finalLat,
+        lon: finalLon,
         name: userName,
-        freeForecast,
+        freeForecast: finalFreeForecast,
         strategicForecast: null,
         modelUsed,
         generationStatus: "failed",
@@ -903,11 +967,11 @@ Return valid JSON only using this schema:
       await saveForecastToDb(supabase, {
         sessionId,
         customerEmail,
-        birthDateTimeUtc,
-        lat,
-        lon,
+        birthDateTimeUtc: finalBirthDateTimeUtc,
+        lat: finalLat,
+        lon: finalLon,
         name: userName,
-        freeForecast,
+        freeForecast: finalFreeForecast,
         strategicForecast: null,
         modelUsed,
         generationStatus: "failed",
@@ -938,11 +1002,11 @@ Return valid JSON only using this schema:
     const forecastId = await saveForecastToDb(supabase, {
       sessionId,
       customerEmail,
-      birthDateTimeUtc,
-      lat,
-      lon,
+      birthDateTimeUtc: finalBirthDateTimeUtc,
+      lat: finalLat,
+      lon: finalLon,
       name: userName,
-      freeForecast,
+      freeForecast: finalFreeForecast,
       strategicForecast: forecast,
       modelUsed,
       generationStatus: "complete",
