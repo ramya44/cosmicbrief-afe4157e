@@ -47,6 +47,9 @@ serve(async (req) => {
       birthDate: session.metadata?.birthDate || "",
       birthTime: session.metadata?.birthTime || "",
       birthPlace: session.metadata?.birthPlace || "",
+      birthDateTimeUtc: session.metadata?.birthDateTimeUtc || "",
+      lat: session.metadata?.lat || "",
+      lon: session.metadata?.lon || "",
       name: session.metadata?.name || "",
       email: session.customer_details?.email || "",
     };

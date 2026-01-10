@@ -64,12 +64,59 @@ const PaymentSuccessPage = () => {
         return;
       }
 
-      // Must have birth data in store (set during input flow)
-      if (!birthData || !birthData.birthDateTimeUtc || !birthData.lat || !birthData.lon) {
-        setStatus('error');
-        toast.error('Birth data not found. Please try again.');
-        setTimeout(() => navigate('/input'), 2000);
-        return;
+      // Try to get birth data from store first
+      let effectiveBirthData = birthData;
+
+      // If birth data is missing from store, recover from Stripe session metadata
+      if (!effectiveBirthData || !effectiveBirthData.birthDateTimeUtc || !effectiveBirthData.lat || !effectiveBirthData.lon) {
+        console.log('Birth data missing from store, attempting to recover from Stripe session...');
+        
+        try {
+          const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-payment', {
+            body: { sessionId },
+          });
+
+          if (verifyError) {
+            console.error('Verify payment error:', verifyError);
+            throw new Error('Could not verify payment session');
+          }
+
+          if (!verifyData?.success || !verifyData?.birthData) {
+            console.error('No birth data in Stripe session');
+            throw new Error('Birth data not found in payment session');
+          }
+
+          // Reconstruct birth data from Stripe metadata
+          const recovered = verifyData.birthData;
+          console.log('Recovered birth data from Stripe:', { 
+            name: recovered.name, 
+            birthDate: recovered.birthDate,
+            hasLat: !!recovered.lat,
+            hasLon: !!recovered.lon 
+          });
+
+          effectiveBirthData = {
+            name: recovered.name || '',
+            birthDate: recovered.birthDate || '',
+            birthTime: recovered.birthTime || '',
+            birthPlace: recovered.birthPlace || '',
+            email: recovered.email || '',
+            birthDateTimeUtc: recovered.birthDateTimeUtc || '',
+            lat: recovered.lat ? parseFloat(recovered.lat) : undefined,
+            lon: recovered.lon ? parseFloat(recovered.lon) : undefined,
+          };
+
+          // If still missing critical data, we can't proceed
+          if (!effectiveBirthData.birthDateTimeUtc || !effectiveBirthData.lat || !effectiveBirthData.lon) {
+            throw new Error('Incomplete birth data in payment session');
+          }
+        } catch (recoveryError) {
+          console.error('Failed to recover birth data:', recoveryError);
+          setStatus('error');
+          toast.error('Birth data not found. Please contact support.');
+          setTimeout(() => navigate('/input'), 2000);
+          return;
+        }
       }
 
       // Start generation immediately - the secure endpoint handles payment verification
@@ -83,10 +130,10 @@ const PaymentSuccessPage = () => {
         const { data, error } = await supabase.functions.invoke('generate-paid-forecast', {
           body: {
             sessionId,
-            birthDateTimeUtc: birthData.birthDateTimeUtc,
-            lat: birthData.lat,
-            lon: birthData.lon,
-            name: birthData.name,
+            birthDateTimeUtc: effectiveBirthData.birthDateTimeUtc,
+            lat: effectiveBirthData.lat,
+            lon: effectiveBirthData.lon,
+            name: effectiveBirthData.name,
             pivotalTheme: freeForecast?.pivotalTheme,
             freeForecast: freeForecast?.forecast,
             freeForecastId: freeForecast?.id,
@@ -113,22 +160,8 @@ const PaymentSuccessPage = () => {
           setFailedEmail(data.customerEmail);
         }
 
-        // Send confirmation email if we have an email and forecast ID
-        if (data.forecastId) {
-          try {
-            await supabase.functions.invoke('send-forecast-email', {
-              body: {
-                customerEmail: data.customerEmail || birthData.email,
-                customerName: birthData.name,
-                forecastId: data.forecastId,
-              },
-            });
-            console.log('Forecast email sent successfully');
-          } catch (emailErr) {
-            console.error('Error sending forecast email:', emailErr);
-            // Don't fail the whole flow for email errors
-          }
-        }
+        // Email is now sent from the backend edge function for resilience
+        // No client-side email call needed - backend handles it automatically
         
         setStatus('complete');
         toast.success('Your Strategic Year Map is ready!');
@@ -140,7 +173,7 @@ const PaymentSuccessPage = () => {
         console.error('Failed to generate strategic forecast:', error);
         
         // Extract email for failure display
-        const forecastEmail = birthData.email || '';
+        const forecastEmail = effectiveBirthData.email || '';
         setFailedEmail(forecastEmail);
 
         // Notify support team about the failure
@@ -148,10 +181,10 @@ const PaymentSuccessPage = () => {
           await supabase.functions.invoke('notify-support', {
             body: {
               customerEmail: forecastEmail,
-              customerName: birthData.name,
-              birthDate: birthData.birthDate,
-              birthTime: birthData.birthTime,
-              birthPlace: birthData.birthPlace,
+              customerName: effectiveBirthData.name,
+              birthDate: effectiveBirthData.birthDate,
+              birthTime: effectiveBirthData.birthTime,
+              birthPlace: effectiveBirthData.birthPlace,
               errorMessage: error instanceof Error ? error.message : 'Unknown error',
               stripeSessionId: sessionId,
               totalAttempts: 4,
