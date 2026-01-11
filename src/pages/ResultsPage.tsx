@@ -85,11 +85,12 @@ const ResultsPage = () => {
 
         if (!cancelled) {
           // Set birth data from the authoritative backend response (overrides any stale localStorage)
-          if (json.birthDate && json.birthPlace) {
+          // IMPORTANT: always set what we have (don't gate on truthy checks) to avoid showing stale cached data.
+          if (json.birthDate || json.birthPlace || json.birthTime || json.customerName) {
             setBirthData({
-              birthDate: json.birthDate,
+              birthDate: json.birthDate || '',
               birthTime: json.birthTime || '',
-              birthPlace: json.birthPlace,
+              birthPlace: json.birthPlace || '',
               name: json.customerName || undefined,
             });
           }
@@ -214,7 +215,19 @@ const ResultsPage = () => {
     }
   };
 
-  
+  const upgradeHook = (() => {
+    if (!freeForecast) return '';
+    const fromSections = freeForecast.sections?.upgrade_hook;
+    if (fromSections && fromSections.trim()) return fromSections.trim();
+
+    // Fallback for legacy markdown (or older stored data): extract the last section.
+    // Expected format in persisted text: "## UPGRADE HOOK\n\n..."
+    const text = typeof freeForecast.forecast === 'string' ? freeForecast.forecast : '';
+    const marker = /\n##\s*UPGRADE HOOK\s*\n\n/i;
+    const parts = text.split(marker);
+    if (parts.length < 2) return '';
+    return stripLeadingHeaders(parts[parts.length - 1]).trim();
+  })();
 
   return (
     <div className="relative min-h-screen bg-celestial">
@@ -298,14 +311,14 @@ const ResultsPage = () => {
                   );
                 })}
                 
-                {/* Upgrade Hook - Bold text, no title */}
-                {freeForecast.sections?.upgrade_hook && (
+                {/* Upgrade Hook - Bold text, no title (free forecast only) */}
+                {!isPaid && upgradeHook && (
                   <div 
                     className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up"
                     style={{ animationDelay: '500ms', animationFillMode: 'both' }}
                   >
                     <p className="text-cream font-semibold leading-relaxed whitespace-pre-line">
-                      {freeForecast.sections.upgrade_hook}
+                      {upgradeHook}
                     </p>
                   </div>
                 )}
