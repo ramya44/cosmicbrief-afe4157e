@@ -293,10 +293,10 @@ const ResultsPage = () => {
               // Structured JSON sections (new format)
               <div className="space-y-6">
                 {[
-                  { key: 'who_you_are_right_now', title: 'Who You Are Right Now' },
-                  { key: 'whats_happening_in_your_life', title: "What's Happening in Your Life" },
-                  { key: 'pivotal_life_theme', title: '2026 Pivotal Life Theme' },
-                  { key: 'what_is_becoming_tighter_or_less_forgiving', title: 'What Is Becoming Tighter' },
+                  { key: 'who_you_are_right_now', title: 'Who You Are Right Now', showAnimal: true },
+                  { key: 'whats_happening_in_your_life', title: "What's Happening in Your Life", showAnimal: false },
+                  { key: 'pivotal_life_theme', title: '2026 Pivotal Life Theme', showAnimal: false },
+                  { key: 'what_is_becoming_tighter_or_less_forgiving', title: 'What Is Becoming Tighter', showAnimal: false },
                 ].map((section, index) => {
                   const content = freeForecast.sections?.[section.key as keyof typeof freeForecast.sections];
                   if (!content) return null;
@@ -308,19 +308,14 @@ const ResultsPage = () => {
                     >
                       <h3 className="font-display text-xl md:text-2xl text-gold mb-4">{section.title}</h3>
                       <p className="text-cream/90 leading-relaxed whitespace-pre-line">{content}</p>
+                      
+                      {/* Animal image and phrase - integrated into Who You Are Right Now */}
+                      {section.showAnimal && !isPaid && freeForecast.animalSign && (
+                        <AnimalBadge animalSign={freeForecast.animalSign} />
+                      )}
                     </div>
                   );
                 })}
-                
-                {/* Animal Badge - show on free forecast only */}
-                {!isPaid && freeForecast.animalSign && (
-                  <div 
-                    className="animate-fade-up"
-                    style={{ animationDelay: '500ms', animationFillMode: 'both' }}
-                  >
-                    <AnimalBadge animalSign={freeForecast.animalSign} />
-                  </div>
-                )}
                 
                 {/* Upgrade Hook - Bold text, no title (free forecast only) */}
                 {!isPaid && upgradeHook && (
