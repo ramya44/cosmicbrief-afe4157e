@@ -1,6 +1,6 @@
 // OpenAI prompt construction
 // supabase/functions/generate-forecast/lib/prompts.ts
-import type { BirthChartData, MoonLookup, NakshatraLookup, SunLookup } from "./types.ts";
+import type { BirthChartData, MoonLookup, NakshatraLookup, SunLookup } from "../../_shared/lib/types.ts;
 
 export function buildSystemPrompt(): string {
   return `
