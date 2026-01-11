@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
+const anthropicApiKey = Deno.env.get("ANTHROPIC_API_KEY");
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -452,10 +452,10 @@ serve(async (req) => {
       }
     }
 
-    if (!openAIApiKey) {
+    if (!anthropicApiKey) {
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
-        reason: "missing_openai_key",
+        reason: "missing_anthropic_key",
         ip: clientIP,
         deviceId: deviceId || null,
         latencyMs: Date.now() - requestStartTime,
@@ -855,21 +855,21 @@ without naming it.
 `.trim();
 
   const payload = {
-    model: "gpt-4.1-mini-2025-04-14",
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1024,
+    system: systemPrompt,
     messages: [
-      { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    max_tokens: 800,
-    temperature: 0.65,
   };
 
-    console.log("OpenAI payload:", JSON.stringify(payload));
+    console.log("Anthropic payload:", JSON.stringify(payload));
 
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${openAIApiKey}`,
+        "x-api-key": anthropicApiKey!,
+        "anthropic-version": "2023-06-01",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -879,11 +879,12 @@ without naming it.
       const errorText = await resp.text();
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
-        reason: "openai_error",
+        reason: "anthropic_error",
         ip: clientIP,
         deviceId: deviceId || null,
-        model: "gpt-4.1-mini-2025-04-14",
+        model: "claude-sonnet-4-20250514",
         errorStatus: resp.status,
+        errorText: errorText,
         latencyMs: Date.now() - requestStartTime,
       });
       return new Response(JSON.stringify({ error: "Unable to generate forecast. Please try again." }), {
@@ -895,7 +896,7 @@ without naming it.
     const data = await resp.json();
     const tokenUsage = data.usage || null;
 
-    const generatedContent = data?.choices?.[0]?.message?.content ?? "";
+    const generatedContent = data?.content?.[0]?.text ?? "";
 
     if (!generatedContent.trim()) {
       logStep("REQUEST_COMPLETE", {
