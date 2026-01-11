@@ -364,6 +364,27 @@ export type Database = {
         }
         Relationships: []
       }
+      vedic_sun_orientation_lookup: {
+        Row: {
+          default_orientation: string
+          effort_misfire: string
+          identity_limit: string
+          sun_sign: string
+        }
+        Insert: {
+          default_orientation: string
+          effort_misfire: string
+          identity_limit: string
+          sun_sign: string
+        }
+        Update: {
+          default_orientation?: string
+          effort_misfire?: string
+          identity_limit?: string
+          sun_sign?: string
+        }
+        Relationships: []
+      }
       zodiac_signs: {
         Row: {
           end_day: number
