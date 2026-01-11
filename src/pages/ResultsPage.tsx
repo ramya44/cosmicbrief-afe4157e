@@ -96,7 +96,20 @@ const ResultsPage = () => {
           
           // Set free forecast from backend response (overrides any stale localStorage)
           if (json.freeForecast) {
-            setFreeForecast({ forecast: json.freeForecast });
+            // Try to parse sections from stored forecast text if it's JSON
+            let sections = undefined;
+            try {
+              const parsed = JSON.parse(json.freeForecast);
+              if (parsed && typeof parsed === 'object') {
+                sections = parsed;
+              }
+            } catch {
+              // Not JSON, use as plain text
+            }
+            setFreeForecast({ 
+              forecast: typeof json.freeForecast === 'string' ? json.freeForecast : JSON.stringify(json.freeForecast),
+              sections 
+            });
           }
           
           setStrategicForecast(json?.strategicForecast ?? null);
@@ -284,6 +297,18 @@ const ResultsPage = () => {
                     </div>
                   );
                 })}
+                
+                {/* Upgrade Hook - Bold text, no title */}
+                {freeForecast.sections?.upgrade_hook && (
+                  <div 
+                    className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up"
+                    style={{ animationDelay: '500ms', animationFillMode: 'both' }}
+                  >
+                    <p className="text-cream font-semibold leading-relaxed whitespace-pre-line">
+                      {freeForecast.sections.upgrade_hook}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               // Fallback: plain text for legacy forecasts

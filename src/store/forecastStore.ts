@@ -24,6 +24,7 @@ export interface FreeForecastSections {
   whats_happening_in_your_life: string;
   pivotal_life_theme: string;
   what_is_becoming_tighter_or_less_forgiving: string;
+  upgrade_hook?: string;
 }
 
 export interface FreeForecast {
