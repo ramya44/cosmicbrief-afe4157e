@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const anthropicApiKey = Deno.env.get("ANTHROPIC_API_KEY");
+const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -452,10 +452,10 @@ serve(async (req) => {
       }
     }
 
-    if (!anthropicApiKey) {
+    if (!openaiApiKey) {
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
-        reason: "missing_anthropic_key",
+        reason: "missing_openai_key",
         ip: clientIP,
         deviceId: deviceId || null,
         latencyMs: Date.now() - requestStartTime,
@@ -911,29 +911,33 @@ Call the save_forecast function with your response.
       },
     };
 
-    const payload = {
-      model: "claude-3-5-haiku-20241022",
-      max_tokens: 1024,
-      system: [
-        {
-          type: "text",
-          text: systemPrompt,
-          cache_control: { type: "ephemeral" },
-        },
-      ],
-      messages: [{ role: "user", content: userPrompt }],
-      tools: [forecastTool],
-      tool_choice: { type: "tool", name: "save_forecast" },
+    // Convert tool schema from Anthropic format to OpenAI format
+    const openAITool = {
+      type: "function",
+      function: {
+        name: forecastTool.name,
+        description: forecastTool.description,
+        parameters: forecastTool.input_schema,
+      },
     };
 
-    console.log("Anthropic payload:", JSON.stringify(payload));
+    const payload = {
+      model: "gpt-4.1-mini",
+      max_completion_tokens: 1024,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      tools: [openAITool],
+      tool_choice: { type: "function", function: { name: "save_forecast" } },
+    };
 
-    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    console.log("OpenAI payload:", JSON.stringify(payload));
+
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": anthropicApiKey!,
-        "anthropic-version": "2023-06-01",
-        "anthropic-beta": "prompt-caching-2024-07-31",
+        Authorization: `Bearer ${openaiApiKey!}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -943,10 +947,10 @@ Call the save_forecast function with your response.
       const errorText = await resp.text();
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
-        reason: "anthropic_error",
+        reason: "openai_error",
         ip: clientIP,
         deviceId: deviceId || null,
-        model: "claude-3-5-haiku-20241022",
+        model: "gpt-4.1-mini",
         errorStatus: resp.status,
         errorText: errorText,
         latencyMs: Date.now() - requestStartTime,
@@ -959,18 +963,10 @@ Call the save_forecast function with your response.
 
     const data = await resp.json();
     const tokenUsage = data.usage || null;
-    const cacheMetrics = tokenUsage
-      ? {
-          input_tokens: tokenUsage.input_tokens,
-          output_tokens: tokenUsage.output_tokens,
-          cache_creation_input_tokens: tokenUsage.cache_creation_input_tokens || 0,
-          cache_read_input_tokens: tokenUsage.cache_read_input_tokens || 0,
-        }
-      : null;
 
-    // Extract structured forecast from tool_use response
-    const toolUseBlock = data?.content?.find((block: { type: string }) => block.type === "tool_use");
-    const forecastSections = toolUseBlock?.input as
+    // Extract structured forecast from OpenAI tool_calls response
+    const toolCall = data?.choices?.[0]?.message?.tool_calls?.[0];
+    let forecastSections:
       | {
           who_you_are_right_now?: string;
           whats_happening_in_your_life?: string;
@@ -979,15 +975,23 @@ Call the save_forecast function with your response.
         }
       | undefined;
 
+    if (toolCall?.function?.arguments) {
+      try {
+        forecastSections = JSON.parse(toolCall.function.arguments);
+      } catch (parseErr) {
+        logStep("JSON parse error", { error: parseErr instanceof Error ? parseErr.message : String(parseErr) });
+      }
+    }
+
     if (!forecastSections || !forecastSections.who_you_are_right_now) {
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
         reason: "empty_response",
         ip: clientIP,
         deviceId: deviceId || null,
-        model: "claude-3-5-haiku-20241022",
+        model: "gpt-4.1-mini",
         tokens: tokenUsage,
-        stopReason: data?.stop_reason,
+        finishReason: data?.choices?.[0]?.finish_reason,
         latencyMs: Date.now() - requestStartTime,
       });
       return new Response(JSON.stringify({ error: "Unable to generate forecast. Please try again." }), {
@@ -1041,7 +1045,7 @@ Call the save_forecast function with your response.
           best_direction: birthChartData.bestDirection ?? null,
           syllables: birthChartData.syllables ?? null,
           birth_stone: birthChartData.birthStone ?? null,
-          model_used: "claude-3-5-haiku-20241022",
+          model_used: "gpt-4.1-mini",
         })
         .select("id, guest_token")
         .single();
@@ -1067,9 +1071,8 @@ Call the save_forecast function with your response.
       deviceId: deviceId || null,
       guestTokenHash,
       forecastId: freeForecastId || null,
-      model: "claude-3-5-haiku-20241022",
+      model: "gpt-4.1-mini",
       tokens: tokenUsage,
-      cacheMetrics,
       latencyMs: Date.now() - requestStartTime,
     });
 
