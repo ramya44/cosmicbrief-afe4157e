@@ -255,49 +255,34 @@ const ResultsPage = () => {
           <div className="max-w-3xl mx-auto space-y-8 mb-12">
             {(() => {
               const text = freeForecast.forecast;
-              const priorYear = new Date().getFullYear() - 1;
-              // Parse sections from the forecast text using more flexible regex
+              // Parse sections by looking for ## headers or UPPERCASE headers
               const sections: { header: string; content: string }[] = [];
-              // Updated headers to match new prompt structure, including dynamic prior year
-              const sectionHeaders = [
-                'Your Natural Orientation',
-                `Your ${priorYear}`,
-                'Looking Ahead',
-                'Your Pivotal Life Theme', 
-                'The Quiet Undercurrent'
-              ];
               
-              sectionHeaders.forEach((header, index) => {
-                // Escape special regex characters in header (for dynamic year like "Your 2025")
-                const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                // Match header with optional markdown formatting (**, ##, etc.) and colon
-                const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${escapedHeader}(?:\\*\\*)?:?\\s*\\n?`, 'i');
-                
-                // For finding the end, we need to check ALL remaining headers (not just the next one)
-                const remainingHeaders = sectionHeaders.slice(index + 1);
-                
-                const headerMatch = text.match(headerPattern);
-                if (headerMatch && headerMatch.index !== undefined) {
-                  const startIndex = headerMatch.index + headerMatch[0].length;
-                  let endIndex = text.length;
-                  
-                  // Find the earliest match of any remaining header
-                  for (const nextHeader of remainingHeaders) {
-                    const escapedNextHeader = nextHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const nextPattern = new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${escapedNextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i');
-                    const nextMatch = text.slice(startIndex).match(nextPattern);
-                    if (nextMatch && nextMatch.index !== undefined) {
-                      const potentialEnd = startIndex + nextMatch.index;
-                      if (potentialEnd < endIndex) {
-                        endIndex = potentialEnd;
-                      }
-                    }
-                  }
-                  
-                  const content = text.slice(startIndex, endIndex).trim();
-                  if (content) {
-                    sections.push({ header, content });
-                  }
+              // Match headers like "## WHO YOU ARE RIGHT NOW" or "WHO YOU ARE RIGHT NOW"
+              // Also match headers like "## 2026 PIVOTAL LIFE THEME" or "## WHAT IS BECOMING TIGHTER..."
+              const sectionRegex = /(?:^|\n)(?:##\s*)?([A-Z][A-Z0-9\s''?]+?)(?:\n|$)/g;
+              const matches: { header: string; index: number; endIndex: number }[] = [];
+              
+              let match;
+              while ((match = sectionRegex.exec(text)) !== null) {
+                const header = match[1].trim();
+                // Filter out very short matches or non-header text
+                if (header.length > 5 && header.length < 100) {
+                  matches.push({
+                    header,
+                    index: match.index,
+                    endIndex: match.index + match[0].length
+                  });
+                }
+              }
+              
+              // Extract content between headers
+              matches.forEach((m, i) => {
+                const contentStart = m.endIndex;
+                const contentEnd = i < matches.length - 1 ? matches[i + 1].index : text.length;
+                const content = text.slice(contentStart, contentEnd).trim();
+                if (content) {
+                  sections.push({ header: m.header, content });
                 }
               });
 
@@ -321,7 +306,7 @@ const ResultsPage = () => {
                       style={{ animationDelay: `${100 + index * 100}ms`, animationFillMode: 'both' }}
                     >
                       <h3 className="font-display text-xl md:text-2xl text-gold mb-4">{section.header}</h3>
-                      <p className="text-cream/70 leading-relaxed text-base md:text-lg">{section.content}</p>
+                      <p className="text-cream/70 leading-relaxed text-base md:text-lg whitespace-pre-line">{section.content}</p>
                     </div>
                   ))}
                 </div>
