@@ -22,8 +22,8 @@ export interface MonthEntry {
 export interface FreeForecastSections {
   who_you_are_right_now: string;
   whats_happening_in_your_life: string;
-  pivotal_life_theme_2026: string;
-  what_is_becoming_tighter: string;
+  pivotal_life_theme: string;
+  what_is_becoming_tighter_or_less_forgiving: string;
 }
 
 export interface FreeForecast {
@@ -82,6 +82,7 @@ export interface ForecastState {
   // Guest tokens for secure forecast retrieval
   freeGuestToken: string | null;
   paidGuestToken: string | null;
+  paidForecastId: string | null;
   setBirthData: (data: BirthData) => void;
   setFreeForecast: (forecast: FreeForecast) => void;
   setForecast: (free: FreeForecast, paid: PaidForecast) => void;
@@ -93,6 +94,7 @@ export interface ForecastState {
   setCustomerEmail: (email: string | null) => void;
   setFreeGuestToken: (token: string | null) => void;
   setPaidGuestToken: (token: string | null) => void;
+  setPaidForecastId: (id: string | null) => void;
   reset: () => void;
 }
 
@@ -110,6 +112,7 @@ export const useForecastStore = create<ForecastState>()(
       customerEmail: null,
       freeGuestToken: null,
       paidGuestToken: null,
+      paidForecastId: null,
       setBirthData: (data) => set({ birthData: data }),
       setFreeForecast: (forecast) => set({ freeForecast: forecast }),
       setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
@@ -121,6 +124,7 @@ export const useForecastStore = create<ForecastState>()(
       setCustomerEmail: (email) => set({ customerEmail: email }),
       setFreeGuestToken: (token) => set({ freeGuestToken: token }),
       setPaidGuestToken: (token) => set({ paidGuestToken: token }),
+      setPaidForecastId: (id) => set({ paidForecastId: id }),
       reset: () => set({ 
         birthData: null, 
         freeForecast: null, 
@@ -133,6 +137,7 @@ export const useForecastStore = create<ForecastState>()(
         customerEmail: null,
         freeGuestToken: null,
         paidGuestToken: null,
+        paidForecastId: null,
       }),
     }),
     {
@@ -146,6 +151,7 @@ export const useForecastStore = create<ForecastState>()(
         customerEmail: state.customerEmail,
         freeGuestToken: state.freeGuestToken,
         paidGuestToken: state.paidGuestToken,
+        paidForecastId: state.paidForecastId,
       }),
     }
   )
