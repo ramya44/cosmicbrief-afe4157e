@@ -253,76 +253,80 @@ const ResultsPage = () => {
         {/* Free Forecast - Formatted Sections */}
         {freeForecast && (
           <div className="max-w-3xl mx-auto space-y-8 mb-12">
-            <ForecastSection title="Your Year at a Glance" delay={100}>
-              {(() => {
-                const text = freeForecast.forecast;
-                const priorYear = new Date().getFullYear() - 1;
-                // Parse sections from the forecast text using more flexible regex
-                const sections: { header: string; content: string }[] = [];
-                // Updated headers to match new prompt structure, including dynamic prior year
-                const sectionHeaders = [
-                  'Your Natural Orientation',
-                  `Your ${priorYear}`,
-                  'Looking Ahead',
-                  'Your Pivotal Life Theme', 
-                  'The Quiet Undercurrent'
-                ];
+            {(() => {
+              const text = freeForecast.forecast;
+              const priorYear = new Date().getFullYear() - 1;
+              // Parse sections from the forecast text using more flexible regex
+              const sections: { header: string; content: string }[] = [];
+              // Updated headers to match new prompt structure, including dynamic prior year
+              const sectionHeaders = [
+                'Your Natural Orientation',
+                `Your ${priorYear}`,
+                'Looking Ahead',
+                'Your Pivotal Life Theme', 
+                'The Quiet Undercurrent'
+              ];
+              
+              sectionHeaders.forEach((header, index) => {
+                // Escape special regex characters in header (for dynamic year like "Your 2025")
+                const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                // Match header with optional markdown formatting (**, ##, etc.) and colon
+                const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${escapedHeader}(?:\\*\\*)?:?\\s*\\n?`, 'i');
                 
-                sectionHeaders.forEach((header, index) => {
-                  // Escape special regex characters in header (for dynamic year like "Your 2025")
-                  const escapedHeader = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                  // Match header with optional markdown formatting (**, ##, etc.) and colon
-                  const headerPattern = new RegExp(`(?:^|\\n)(?:\\*\\*|##?\\s*)?${escapedHeader}(?:\\*\\*)?:?\\s*\\n?`, 'i');
+                // For finding the end, we need to check ALL remaining headers (not just the next one)
+                const remainingHeaders = sectionHeaders.slice(index + 1);
+                
+                const headerMatch = text.match(headerPattern);
+                if (headerMatch && headerMatch.index !== undefined) {
+                  const startIndex = headerMatch.index + headerMatch[0].length;
+                  let endIndex = text.length;
                   
-                  // For finding the end, we need to check ALL remaining headers (not just the next one)
-                  const remainingHeaders = sectionHeaders.slice(index + 1);
-                  
-                  const headerMatch = text.match(headerPattern);
-                  if (headerMatch && headerMatch.index !== undefined) {
-                    const startIndex = headerMatch.index + headerMatch[0].length;
-                    let endIndex = text.length;
-                    
-                    // Find the earliest match of any remaining header
-                    for (const nextHeader of remainingHeaders) {
-                      const escapedNextHeader = nextHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                      const nextPattern = new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${escapedNextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i');
-                      const nextMatch = text.slice(startIndex).match(nextPattern);
-                      if (nextMatch && nextMatch.index !== undefined) {
-                        const potentialEnd = startIndex + nextMatch.index;
-                        if (potentialEnd < endIndex) {
-                          endIndex = potentialEnd;
-                        }
+                  // Find the earliest match of any remaining header
+                  for (const nextHeader of remainingHeaders) {
+                    const escapedNextHeader = nextHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const nextPattern = new RegExp(`(?:\\n)(?:\\*\\*|##?\\s*)?${escapedNextHeader}(?:\\*\\*)?:?\\s*(?:\\n|$)`, 'i');
+                    const nextMatch = text.slice(startIndex).match(nextPattern);
+                    if (nextMatch && nextMatch.index !== undefined) {
+                      const potentialEnd = startIndex + nextMatch.index;
+                      if (potentialEnd < endIndex) {
+                        endIndex = potentialEnd;
                       }
                     }
-                    
-                    const content = text.slice(startIndex, endIndex).trim();
-                    if (content) {
-                      sections.push({ header, content });
-                    }
                   }
-                });
+                  
+                  const content = text.slice(startIndex, endIndex).trim();
+                  if (content) {
+                    sections.push({ header, content });
+                  }
+                }
+              });
 
-                // If parsing didn't work, show as plain text
-                if (sections.length === 0) {
-                  return (
+              // If parsing didn't work, show as plain text
+              if (sections.length === 0) {
+                return (
+                  <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up">
                     <p className="text-cream/70 leading-relaxed text-lg whitespace-pre-line">
                       {text}
                     </p>
-                  );
-                }
-
-                return (
-                  <div className="space-y-6">
-                    {sections.map((section, index) => (
-                      <div key={index}>
-                        <h4 className="text-cream font-medium text-lg mb-1">{section.header}</h4>
-                        <p className="text-cream/70 leading-relaxed">{section.content}</p>
-                      </div>
-                    ))}
                   </div>
                 );
-              })()}
-            </ForecastSection>
+              }
+
+              return (
+                <div className="space-y-6">
+                  {sections.map((section, index) => (
+                    <div 
+                      key={index} 
+                      className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up"
+                      style={{ animationDelay: `${100 + index * 100}ms`, animationFillMode: 'both' }}
+                    >
+                      <h3 className="font-display text-xl md:text-2xl text-gold mb-4">{section.header}</h3>
+                      <p className="text-cream/70 leading-relaxed text-base md:text-lg">{section.content}</p>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 
