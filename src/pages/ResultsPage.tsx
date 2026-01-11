@@ -314,7 +314,7 @@ const ResultsPage = () => {
                         <AnimalBadge animalSign={freeForecast.animalSign!} inline />
                       )}
                       
-                      <p className={`text-cream/90 leading-relaxed whitespace-pre-line ${showAnimalHere ? 'md:text-right' : ''}`}>
+                      <p className="text-cream/90 leading-relaxed whitespace-pre-line">
                         {content}
                       </p>
                       
