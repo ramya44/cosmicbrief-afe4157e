@@ -1,6 +1,6 @@
 // Birth chart fetching logic
 // supabase/functions/generate-forecast/lib/birth_chart.ts
-import type { BirthChartData } from "./types.ts";
+import type { BirthChartData } from "../../_shared/lib/types.ts";
 
 export async function fetchBirthChart(args: {
   supabaseUrl: string;
