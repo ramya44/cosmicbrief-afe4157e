@@ -1,6 +1,6 @@
 // Style seed and pivotal element generation
 // supabase/functions/generate-forecast/lib/style.ts
-import type { ThemeCacheResult } from "./types.ts";
+import type { ThemeCacheResult } from "../../_shared/lib/types.ts";
 
 // short hash used for deterministic theme selection
 export async function generateStyleSeed(input: string): Promise<string> {
