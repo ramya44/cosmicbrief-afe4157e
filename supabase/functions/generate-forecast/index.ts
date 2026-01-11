@@ -587,66 +587,136 @@ serve(async (req) => {
         logStep("Birth chart fetch exception", {
           error: chartError instanceof Error ? chartError.message : String(chartError),
         });
-      }
+    }
+  }
+
+  // ============= LOOKUP TABLE QUERIES =============
+  // Fetch interpretive context from lookup tables
+  interface SunLookup {
+    default_orientation: string;
+    identity_limit: string;
+    effort_misfire: string;
+  }
+  interface MoonLookup {
+    emotional_pacing: string;
+    sensitivity_point: string;
+    strain_leak: string;
+  }
+  interface NakshatraLookup {
+    intensity_reason: string;
+    moral_cost_limit: string;
+    strain_accumulation: string;
+  }
+
+  let sunLookup: SunLookup | null = null;
+  let moonLookup: MoonLookup | null = null;
+  let nakshatraLookup: NakshatraLookup | null = null;
+
+  // Query sun orientation lookup
+  if (birthChartData.sunSign) {
+    const { data: sunData, error: sunError } = await supabase
+      .from("vedic_sun_orientation_lookup")
+      .select("default_orientation, identity_limit, effort_misfire")
+      .eq("sun_sign", birthChartData.sunSign)
+      .maybeSingle();
+
+    if (sunError) {
+      logStep("Sun lookup error", { error: sunError.message });
+    } else if (sunData) {
+      sunLookup = sunData;
+      logStep("Sun lookup success", { sunSign: birthChartData.sunSign });
+    }
+  }
+
+  // Query moon pacing lookup
+  if (birthChartData.moonSign) {
+    const { data: moonData, error: moonError } = await supabase
+      .from("vedic_moon_pacing_lookup")
+      .select("emotional_pacing, sensitivity_point, strain_leak")
+      .eq("moon_sign", birthChartData.moonSign)
+      .maybeSingle();
+
+    if (moonError) {
+      logStep("Moon lookup error", { error: moonError.message });
+    } else if (moonData) {
+      moonLookup = moonData;
+      logStep("Moon lookup success", { moonSign: birthChartData.moonSign });
+    }
+  }
+
+  // Query nakshatra pressure lookup
+  if (birthChartData.nakshatra) {
+    const { data: nakData, error: nakError } = await supabase
+      .from("nakshatra_pressure_lookup")
+      .select("intensity_reason, moral_cost_limit, strain_accumulation")
+      .eq("nakshatra", birthChartData.nakshatra)
+      .maybeSingle();
+
+    if (nakError) {
+      logStep("Nakshatra lookup error", { error: nakError.message });
+    } else if (nakData) {
+      nakshatraLookup = nakData;
+      logStep("Nakshatra lookup success", { nakshatra: birthChartData.nakshatra });
+    }
+  }
+
+  let pivotalLifeElement: string;
+
+  // Only use cache if we have UTC datetime
+  if (birthTimeUtc) {
+    // Normalize UTC datetime for cache key (30-minute increments)
+    const normalizedUtc = normalizeUtcDatetime(birthTimeUtc);
+
+    console.log(`Cache lookup: normalized UTC=${normalizedUtc}, targetYear=${targetYear}`);
+
+    // Check theme cache using UTC datetime
+    const { data: cachedTheme, error: cacheError } = await supabase
+      .from("theme_cache")
+      .select("pivotal_theme")
+      .eq("birth_datetime_utc", normalizedUtc)
+      .eq("target_year", String(targetYear))
+      .maybeSingle();
+
+    if (cacheError) {
+      console.error("Cache lookup error:", cacheError);
     }
 
-    let pivotalLifeElement: string;
-
-    // Only use cache if we have UTC datetime
-    if (birthTimeUtc) {
-      // Normalize UTC datetime for cache key (30-minute increments)
-      const normalizedUtc = normalizeUtcDatetime(birthTimeUtc);
-
-      console.log(`Cache lookup: normalized UTC=${normalizedUtc}, targetYear=${targetYear}`);
-
-      // Check theme cache using UTC datetime
-      const { data: cachedTheme, error: cacheError } = await supabase
-        .from("theme_cache")
-        .select("pivotal_theme")
-        .eq("birth_datetime_utc", normalizedUtc)
-        .eq("target_year", String(targetYear))
-        .maybeSingle();
-
-      if (cacheError) {
-        console.error("Cache lookup error:", cacheError);
-      }
-
-      if (cachedTheme?.pivotal_theme) {
-        // Cache hit - use existing theme
-        pivotalLifeElement = cachedTheme.pivotal_theme;
-        console.log(
-          `Cache HIT: Using cached theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}`,
-        );
-      } else {
-        // Cache miss - generate and store new theme
-        pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
-
-        console.log(
-          `Cache MISS: Generated new theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}, age=${age}`,
-        );
-
-        // Insert into cache (ignore errors - cache is optional)
-        const { error: insertError } = await supabase.from("theme_cache").insert({
-          birth_datetime_utc: normalizedUtc,
-          target_year: String(targetYear),
-          pivotal_theme: pivotalLifeElement,
-        });
-
-        if (insertError) {
-          console.error("Cache insert error:", insertError);
-        }
-      }
+    if (cachedTheme?.pivotal_theme) {
+      // Cache hit - use existing theme
+      pivotalLifeElement = cachedTheme.pivotal_theme;
+      console.log(
+        `Cache HIT: Using cached theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}`,
+      );
     } else {
-      // No UTC datetime - just generate theme without caching
+      // Cache miss - generate and store new theme
       pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
-      console.log(`No UTC datetime provided - generated theme "${pivotalLifeElement}" without caching`);
+
+      console.log(
+        `Cache MISS: Generated new theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}, age=${age}`,
+      );
+
+      // Insert into cache (ignore errors - cache is optional)
+      const { error: insertError } = await supabase.from("theme_cache").insert({
+        birth_datetime_utc: normalizedUtc,
+        target_year: String(targetYear),
+        pivotal_theme: pivotalLifeElement,
+      });
+
+      if (insertError) {
+        console.error("Cache insert error:", insertError);
+      }
     }
+  } else {
+    // No UTC datetime - just generate theme without caching
+    pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+    console.log(`No UTC datetime provided - generated theme "${pivotalLifeElement}" without caching`);
+  }
 
-    console.log(
-      `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}, birthChart: ${JSON.stringify(birthChartData)}`,
-    );
+  console.log(
+    `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}, sunLookup: ${JSON.stringify(sunLookup)}, moonLookup: ${JSON.stringify(moonLookup)}, nakshatraLookup: ${JSON.stringify(nakshatraLookup)}`,
+  );
 
-    const systemPrompt = `
+  const systemPrompt = `
 You generate concise, high-impact annual previews inspired by Indian Jyotish.
 
 This is a free preview meant to feel personally resonant and slightly incomplete.
@@ -678,7 +748,7 @@ Internal logic rules (do not reveal to user):
 - Reflect these through emphasis and consequences, not symbolism or explanation
 
 AGE-BASED PIVOTAL LIFE ELEMENT (STRICT):
-You must select exactly ONE pivotal life element from the allowed list for the user’s age.
+You must select exactly ONE pivotal life element from the allowed list for the user's age.
 
 Allowed lists:
 - Age < 35: [career, education, identity]
@@ -691,85 +761,60 @@ Rule: if age >= 60, never choose career.
 Personalization should come from tone, pressure, and what feels costly if misread or delayed.
 `;
 
-    const userPrompt = `
-Create a concise preview of the user's ${targetYear}.
-
-This preview should feel specific, grounded, and slightly unfinished in a way that creates curiosity.
+  const userPrompt = `
+Create a concise free preview for the target year.
 
 INPUTS:
-- Age: ${age}
-- Sun sign: ${birthChartData.sunSign || "unknown"}
-- Moon sign: ${birthChartData.moonSign || "unknown"}
-- Nakshatra: ${birthChartData.nakshatra || "unknown"}
-- Style seed: ${styleSeed}
-- Pivotal life element (preselected): ${pivotalLifeElement}
-- Prior year: ${priorYear}
+- Sun orientation context: ${sunLookup?.default_orientation || "unknown"}
+- Sun identity limit: ${sunLookup?.identity_limit || "unknown"}
+- Moon emotional pacing: ${moonLookup?.emotional_pacing || "unknown"}
+- Moon sensitivity point: ${moonLookup?.sensitivity_point || "unknown"}
+- Nakshatra pressure context: ${nakshatraLookup?.intensity_reason || "unknown"}
+- Nakshatra moral limit: ${nakshatraLookup?.moral_cost_limit || "unknown"}
+- Nakshatra strain pattern: ${nakshatraLookup?.strain_accumulation || "unknown"}
+- Pivotal life theme: ${pivotalLifeElement}
 
 LENGTH:
-- 120–160 words total
+- 180–220 words total
 - Plain text only
 
-EDGE REQUIREMENT (MANDATORY):
-Across the preview, include at least TWO moments where:
-- A cost, friction, or limit is implied if something is misread, delayed, or treated casually
-- The consequence is NOT resolved
-- No correction or advice is offered
-
-The reader should feel oriented, but not fully equipped.
-
-STYLE AND SAFETY RULES:
-- Grounded, composed, quietly confident
-- Observational, not therapeutic
-- No reassurance
-- No advice or instructions
-- No specific event predictions
-- No explanations of mechanisms or systems
-- Avoid medical or literal health claims
-- Do NOT use em dashes
-
 STRUCTURE:
-Write exactly in the following format with headers.
-Do not add extra sections.
+Write exactly three sections with the following headers.
+Do not add any other sections.
 Do not add commentary.
 
 ---
 
-Your Natural Orientation  
-Write 3–4 sentences describing how the user typically responds to uncertainty or pressure at this stage of life.
-- Frame this as an orientation or default pattern, not a personality trait
-- Describe how this orientation has generally helped them
-- Name one way this same pattern is beginning to show a limit now
-- Do not give advice or suggest change
+WHO YOU ARE RIGHT NOW  
+Describe the person's current internal stance.
+- Blend identity orientation and emotional pacing
+- Emphasize discernment, not personality
+- Avoid reassurance or advice
 
-Your ${priorYear}  
-Write 2–3 sentences describing what the prior year felt like emotionally or psychologically.
-- Focus on pacing, effort, and what was required to keep things moving
-- Explicitly state what stopped working or felt increasingly costly
-- Do not resolve the tension
+WHAT'S HAPPENING IN YOUR LIFE  
+Describe the broader life context this year.
+- Localize pressure around the pivotal life theme
+- Emphasize reassessment, accumulation, or recalibration
+- Do not resolve tension or describe outcomes
 
-Your Pivotal Life Theme  
-Write 2–3 sentences describing how attention naturally gathers around "${pivotalLifeElement}" in ${targetYear}.
-- Explicitly state what happens when last year's logic is applied to this year
+WHAT IS BECOMING TIGHTER OR LESS FORGIVING THIS YEAR?  
+Describe the key constraint or limit now in effect.
+- Anchor this in moral pressure or internal cost
+- Make clear that endurance alone is no longer neutral
 - Do not explain how to fix it
-
-The Quiet Undercurrent  
-Write 1–2 sentences describing a subtle, ongoing tension within "${pivotalLifeElement}" this year.
-- Use language like balancing, recalibration, or competing pulls
-- Do not describe outcomes
-- Do not give advice
 
 Stop when finished.
 `.trim();
 
-    const payload = {
-      model: "gpt-4.1-mini-2025-04-14",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      max_tokens: 400,
-      temperature: 0.65,
-    };
+  const payload = {
+    model: "gpt-4.1-mini-2025-04-14",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    max_tokens: 500,
+    temperature: 0.65,
+  };
 
     console.log("OpenAI payload:", JSON.stringify(payload));
 
