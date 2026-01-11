@@ -778,51 +778,71 @@ If the output could plausibly apply to many people, revise until it cannot.
 
 `;
 
-    const userPrompt = `
+    const userPrompt = `Write a personalized forecast.
 
-Generate a free forecast for the reader based on these inputs:
+INPUTS:
 
 - Sun orientation context: ${sunLookup?.default_orientation || "unknown"}
-
 - Sun identity limit: ${sunLookup?.identity_limit || "unknown"}
-
-- Sun effort misfire: ${sunLookup?.effort_misfire || "unknown"}
-
 - Moon emotional pacing: ${moonLookup?.emotional_pacing || "unknown"}
-
 - Moon sensitivity point: ${moonLookup?.sensitivity_point || "unknown"}
-
-- Moon strain leak: ${moonLookup?.strain_leak || "unknown"}
-
-- Nakshatra pressure context: ${nakshatraLookup?.intensity_reason || "unknown"}
-
+- Nakshatra intensity: ${nakshatraLookup?.intensity_reason || "unknown"}
 - Nakshatra moral limit: ${nakshatraLookup?.moral_cost_limit || "unknown"}
-
 - Nakshatra strain pattern: ${nakshatraLookup?.strain_accumulation || "unknown"}
-
+- Nakshatra animal (optional): ${birthChartData.animalSign || "none"}
 - Pivotal life theme: ${pivotalLifeElement}
 
-CRITICAL INSTRUCTIONS:
+LENGTH:
 
-1. Synthesize these data points into a cohesive psychological portrait—do not list them separately
+- 220–260 words total across all fields
+- Each field should contain natural, flowing prose
+- Paragraph breaks are allowed within fields
 
-2. Include at least one concrete, specific example or scenario per section
+OUTPUT FORMAT:
 
-3. Avoid repeating the same core insight across multiple paragraphs
+Return valid JSON only.
+Do not include commentary or explanations.
+Use exactly this schema:
 
-4. Use everyday language, not clinical or abstract terminology
+{
+  "who_you_are_right_now": "...",
+  "whats_happening_in_your_life": "...",
+  "pivotal_life_theme": "...",
+  "what_is_becoming_tighter_or_less_forgiving": "...",
+  "upgrade_hook": "..."
+}
 
-5. Keep total length tight—eliminate any redundancy
+CONTENT REQUIREMENTS BY FIELD:
 
-6. BEFORE FINALIZING: Read each section and delete any sentence that restates a point already made in that section
+who_you_are_right_now:
+- Synthesize identity orientation, emotional pacing, and moral pressure
+- Emphasize contradiction and hidden strain
+- Show how strength is becoming costly
+- End by implying something is reaching a limit
 
-7. If two sentences express the same idea with different words, keep only the stronger one
+whats_happening_in_your_life:
+- Describe the broader pattern unfolding now
+- Localize pressure around the pivotal life theme
+- Build tension without resolving it
 
-8. Cut ornate phrases ("delicate dance of connection") in favor of direct language ("your connection strategy")
+pivotal_life_theme:
+- State the pivotal life theme clearly
+- Contrast last year's logic with this year's pressure
+- Emphasize the cost of repeating the same approach
 
-Call the save_forecast function with your response.
+what_is_becoming_tighter_or_less_forgiving:
+- Describe the main constraint now in effect
+- Anchor this in moral or internal cost
+- Make clear endurance is no longer neutral
+- If animal imagery is used, place it here
+- End by hinting at a specific tradeoff ahead, without naming it
 
-`.trim();
+upgrade_hook:
+- One sentence only
+- Use this exact meaning, but not necessarily exact wording:
+  "The full brief shows where this pressure peaks, what decision it's quietly forcing, and what becomes costly if it's delayed."
+
+Call the save_forecast function with your response.`.trim();
 
     // Define the tool for structured output
     const forecastTool = {
@@ -833,30 +853,31 @@ Call the save_forecast function with your response.
         properties: {
           who_you_are_right_now: {
             type: "string",
-            description:
-              "1-2 concise paragraphs (max 150 words each) describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra) into ONE unified portrait with NO repetition between paragraphs. CRITICAL: Each paragraph must introduce a NEW dimension—if paragraph 2 says 'you absorb emotions and get overwhelmed,' paragraph 1 cannot also make this point. Include at least one specific, concrete scenario that illustrates the pattern. Emphasize contradictions, show how usual strengths create friction, describe strain as lived experience. End implying a turning point without naming what happens next. Avoid therapy-speak and abstraction. Delete any sentence that repeats a point already made.",
+            description: "Synthesize identity orientation, emotional pacing, and moral pressure. Emphasize contradiction and hidden strain. Show how strength is becoming costly. End by implying something is reaching a limit.",
           },
           whats_happening_in_your_life: {
             type: "string",
-            description:
-              "1-2 concise paragraphs (max 120 words each) describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme with specific reference to what this looks like in practice. Show how identity limits and emotional sensitivities are being tested through concrete situations. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available. Each paragraph must advance the narrative, not restate. Eliminate phrases that mean the same thing—if you say 'peace-keeping performance' don't also say 'reflexive accommodations' in the same section.",
+            description: "Describe the broader pattern unfolding now. Localize pressure around the pivotal life theme. Build tension without resolving it.",
           },
-          pivotal_life_theme_2026: {
+          pivotal_life_theme: {
             type: "string",
-            description:
-              "1 paragraphs (max 150 words total) stating the pivotal life theme clearly and concretely. Describe why attention is gathering here this year using specific language tied to their actual experience. Contrast last year's logic with this year's pressure. Emphasize cost if same approach is repeated, with tangible examples of what that cost looks like. Do not explain how to fix anything. Avoid vague language like 'situations' or 'contexts'—name actual relationship types, work scenarios, or life circumstances.",
+            description: "State the pivotal life theme clearly. Contrast last year's logic with this year's pressure. Emphasize the cost of repeating the same approach.",
           },
-          what_is_becoming_tighter: {
+          what_is_becoming_tighter_or_less_forgiving: {
             type: "string",
-            description:
-              "1-2 paragraphs (max 130 words total) describing the main constraint now in effect. Anchor in moral or internal cost with concrete stakes. Make clear that endurance alone no longer keeps things neutral. Use specific language about what's actually happening in their life. Keep language calm, precise, unsentimental. End with one sentence suggesting a specific decision or tradeoff ahead without naming the solution. Avoid abstraction—reference actual choices, relationships, or circumstances. CRITICAL: Do not restate the same consequence twice—if paragraph 1 says 'you're paying a psychological toll,' paragraph 2 cannot repeat this in different words. One statement of cost per section.",
+            description: "Describe the main constraint now in effect. Anchor this in moral or internal cost. Make clear endurance is no longer neutral. If animal imagery is used, place it here. End by hinting at a specific tradeoff ahead, without naming it.",
+          },
+          upgrade_hook: {
+            type: "string",
+            description: "One sentence only. Use this meaning: The full brief shows where this pressure peaks, what decision it's quietly forcing, and what becomes costly if it's delayed.",
           },
         },
         required: [
           "who_you_are_right_now",
           "whats_happening_in_your_life",
-          "pivotal_life_theme_2026",
-          "what_is_becoming_tighter",
+          "pivotal_life_theme",
+          "what_is_becoming_tighter_or_less_forgiving",
+          "upgrade_hook",
         ],
       },
     };
@@ -873,7 +894,10 @@ Call the save_forecast function with your response.
 
     const payload = {
       model: "gpt-4.1-mini",
-      max_completion_tokens: 1024,
+      temperature: 0.65,
+      max_tokens: 400,
+      presence_penalty: 0.3,
+      frequency_penalty: 0.0,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
