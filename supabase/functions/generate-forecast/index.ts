@@ -842,7 +842,7 @@ Call the save_forecast function with your response.
     };
 
     const payload = {
-      model: "claude-sonnet-4-20250514",
+      model: "claude-3-5-haiku-20241022",
       max_tokens: 1024,
       system: [
         {
@@ -876,7 +876,7 @@ Call the save_forecast function with your response.
         reason: "anthropic_error",
         ip: clientIP,
         deviceId: deviceId || null,
-        model: "claude-sonnet-4-20250514",
+        model: "claude-3-5-haiku-20241022",
         errorStatus: resp.status,
         errorText: errorText,
         latencyMs: Date.now() - requestStartTime,
@@ -915,7 +915,7 @@ Call the save_forecast function with your response.
         reason: "empty_response",
         ip: clientIP,
         deviceId: deviceId || null,
-        model: "claude-sonnet-4-20250514",
+        model: "claude-3-5-haiku-20241022",
         tokens: tokenUsage,
         stopReason: data?.stop_reason,
         latencyMs: Date.now() - requestStartTime,
@@ -971,7 +971,7 @@ Call the save_forecast function with your response.
           best_direction: birthChartData.bestDirection ?? null,
           syllables: birthChartData.syllables ?? null,
           birth_stone: birthChartData.birthStone ?? null,
-          model_used: "claude-sonnet-4-20250514",
+          model_used: "claude-3-5-haiku-20241022",
         })
         .select("id, guest_token")
         .single();
@@ -997,7 +997,7 @@ Call the save_forecast function with your response.
       deviceId: deviceId || null,
       guestTokenHash,
       forecastId: freeForecastId || null,
-      model: "claude-sonnet-4-20250514",
+      model: "claude-3-5-haiku-20241022",
       tokens: tokenUsage,
       cacheMetrics,
       latencyMs: Date.now() - requestStartTime,
