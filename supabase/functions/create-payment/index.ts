@@ -68,7 +68,7 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
     logStep("Stripe key verified");
 
-    const { freeForecastId, guestToken, freeForecastText } = await req.json();
+    const { freeForecastId, guestToken, freeForecastText, customerEmail } = await req.json();
     
     // Database-first approach: only require IDs, not full birth data
     if (!freeForecastId) throw new Error("Free forecast ID is required");
@@ -77,6 +77,7 @@ serve(async (req) => {
     logStep("Received forecast reference", { 
       freeForecastId: freeForecastId.slice(0, 8) + "...",
       hasGuestToken: !!guestToken,
+      hasEmail: !!customerEmail,
     });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
@@ -96,6 +97,7 @@ serve(async (req) => {
     // Database-first: Store only IDs in Stripe metadata
     // The generate-paid-forecast function will fetch all birth data from free_forecasts table
     const session = await stripe.checkout.sessions.create({
+      customer_email: customerEmail || undefined,
       line_items: [
         {
           price: "price_1SoFOPCxgYskbggmpyVquT2X",
