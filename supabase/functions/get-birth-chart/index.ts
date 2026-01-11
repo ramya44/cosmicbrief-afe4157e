@@ -90,7 +90,6 @@ interface BirthChartResult {
   bestDirection: string;
   syllables: string;
   birthStone: string;
-  westernZodiac: string;
 }
 
 // Call Prokerala birth-details API to get moon sign, sun sign, nakshatra, and additional info
@@ -156,7 +155,6 @@ async function getBirthDetails(
     bestDirection: additionalInfo.best_direction || "",
     syllables: additionalInfo.syllables || "",
     birthStone: additionalInfo.birth_stone || "",
-    westernZodiac: zodiac?.name || "",
   };
 }
 

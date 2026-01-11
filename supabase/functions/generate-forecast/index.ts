@@ -498,7 +498,6 @@ serve(async (req) => {
       bestDirection?: string;
       syllables?: string;
       birthStone?: string;
-      westernZodiac?: string;
     }
     let birthChartData: BirthChartData = {};
 
@@ -543,7 +542,6 @@ serve(async (req) => {
             bestDirection: chartResult.bestDirection,
             syllables: chartResult.syllables,
             birthStone: chartResult.birthStone,
-            westernZodiac: chartResult.westernZodiac,
           };
           logStep("Birth chart fetched successfully", {
             moonSign: birthChartData.moonSign,
