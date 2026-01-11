@@ -45,15 +45,31 @@ export const AnimalBadge = ({ animalSign }: AnimalBadgeProps) => {
   }
 
   return (
-    <div className="mt-6 pt-6 border-t border-border/30 flex flex-col items-center text-center">
-      <img
-        src={animalData.image_url}
-        alt={animalSign}
-        className="w-48 h-48 object-contain mb-4"
-      />
-      <p className="text-gold font-display text-xl italic">
-        "{animalData.phrase}"
-      </p>
+    <div className="mt-6 pt-6 border-t border-border/30 overflow-hidden">
+      {/* Mobile: stacked centered */}
+      <div className="md:hidden flex flex-col items-center text-center">
+        <img
+          src={animalData.image_url}
+          alt={animalSign}
+          className="w-48 h-48 object-contain mb-4"
+        />
+        <p className="text-gold font-display text-xl italic">
+          "{animalData.phrase}"
+        </p>
+      </div>
+
+      {/* Desktop: image left with text wrap */}
+      <div className="hidden md:block">
+        <img
+          src={animalData.image_url}
+          alt={animalSign}
+          className="float-left w-48 h-48 object-contain mr-6"
+        />
+        <p className="text-gold font-display text-xl italic text-right pt-16">
+          "{animalData.phrase}"
+        </p>
+        <div className="clear-both" />
+      </div>
     </div>
   );
 };
