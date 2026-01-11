@@ -762,48 +762,96 @@ Personalization should come from tone, pressure, and what feels costly if misrea
 `;
 
   const userPrompt = `
-Create a concise free preview for the target year.
+Write a free forecast for the reader consisting of the following sections.
+
+This is a grounded, psychologically precise preview.
+
+It should feel personal, specific, and unfinished.
+
+Do not mention astrology or techniques.
+
+Do not give advice or solutions.
+
+Do not predict literal events.
+
+Do not use em dashes.
+
+Address the reader directly as "you."
+
+Use the provided Sun, Moon, and Nakshatra interpretations implicitly.
+
+Focus on tension, not traits.
 
 INPUTS:
 - Sun orientation context: ${sunLookup?.default_orientation || "unknown"}
 - Sun identity limit: ${sunLookup?.identity_limit || "unknown"}
+- Sun effort misfire: ${sunLookup?.effort_misfire || "unknown"}
 - Moon emotional pacing: ${moonLookup?.emotional_pacing || "unknown"}
 - Moon sensitivity point: ${moonLookup?.sensitivity_point || "unknown"}
+- Moon strain leak: ${moonLookup?.strain_leak || "unknown"}
 - Nakshatra pressure context: ${nakshatraLookup?.intensity_reason || "unknown"}
 - Nakshatra moral limit: ${nakshatraLookup?.moral_cost_limit || "unknown"}
 - Nakshatra strain pattern: ${nakshatraLookup?.strain_accumulation || "unknown"}
 - Pivotal life theme: ${pivotalLifeElement}
 
-LENGTH:
-- 180–220 words total
-- Plain text only
+---
 
-STRUCTURE:
-Write exactly three sections with the following headers.
-Do not add any other sections.
-Do not add commentary.
+SECTION 1: WHO YOU ARE RIGHT NOW
+
+Write 2-3 short paragraphs describing the reader's current internal state.
+
+Requirements:
+- Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra)
+- Emphasize contradictions rather than harmony
+- Show how their usual strengths are now creating friction
+- Describe strain as something lived, not abstract
+- Make the reader feel recognized without sounding intrusive
+
+End this section by implying that something is reaching a turning point,
+without naming what happens next.
 
 ---
 
-WHO YOU ARE RIGHT NOW  
-Describe the person's current internal stance.
-- Blend identity orientation and emotional pacing
-- Emphasize discernment, not personality
-- Avoid reassurance or advice
+SECTION 2: WHAT'S HAPPENING IN YOUR LIFE
 
-WHAT'S HAPPENING IN YOUR LIFE  
-Describe the broader life context this year.
-- Localize pressure around the pivotal life theme
-- Emphasize reassessment, accumulation, or recalibration
-- Do not resolve tension or describe outcomes
+Write 2 paragraphs describing the broader pattern unfolding in their life.
 
-WHAT IS BECOMING TIGHTER OR LESS FORGIVING THIS YEAR?  
-Describe the key constraint or limit now in effect.
-- Anchor this in moral pressure or internal cost
-- Make clear that endurance alone is no longer neutral
-- Do not explain how to fix it
+Requirements:
+- Localize pressure around the current life stage and chosen pivotal theme
+- Show how their identity limits and emotional sensitivities are being tested
+- Hint that a moral or internal limit is approaching
+- Build tension without resolving it
 
-Stop when finished.
+End this section with a sense that clarity is increasing,
+but the full picture is not yet available.
+
+---
+
+SECTION 3: 2026 PIVOTAL LIFE THEME
+
+State the pivotal life theme clearly.
+
+Describe why attention is gathering here this year.
+
+Requirements:
+- Contrast last year's logic with this year's pressure
+- Emphasize cost if the same approach is repeated
+- Do not explain how to fix anything
+
+---
+
+SECTION 4: WHAT IS BECOMING TIGHTER OR LESS FORGIVING THIS YEAR?
+
+Describe the main constraint now in effect.
+
+Requirements:
+- Anchor this in moral or internal cost
+- Make clear that endurance alone no longer keeps things neutral
+- Keep language calm, precise, and unsentimental
+
+End with one sentence that suggests
+there is a specific decision or tradeoff ahead,
+without naming it.
 `.trim();
 
   const payload = {
@@ -812,7 +860,7 @@ Stop when finished.
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    max_tokens: 500,
+    max_tokens: 800,
     temperature: 0.65,
   };
 
