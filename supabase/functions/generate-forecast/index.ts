@@ -979,8 +979,9 @@ Call the save_forecast function with your response.`.trim();
     const forecastText = [
       `## WHO YOU ARE RIGHT NOW\n\n${forecastSections.who_you_are_right_now}`,
       `## WHAT'S HAPPENING IN YOUR LIFE\n\n${forecastSections.whats_happening_in_your_life}`,
-      `## 2026 PIVOTAL LIFE THEME\n\n${forecastSections.pivotal_life_theme_2026}`,
-      `## WHAT IS BECOMING TIGHTER\n\n${forecastSections.what_is_becoming_tighter}`,
+      `## 2026 PIVOTAL LIFE THEME\n\n${forecastSections.pivotal_life_theme}`,
+      `## WHAT IS BECOMING TIGHTER OR LESS FORGIVING\n\n${forecastSections.what_is_becoming_tighter_or_less_forgiving}`,
+      `## UPGRADE HOOK\n\n${forecastSections.upgrade_hook}`,
     ].join("\n\n");
 
     // Save to free_forecasts table (non-blocking failure)
