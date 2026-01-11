@@ -1,7 +1,7 @@
 // Input validation logic
 // supabase/functions/generate-forecast/lib/validate.ts
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import type { ParsedInput } from "../../_shared/lib/types.ts";
+import type { ParsedInput } from "./types.ts";
 
 const MAX_BIRTH_PLACE_LENGTH = 200;
 const MAX_CAPTCHA_TOKEN_LENGTH = 2000;
