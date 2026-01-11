@@ -170,18 +170,21 @@ export type Database = {
           moral_cost_limit: string
           nakshatra: string
           strain_accumulation: string
+          summary_interpretation: string | null
         }
         Insert: {
           intensity_reason: string
           moral_cost_limit: string
           nakshatra: string
           strain_accumulation: string
+          summary_interpretation?: string | null
         }
         Update: {
           intensity_reason?: string
           moral_cost_limit?: string
           nakshatra?: string
           strain_accumulation?: string
+          summary_interpretation?: string | null
         }
         Relationships: []
       }
