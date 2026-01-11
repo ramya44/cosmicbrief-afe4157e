@@ -164,6 +164,27 @@ export type Database = {
         }
         Relationships: []
       }
+      nakshatra_pressure_lookup: {
+        Row: {
+          intensity_reason: string
+          moral_cost_limit: string
+          nakshatra: string
+          strain_accumulation: string
+        }
+        Insert: {
+          intensity_reason: string
+          moral_cost_limit: string
+          nakshatra: string
+          strain_accumulation: string
+        }
+        Update: {
+          intensity_reason?: string
+          moral_cost_limit?: string
+          nakshatra?: string
+          strain_accumulation?: string
+        }
+        Relationships: []
+      }
       paid_forecasts: {
         Row: {
           amount_paid: number | null
