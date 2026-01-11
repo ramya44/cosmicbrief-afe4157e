@@ -72,6 +72,7 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           lucky_color: string | null
+          model_used: string | null
           moon_sign: string | null
           moon_sign_id: number | null
           moon_sign_lord: string | null
@@ -109,6 +110,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           lucky_color?: string | null
+          model_used?: string | null
           moon_sign?: string | null
           moon_sign_id?: number | null
           moon_sign_lord?: string | null
@@ -146,6 +148,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           lucky_color?: string | null
+          model_used?: string | null
           moon_sign?: string | null
           moon_sign_id?: number | null
           moon_sign_lord?: string | null

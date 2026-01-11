@@ -921,6 +921,7 @@ Call the save_forecast function with your response.
           best_direction: birthChartData.bestDirection ?? null,
           syllables: birthChartData.syllables ?? null,
           birth_stone: birthChartData.birthStone ?? null,
+          model_used: "claude-sonnet-4-20250514",
         })
         .select("id, guest_token")
         .single();
