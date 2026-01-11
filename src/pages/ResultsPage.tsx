@@ -245,7 +245,14 @@ const ResultsPage = () => {
               {(() => {
                 const [year, month, day] = birthData.birthDate.split('-').map(Number);
                 return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-              })()} · {birthData.birthPlace}
+              })()}
+              {birthData.birthTime && (() => {
+                const [hours, minutes] = birthData.birthTime.split(':').map(Number);
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const hour12 = hours % 12 || 12;
+                return ` · ${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+              })()}
+              {' · '}{birthData.birthPlace}
             </p>
           )}
         </div>
