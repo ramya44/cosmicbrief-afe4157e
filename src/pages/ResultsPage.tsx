@@ -253,65 +253,37 @@ const ResultsPage = () => {
         {/* Free Forecast - Formatted Sections */}
         {freeForecast && (
           <div className="max-w-3xl mx-auto space-y-8 mb-12">
-            {(() => {
-              const text = freeForecast.forecast;
-              // Parse sections by looking for ## headers or UPPERCASE headers
-              const sections: { header: string; content: string }[] = [];
-              
-              // Match headers like "## WHO YOU ARE RIGHT NOW" or "WHO YOU ARE RIGHT NOW"
-              // Also match headers like "## 2026 PIVOTAL LIFE THEME" or "## WHAT IS BECOMING TIGHTER..."
-              const sectionRegex = /(?:^|\n)(?:##\s*)?([A-Z][A-Z0-9\s''?]+?)(?:\n|$)/g;
-              const matches: { header: string; index: number; endIndex: number }[] = [];
-              
-              let match;
-              while ((match = sectionRegex.exec(text)) !== null) {
-                const header = match[1].trim();
-                // Filter out very short matches or non-header text
-                if (header.length > 5 && header.length < 100) {
-                  matches.push({
-                    header,
-                    index: match.index,
-                    endIndex: match.index + match[0].length
-                  });
-                }
-              }
-              
-              // Extract content between headers
-              matches.forEach((m, i) => {
-                const contentStart = m.endIndex;
-                const contentEnd = i < matches.length - 1 ? matches[i + 1].index : text.length;
-                const content = text.slice(contentStart, contentEnd).trim();
-                if (content) {
-                  sections.push({ header: m.header, content });
-                }
-              });
-
-              // If parsing didn't work, show as plain text
-              if (sections.length === 0) {
-                return (
-                  <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up">
-                    <p className="text-cream/70 leading-relaxed text-lg whitespace-pre-line">
-                      {text}
-                    </p>
-                  </div>
-                );
-              }
-
-              return (
-                <div className="space-y-6">
-                  {sections.map((section, index) => (
+            {freeForecast.sections ? (
+              // Structured JSON sections (new format)
+              <div className="space-y-6">
+                {[
+                  { key: 'who_you_are_right_now', title: 'Who You Are Right Now' },
+                  { key: 'whats_happening_in_your_life', title: "What's Happening in Your Life" },
+                  { key: 'pivotal_life_theme_2026', title: '2026 Pivotal Life Theme' },
+                  { key: 'what_is_becoming_tighter', title: 'What Is Becoming Tighter' },
+                ].map((section, index) => {
+                  const content = freeForecast.sections?.[section.key as keyof typeof freeForecast.sections];
+                  if (!content) return null;
+                  return (
                     <div 
-                      key={index} 
+                      key={section.key} 
                       className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up"
                       style={{ animationDelay: `${100 + index * 100}ms`, animationFillMode: 'both' }}
                     >
-                      <h3 className="font-display text-xl md:text-2xl text-gold mb-4">{section.header}</h3>
-                      <p className="text-cream/70 leading-relaxed text-base md:text-lg whitespace-pre-line">{section.content}</p>
+                      <h3 className="font-display text-xl md:text-2xl text-gold mb-4">{section.title}</h3>
+                      <p className="text-cream/70 leading-relaxed text-base md:text-lg whitespace-pre-line">{content}</p>
                     </div>
-                  ))}
-                </div>
-              );
-            })()}
+                  );
+                })}
+              </div>
+            ) : (
+              // Fallback: plain text for legacy forecasts
+              <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up">
+                <p className="text-cream/70 leading-relaxed text-lg whitespace-pre-line">
+                  {freeForecast.forecast}
+                </p>
+              </div>
+            )}
           </div>
         )}
 

@@ -85,6 +85,7 @@ export const generateForecast = async (
   return { 
     forecast: {
       forecast: data.forecast, 
+      sections: data.forecastSections,
       pivotalTheme: data.pivotalTheme,
       id: data.freeForecastId,
     },

@@ -19,8 +19,16 @@ export interface MonthEntry {
   why: string;
 }
 
+export interface FreeForecastSections {
+  who_you_are_right_now: string;
+  whats_happening_in_your_life: string;
+  pivotal_life_theme_2026: string;
+  what_is_becoming_tighter: string;
+}
+
 export interface FreeForecast {
   forecast: string;
+  sections?: FreeForecastSections;
   pivotalTheme?: string;
   id?: string; // Database ID for linking email later
 }
