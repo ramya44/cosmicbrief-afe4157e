@@ -29,7 +29,6 @@ export interface BirthChartData {
   bestDirection?: string;
   syllables?: string;
   birthStone?: string;
-  westernZodiac?: string;
 }
 
 export interface ForecastSections {
