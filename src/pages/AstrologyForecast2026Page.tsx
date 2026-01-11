@@ -101,8 +101,8 @@ const AstrologyForecast2026Page = () => {
         "Industry-specific guidance based on planetary rulerships",
         "Entrepreneurship timing and preparation phases"
       ],
-      link: "#",
-      available: false
+      link: "/2026-astrology-forecast/career",
+      available: true
     },
     {
       icon: Heart,
@@ -383,7 +383,9 @@ const AstrologyForecast2026Page = () => {
           
           <p className="text-cream/70 mb-4">
             <strong className="text-cream">Know your focus area?</strong> Jump to{" "}
-            <span className="text-cream/50">Career</span> |{" "}
+            <Link to="/2026-astrology-forecast/career" className="text-gold hover:underline">
+              Career
+            </Link>{" "}|{" "}
             <span className="text-cream/50">Love</span> |{" "}
             <span className="text-cream/50">Health</span> |{" "}
             <Link to="/2026-astrology-forecast/politics-and-global-events" className="text-gold hover:underline">
