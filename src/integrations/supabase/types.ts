@@ -364,6 +364,27 @@ export type Database = {
         }
         Relationships: []
       }
+      vedic_moon_pacing_lookup: {
+        Row: {
+          emotional_pacing: string
+          moon_sign: string
+          sensitivity_point: string
+          strain_leak: string
+        }
+        Insert: {
+          emotional_pacing: string
+          moon_sign: string
+          sensitivity_point: string
+          strain_leak: string
+        }
+        Update: {
+          emotional_pacing?: string
+          moon_sign?: string
+          sensitivity_point?: string
+          strain_leak?: string
+        }
+        Relationships: []
+      }
       vedic_sun_orientation_lookup: {
         Row: {
           default_orientation: string
