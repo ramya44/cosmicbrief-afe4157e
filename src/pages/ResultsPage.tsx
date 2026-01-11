@@ -5,6 +5,7 @@ import { ForecastSection } from '@/components/ForecastSection';
 import { SeasonalMapAccordion } from '@/components/SeasonalMapAccordion';
 import { ShareButton } from '@/components/ShareButton';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { AnimalBadge } from '@/components/AnimalBadge';
 import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 import { stripLeadingHeaders } from '@/lib/utils';
@@ -311,11 +312,21 @@ const ResultsPage = () => {
                   );
                 })}
                 
+                {/* Animal Badge - show on free forecast only */}
+                {!isPaid && freeForecast.animalSign && (
+                  <div 
+                    className="animate-fade-up"
+                    style={{ animationDelay: '500ms', animationFillMode: 'both' }}
+                  >
+                    <AnimalBadge animalSign={freeForecast.animalSign} />
+                  </div>
+                )}
+                
                 {/* Upgrade Hook - Bold text, no title (free forecast only) */}
                 {!isPaid && upgradeHook && (
                   <div 
                     className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up"
-                    style={{ animationDelay: '500ms', animationFillMode: 'both' }}
+                    style={{ animationDelay: '600ms', animationFillMode: 'both' }}
                   >
                     <p className="text-cream font-semibold leading-relaxed whitespace-pre-line">
                       {upgradeHook}
