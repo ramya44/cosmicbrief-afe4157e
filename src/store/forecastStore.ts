@@ -32,6 +32,7 @@ export interface FreeForecast {
   sections?: FreeForecastSections;
   pivotalTheme?: string;
   id?: string; // Database ID for linking email later
+  animalSign?: string; // Nakshatra animal from Prokerala
 }
 
 export interface PaidForecast {

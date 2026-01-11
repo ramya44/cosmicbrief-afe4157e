@@ -249,6 +249,7 @@ serve(async (req) => {
         pivotalTheme: pivotalLifeElement,
         freeForecastId: saved.freeForecastId,
         guestToken: saved.guestToken,
+        animalSign: birthChartData.animalSign || null,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

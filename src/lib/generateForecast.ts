@@ -88,6 +88,7 @@ export const generateForecast = async (
       sections: data.forecastSections,
       pivotalTheme: data.pivotalTheme,
       id: data.freeForecastId,
+      animalSign: data.animalSign,
     },
     guestToken: data.guestToken,
   };
