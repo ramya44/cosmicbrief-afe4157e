@@ -1,6 +1,6 @@
 // Database lookup logic (Sun, Moon, Nakshatra tables)
 // supabase/functions/generate-forecast/lib/lookups.ts
-import type { MoonLookup, NakshatraLookup, SunLookup } from "./types.ts";
+import type { MoonLookup, NakshatraLookup, SunLookup } from "../../_shared/lib/types.ts";
 
 export async function fetchLookups(args: {
   supabase: any;
