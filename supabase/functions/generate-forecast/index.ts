@@ -752,6 +752,17 @@ Each paragraph should:
 3. Name the tension this creates
 4. Show current impact
 
+**AGE-BASED PIVOTAL LIFE ELEMENT (STRICT):**
+You must select exactly ONE pivotal life element from the allowed list for the user's age.
+
+Allowed lists:
+- Age < 35: [career, education, identity]
+- Age 35–49: [career, relationships, family, health]
+- Age 50–59: [health, family, relationships, purpose]
+- Age >= 60: [health, family, relationships, meaning, stewardship]
+
+Rule: if age >= 60, never choose career.
+
 Example: "You're deeply intuitive and compassionate at your core. You absorb atmospheres, pick up on undercurrents, feel what's unspoken. But here's where it gets complicated: emotionally, you need radical independence. You process feelings intellectually, at a distance. You care about humanity broadly but can be surprisingly detached in one-on-one connections."
 `;
 
