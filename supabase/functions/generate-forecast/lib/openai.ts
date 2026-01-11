@@ -51,7 +51,7 @@ export async function generateForecast(args: {
   const payload = {
     model: "gpt-4.1-mini",
     temperature: 0.65,
-    max_tokens: 400,
+    max_tokens: 600,
     presence_penalty: 0.3,
     frequency_penalty: 0.0,
     messages: [
