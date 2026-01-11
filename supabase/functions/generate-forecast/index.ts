@@ -814,7 +814,13 @@ Call the save_forecast function with your response.
   const payload = {
     model: "claude-sonnet-4-20250514",
     max_tokens: 1024,
-    system: systemPrompt,
+    system: [
+      {
+        type: "text",
+        text: systemPrompt,
+        cache_control: { type: "ephemeral" }
+      }
+    ],
     messages: [
       { role: "user", content: userPrompt },
     ],
@@ -829,6 +835,7 @@ Call the save_forecast function with your response.
       headers: {
         "x-api-key": anthropicApiKey!,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "prompt-caching-2024-07-31",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
@@ -854,6 +861,12 @@ Call the save_forecast function with your response.
 
     const data = await resp.json();
     const tokenUsage = data.usage || null;
+    const cacheMetrics = tokenUsage ? {
+      input_tokens: tokenUsage.input_tokens,
+      output_tokens: tokenUsage.output_tokens,
+      cache_creation_input_tokens: tokenUsage.cache_creation_input_tokens || 0,
+      cache_read_input_tokens: tokenUsage.cache_read_input_tokens || 0,
+    } : null;
 
     // Extract structured forecast from tool_use response
     const toolUseBlock = data?.content?.find((block: { type: string }) => block.type === "tool_use");
@@ -954,6 +967,7 @@ Call the save_forecast function with your response.
       forecastId: freeForecastId || null,
       model: "claude-sonnet-4-20250514",
       tokens: tokenUsage,
+      cacheMetrics,
       latencyMs: Date.now() - requestStartTime,
     });
 
