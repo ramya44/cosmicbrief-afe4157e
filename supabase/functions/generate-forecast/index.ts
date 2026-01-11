@@ -762,27 +762,8 @@ Personalization should come from tone, pressure, and what feels costly if misrea
 `;
 
   const userPrompt = `
-Write a free forecast for the reader consisting of the following sections.
+Generate a free forecast for the reader based on these inputs:
 
-This is a grounded, psychologically precise preview.
-
-It should feel personal, specific, and unfinished.
-
-Do not mention astrology or techniques.
-
-Do not give advice or solutions.
-
-Do not predict literal events.
-
-Do not use em dashes.
-
-Address the reader directly as "you."
-
-Use the provided Sun, Moon, and Nakshatra interpretations implicitly.
-
-Focus on tension, not traits.
-
-INPUTS:
 - Sun orientation context: ${sunLookup?.default_orientation || "unknown"}
 - Sun identity limit: ${sunLookup?.identity_limit || "unknown"}
 - Sun effort misfire: ${sunLookup?.effort_misfire || "unknown"}
@@ -794,65 +775,36 @@ INPUTS:
 - Nakshatra strain pattern: ${nakshatraLookup?.strain_accumulation || "unknown"}
 - Pivotal life theme: ${pivotalLifeElement}
 
----
-
-SECTION 1: WHO YOU ARE RIGHT NOW
-
-Write 2-3 short paragraphs describing the reader's current internal state.
-
-Requirements:
-- Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra)
-- Emphasize contradictions rather than harmony
-- Show how their usual strengths are now creating friction
-- Describe strain as something lived, not abstract
-- Make the reader feel recognized without sounding intrusive
-
-End this section by implying that something is reaching a turning point,
-without naming what happens next.
-
----
-
-SECTION 2: WHAT'S HAPPENING IN YOUR LIFE
-
-Write 2 paragraphs describing the broader pattern unfolding in their life.
-
-Requirements:
-- Localize pressure around the current life stage and chosen pivotal theme
-- Show how their identity limits and emotional sensitivities are being tested
-- Hint that a moral or internal limit is approaching
-- Build tension without resolving it
-
-End this section with a sense that clarity is increasing,
-but the full picture is not yet available.
-
----
-
-SECTION 3: 2026 PIVOTAL LIFE THEME
-
-State the pivotal life theme clearly.
-
-Describe why attention is gathering here this year.
-
-Requirements:
-- Contrast last year's logic with this year's pressure
-- Emphasize cost if the same approach is repeated
-- Do not explain how to fix anything
-
----
-
-SECTION 4: WHAT IS BECOMING TIGHTER OR LESS FORGIVING THIS YEAR?
-
-Describe the main constraint now in effect.
-
-Requirements:
-- Anchor this in moral or internal cost
-- Make clear that endurance alone no longer keeps things neutral
-- Keep language calm, precise, and unsentimental
-
-End with one sentence that suggests
-there is a specific decision or tradeoff ahead,
-without naming it.
+Call the save_forecast function with your response.
 `.trim();
+
+  // Define the tool for structured output
+  const forecastTool = {
+    name: "save_forecast",
+    description: "Save the forecast sections for the reader",
+    input_schema: {
+      type: "object",
+      properties: {
+        who_you_are_right_now: {
+          type: "string",
+          description: "2-3 paragraphs describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra). Emphasize contradictions, show how usual strengths create friction, describe strain as lived. End implying a turning point without naming what happens next."
+        },
+        whats_happening_in_your_life: {
+          type: "string",
+          description: "2 paragraphs describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme. Show how identity limits and emotional sensitivities are tested. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available."
+        },
+        pivotal_life_theme_2026: {
+          type: "string",
+          description: "State the pivotal life theme clearly. Describe why attention is gathering here this year. Contrast last year's logic with this year's pressure. Emphasize cost if same approach is repeated. Do not explain how to fix anything."
+        },
+        what_is_becoming_tighter: {
+          type: "string",
+          description: "Describe the main constraint now in effect. Anchor in moral or internal cost. Make clear that endurance alone no longer keeps things neutral. Keep language calm, precise, unsentimental. End with one sentence suggesting a specific decision or tradeoff ahead without naming it."
+        }
+      },
+      required: ["who_you_are_right_now", "whats_happening_in_your_life", "pivotal_life_theme_2026", "what_is_becoming_tighter"]
+    }
+  };
 
   const payload = {
     model: "claude-sonnet-4-20250514",
@@ -861,6 +813,8 @@ without naming it.
     messages: [
       { role: "user", content: userPrompt },
     ],
+    tools: [forecastTool],
+    tool_choice: { type: "tool", name: "save_forecast" }
   };
 
     console.log("Anthropic payload:", JSON.stringify(payload));
@@ -896,17 +850,24 @@ without naming it.
     const data = await resp.json();
     const tokenUsage = data.usage || null;
 
-    const generatedContent = data?.content?.[0]?.text ?? "";
+    // Extract structured forecast from tool_use response
+    const toolUseBlock = data?.content?.find((block: { type: string }) => block.type === "tool_use");
+    const forecastSections = toolUseBlock?.input as {
+      who_you_are_right_now?: string;
+      whats_happening_in_your_life?: string;
+      pivotal_life_theme_2026?: string;
+      what_is_becoming_tighter?: string;
+    } | undefined;
 
-    if (!generatedContent.trim()) {
+    if (!forecastSections || !forecastSections.who_you_are_right_now) {
       logStep("REQUEST_COMPLETE", {
         outcome: "fail",
         reason: "empty_response",
         ip: clientIP,
         deviceId: deviceId || null,
-        model: "gpt-4.1-mini-2025-04-14",
+        model: "claude-sonnet-4-20250514",
         tokens: tokenUsage,
-        finishReason: data?.choices?.[0]?.finish_reason,
+        stopReason: data?.stop_reason,
         latencyMs: Date.now() - requestStartTime,
       });
       return new Response(JSON.stringify({ error: "Unable to generate forecast. Please try again." }), {
@@ -915,7 +876,13 @@ without naming it.
       });
     }
 
-    const forecastText = generatedContent.trim();
+    // Create a combined text version for database storage (backwards compatibility)
+    const forecastText = [
+      `## WHO YOU ARE RIGHT NOW\n\n${forecastSections.who_you_are_right_now}`,
+      `## WHAT'S HAPPENING IN YOUR LIFE\n\n${forecastSections.whats_happening_in_your_life}`,
+      `## 2026 PIVOTAL LIFE THEME\n\n${forecastSections.pivotal_life_theme_2026}`,
+      `## WHAT IS BECOMING TIGHTER\n\n${forecastSections.what_is_becoming_tighter}`
+    ].join("\n\n");
 
     // Save to free_forecasts table (non-blocking failure)
     let freeForecastId: string | undefined;
@@ -979,7 +946,7 @@ without naming it.
       deviceId: deviceId || null,
       guestTokenHash,
       forecastId: freeForecastId || null,
-      model: "gpt-4.1-mini-2025-04-14",
+      model: "claude-sonnet-4-20250514",
       tokens: tokenUsage,
       latencyMs: Date.now() - requestStartTime,
     });
@@ -987,6 +954,7 @@ without naming it.
     return new Response(
       JSON.stringify({
         forecast: forecastText,
+        forecastSections,
         pivotalTheme: pivotalLifeElement,
         freeForecastId,
         guestToken,
