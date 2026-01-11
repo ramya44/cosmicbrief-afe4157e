@@ -571,9 +571,9 @@ serve(async (req) => {
             birthStone: chartResult.birthStone,
             westernZodiac: chartResult.westernZodiac,
           };
-          logStep("Birth chart fetched successfully", { 
+          logStep("Birth chart fetched successfully", {
             moonSign: birthChartData.moonSign,
-            sunSign: birthChartData.sunSign, 
+            sunSign: birthChartData.sunSign,
             nakshatra: birthChartData.nakshatra,
             nakshatraLord: birthChartData.nakshatraLord,
             ganam: birthChartData.ganam,
@@ -587,136 +587,136 @@ serve(async (req) => {
         logStep("Birth chart fetch exception", {
           error: chartError instanceof Error ? chartError.message : String(chartError),
         });
-    }
-  }
-
-  // ============= LOOKUP TABLE QUERIES =============
-  // Fetch interpretive context from lookup tables
-  interface SunLookup {
-    default_orientation: string;
-    identity_limit: string;
-    effort_misfire: string;
-  }
-  interface MoonLookup {
-    emotional_pacing: string;
-    sensitivity_point: string;
-    strain_leak: string;
-  }
-  interface NakshatraLookup {
-    intensity_reason: string;
-    moral_cost_limit: string;
-    strain_accumulation: string;
-  }
-
-  let sunLookup: SunLookup | null = null;
-  let moonLookup: MoonLookup | null = null;
-  let nakshatraLookup: NakshatraLookup | null = null;
-
-  // Query sun orientation lookup
-  if (birthChartData.sunSign) {
-    const { data: sunData, error: sunError } = await supabase
-      .from("vedic_sun_orientation_lookup")
-      .select("default_orientation, identity_limit, effort_misfire")
-      .eq("sun_sign", birthChartData.sunSign)
-      .maybeSingle();
-
-    if (sunError) {
-      logStep("Sun lookup error", { error: sunError.message });
-    } else if (sunData) {
-      sunLookup = sunData;
-      logStep("Sun lookup success", { sunSign: birthChartData.sunSign });
-    }
-  }
-
-  // Query moon pacing lookup
-  if (birthChartData.moonSign) {
-    const { data: moonData, error: moonError } = await supabase
-      .from("vedic_moon_pacing_lookup")
-      .select("emotional_pacing, sensitivity_point, strain_leak")
-      .eq("moon_sign", birthChartData.moonSign)
-      .maybeSingle();
-
-    if (moonError) {
-      logStep("Moon lookup error", { error: moonError.message });
-    } else if (moonData) {
-      moonLookup = moonData;
-      logStep("Moon lookup success", { moonSign: birthChartData.moonSign });
-    }
-  }
-
-  // Query nakshatra pressure lookup
-  if (birthChartData.nakshatra) {
-    const { data: nakData, error: nakError } = await supabase
-      .from("nakshatra_pressure_lookup")
-      .select("intensity_reason, moral_cost_limit, strain_accumulation")
-      .eq("nakshatra", birthChartData.nakshatra)
-      .maybeSingle();
-
-    if (nakError) {
-      logStep("Nakshatra lookup error", { error: nakError.message });
-    } else if (nakData) {
-      nakshatraLookup = nakData;
-      logStep("Nakshatra lookup success", { nakshatra: birthChartData.nakshatra });
-    }
-  }
-
-  let pivotalLifeElement: string;
-
-  // Only use cache if we have UTC datetime
-  if (birthTimeUtc) {
-    // Normalize UTC datetime for cache key (30-minute increments)
-    const normalizedUtc = normalizeUtcDatetime(birthTimeUtc);
-
-    console.log(`Cache lookup: normalized UTC=${normalizedUtc}, targetYear=${targetYear}`);
-
-    // Check theme cache using UTC datetime
-    const { data: cachedTheme, error: cacheError } = await supabase
-      .from("theme_cache")
-      .select("pivotal_theme")
-      .eq("birth_datetime_utc", normalizedUtc)
-      .eq("target_year", String(targetYear))
-      .maybeSingle();
-
-    if (cacheError) {
-      console.error("Cache lookup error:", cacheError);
-    }
-
-    if (cachedTheme?.pivotal_theme) {
-      // Cache hit - use existing theme
-      pivotalLifeElement = cachedTheme.pivotal_theme;
-      console.log(
-        `Cache HIT: Using cached theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}`,
-      );
-    } else {
-      // Cache miss - generate and store new theme
-      pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
-
-      console.log(
-        `Cache MISS: Generated new theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}, age=${age}`,
-      );
-
-      // Insert into cache (ignore errors - cache is optional)
-      const { error: insertError } = await supabase.from("theme_cache").insert({
-        birth_datetime_utc: normalizedUtc,
-        target_year: String(targetYear),
-        pivotal_theme: pivotalLifeElement,
-      });
-
-      if (insertError) {
-        console.error("Cache insert error:", insertError);
       }
     }
-  } else {
-    // No UTC datetime - just generate theme without caching
-    pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
-    console.log(`No UTC datetime provided - generated theme "${pivotalLifeElement}" without caching`);
-  }
 
-  console.log(
-    `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}, sunLookup: ${JSON.stringify(sunLookup)}, moonLookup: ${JSON.stringify(moonLookup)}, nakshatraLookup: ${JSON.stringify(nakshatraLookup)}`,
-  );
+    // ============= LOOKUP TABLE QUERIES =============
+    // Fetch interpretive context from lookup tables
+    interface SunLookup {
+      default_orientation: string;
+      identity_limit: string;
+      effort_misfire: string;
+    }
+    interface MoonLookup {
+      emotional_pacing: string;
+      sensitivity_point: string;
+      strain_leak: string;
+    }
+    interface NakshatraLookup {
+      intensity_reason: string;
+      moral_cost_limit: string;
+      strain_accumulation: string;
+    }
 
-  const systemPrompt = `You are a deeply intuitive guide who understands human psychology and life patterns. You create personalized readings that make people feel profoundly seen and understood.
+    let sunLookup: SunLookup | null = null;
+    let moonLookup: MoonLookup | null = null;
+    let nakshatraLookup: NakshatraLookup | null = null;
+
+    // Query sun orientation lookup
+    if (birthChartData.sunSign) {
+      const { data: sunData, error: sunError } = await supabase
+        .from("vedic_sun_orientation_lookup")
+        .select("default_orientation, identity_limit, effort_misfire")
+        .eq("sun_sign", birthChartData.sunSign)
+        .maybeSingle();
+
+      if (sunError) {
+        logStep("Sun lookup error", { error: sunError.message });
+      } else if (sunData) {
+        sunLookup = sunData;
+        logStep("Sun lookup success", { sunSign: birthChartData.sunSign });
+      }
+    }
+
+    // Query moon pacing lookup
+    if (birthChartData.moonSign) {
+      const { data: moonData, error: moonError } = await supabase
+        .from("vedic_moon_pacing_lookup")
+        .select("emotional_pacing, sensitivity_point, strain_leak")
+        .eq("moon_sign", birthChartData.moonSign)
+        .maybeSingle();
+
+      if (moonError) {
+        logStep("Moon lookup error", { error: moonError.message });
+      } else if (moonData) {
+        moonLookup = moonData;
+        logStep("Moon lookup success", { moonSign: birthChartData.moonSign });
+      }
+    }
+
+    // Query nakshatra pressure lookup
+    if (birthChartData.nakshatra) {
+      const { data: nakData, error: nakError } = await supabase
+        .from("nakshatra_pressure_lookup")
+        .select("intensity_reason, moral_cost_limit, strain_accumulation")
+        .eq("nakshatra", birthChartData.nakshatra)
+        .maybeSingle();
+
+      if (nakError) {
+        logStep("Nakshatra lookup error", { error: nakError.message });
+      } else if (nakData) {
+        nakshatraLookup = nakData;
+        logStep("Nakshatra lookup success", { nakshatra: birthChartData.nakshatra });
+      }
+    }
+
+    let pivotalLifeElement: string;
+
+    // Only use cache if we have UTC datetime
+    if (birthTimeUtc) {
+      // Normalize UTC datetime for cache key (30-minute increments)
+      const normalizedUtc = normalizeUtcDatetime(birthTimeUtc);
+
+      console.log(`Cache lookup: normalized UTC=${normalizedUtc}, targetYear=${targetYear}`);
+
+      // Check theme cache using UTC datetime
+      const { data: cachedTheme, error: cacheError } = await supabase
+        .from("theme_cache")
+        .select("pivotal_theme")
+        .eq("birth_datetime_utc", normalizedUtc)
+        .eq("target_year", String(targetYear))
+        .maybeSingle();
+
+      if (cacheError) {
+        console.error("Cache lookup error:", cacheError);
+      }
+
+      if (cachedTheme?.pivotal_theme) {
+        // Cache hit - use existing theme
+        pivotalLifeElement = cachedTheme.pivotal_theme;
+        console.log(
+          `Cache HIT: Using cached theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}`,
+        );
+      } else {
+        // Cache miss - generate and store new theme
+        pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+
+        console.log(
+          `Cache MISS: Generated new theme "${pivotalLifeElement}" for UTC=${normalizedUtc}, targetYear=${targetYear}, age=${age}`,
+        );
+
+        // Insert into cache (ignore errors - cache is optional)
+        const { error: insertError } = await supabase.from("theme_cache").insert({
+          birth_datetime_utc: normalizedUtc,
+          target_year: String(targetYear),
+          pivotal_theme: pivotalLifeElement,
+        });
+
+        if (insertError) {
+          console.error("Cache insert error:", insertError);
+        }
+      }
+    } else {
+      // No UTC datetime - just generate theme without caching
+      pivotalLifeElement = pickPivotalLifeElement(age, styleSeed);
+      console.log(`No UTC datetime provided - generated theme "${pivotalLifeElement}" without caching`);
+    }
+
+    console.log(
+      `Generating forecast for: age ${age}, zodiac ${zodiacSign}, ${formattedDob} ${birthTime} in ${birthPlace}, UTC=${birthTimeUtc || "N/A"}, styleSeed: ${styleSeed}, pivotalLifeElement: ${pivotalLifeElement}, deviceId: ${deviceId || "none"}, sunLookup: ${JSON.stringify(sunLookup)}, moonLookup: ${JSON.stringify(moonLookup)}, nakshatraLookup: ${JSON.stringify(nakshatraLookup)}`,
+    );
+
+    const systemPrompt = `You are a deeply intuitive guide who understands human psychology and life patterns. You create personalized readings that make people feel profoundly seen and understood.
 
 # YOUR WRITING RULES
 
@@ -727,16 +727,20 @@ serve(async (req) => {
 - Gentle, vague language like "perhaps" or "you might be"
 - Bullet points or lists
 - Generic horoscope language
+- Therapy-speak terms ("optimize," "processing style," "moral compromises")
+- Repetitive restatements of the same idea
 
 **ALWAYS:**
 - Write in direct, confident statements
 - Use "you" and address the person directly
-- Name specific internal experiences and tensions
+- Name specific internal experiences and tensions WITH CONCRETE EXAMPLES
 - Focus on CONTRADICTIONS and PARADOXES (this creates accuracy)
-- Use concrete, visceral language
+- Use concrete, visceral language over abstract concepts
 - Keep sentences relatively short and punchy
 - Build tension without resolution
 - Leave them wanting more
+- Be ruthlessly efficient—cut any sentence that doesn't add new information
+- Ground abstract patterns in specific, recognizable moments or scenarios
 
 **TONE MATCHING:**
 Match emotional intensity to the person's psychological makeup:
@@ -750,7 +754,17 @@ Each paragraph should:
 1. Make a direct statement about them
 2. Add nuance or contradiction
 3. Name the tension this creates
-4. Show current impact
+4. Show current impact with a concrete example or specific scenario
+
+**SPECIFICITY REQUIREMENT:**
+Every paragraph must include at least one concrete detail:
+- A specific type of situation they encounter
+- A recognizable moment or interaction
+- A particular kind of relationship or context
+- An actual behavior or response pattern
+
+Avoid: "situations that demand boundaries"
+Use: "when someone asks for more than you can give, you say yes anyway and resent them later"
 
 **AGE-BASED PIVOTAL LIFE ELEMENT (STRICT):**
 You must select exactly ONE pivotal life element from the allowed list for the user's age.
@@ -763,10 +777,10 @@ Allowed lists:
 
 Rule: if age >= 60, never choose career.
 
-Example: "You're deeply intuitive and compassionate at your core. You absorb atmospheres, pick up on undercurrents, feel what's unspoken. But here's where it gets complicated: emotionally, you need radical independence. You process feelings intellectually, at a distance. You care about humanity broadly but can be surprisingly detached in one-on-one connections."
+Example: "You read people instantly. Walk into a room and you know who's angry, who's lying, who needs something they won't ask for. This serves you well until someone needs you to stop being perceptive and start being direct. You keep trying to find the compassionate angle, the way to handle it that doesn't hurt anyone. But some situations don't have a gentle solution. The compromise you keep making is costing you something real."
 `;
 
-  const userPrompt = `
+    const userPrompt = `
 Generate a free forecast for the reader based on these inputs:
 
 - Sun orientation context: ${sunLookup?.default_orientation || "unknown"}
@@ -780,53 +794,67 @@ Generate a free forecast for the reader based on these inputs:
 - Nakshatra strain pattern: ${nakshatraLookup?.strain_accumulation || "unknown"}
 - Pivotal life theme: ${pivotalLifeElement}
 
+CRITICAL INSTRUCTIONS:
+1. Synthesize these data points into a cohesive psychological portrait—do not list them separately
+2. Include at least one concrete, specific example or scenario per section
+3. Avoid repeating the same core insight across multiple paragraphs
+4. Use everyday language, not clinical or abstract terminology
+5. Keep total length tight—eliminate any redundancy
+
 Call the save_forecast function with your response.
 `.trim();
 
-  // Define the tool for structured output
-  const forecastTool = {
-    name: "save_forecast",
-    description: "Save the forecast sections for the reader",
-    input_schema: {
-      type: "object",
-      properties: {
-        who_you_are_right_now: {
-          type: "string",
-          description: "2-3 paragraphs describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra). Emphasize contradictions, show how usual strengths create friction, describe strain as lived. End implying a turning point without naming what happens next."
+    // Define the tool for structured output
+    const forecastTool = {
+      name: "save_forecast",
+      description: "Save the forecast sections for the reader",
+      input_schema: {
+        type: "object",
+        properties: {
+          who_you_are_right_now: {
+            type: "string",
+            description:
+              "2-3 concise paragraphs (max 150 words each) describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra) into ONE unified portrait with NO repetition between paragraphs. Each paragraph must add NEW information or perspective. Include at least one specific, concrete scenario that illustrates the pattern. Emphasize contradictions, show how usual strengths create friction, describe strain as lived experience. End implying a turning point without naming what happens next. Avoid therapy-speak and abstraction.",
+          },
+          whats_happening_in_your_life: {
+            type: "string",
+            description:
+              "2 concise paragraphs (max 120 words each) describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme with specific reference to what this looks like in practice. Show how identity limits and emotional sensitivities are being tested through concrete situations. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available. Each paragraph must advance the narrative, not restate.",
+          },
+          pivotal_life_theme_2026: {
+            type: "string",
+            description:
+              "1-2 paragraphs (max 150 words total) stating the pivotal life theme clearly and concretely. Describe why attention is gathering here this year using specific language tied to their actual experience. Contrast last year's logic with this year's pressure. Emphasize cost if same approach is repeated, with tangible examples of what that cost looks like. Do not explain how to fix anything. Avoid vague language like 'situations' or 'contexts'—name actual relationship types, work scenarios, or life circumstances.",
+          },
+          what_is_becoming_tighter: {
+            type: "string",
+            description:
+              "1-2 paragraphs (max 130 words total) describing the main constraint now in effect. Anchor in moral or internal cost with concrete stakes. Make clear that endurance alone no longer keeps things neutral. Use specific language about what's actually happening in their life. Keep language calm, precise, unsentimental. End with one sentence suggesting a specific decision or tradeoff ahead without naming the solution. Avoid abstraction—reference actual choices, relationships, or circumstances.",
+          },
         },
-        whats_happening_in_your_life: {
-          type: "string",
-          description: "2 paragraphs describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme. Show how identity limits and emotional sensitivities are tested. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available."
-        },
-        pivotal_life_theme_2026: {
-          type: "string",
-          description: "State the pivotal life theme clearly. Describe why attention is gathering here this year. Contrast last year's logic with this year's pressure. Emphasize cost if same approach is repeated. Do not explain how to fix anything."
-        },
-        what_is_becoming_tighter: {
-          type: "string",
-          description: "Describe the main constraint now in effect. Anchor in moral or internal cost. Make clear that endurance alone no longer keeps things neutral. Keep language calm, precise, unsentimental. End with one sentence suggesting a specific decision or tradeoff ahead without naming it."
-        }
+        required: [
+          "who_you_are_right_now",
+          "whats_happening_in_your_life",
+          "pivotal_life_theme_2026",
+          "what_is_becoming_tighter",
+        ],
       },
-      required: ["who_you_are_right_now", "whats_happening_in_your_life", "pivotal_life_theme_2026", "what_is_becoming_tighter"]
-    }
-  };
+    };
 
-  const payload = {
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 1024,
-    system: [
-      {
-        type: "text",
-        text: systemPrompt,
-        cache_control: { type: "ephemeral" }
-      }
-    ],
-    messages: [
-      { role: "user", content: userPrompt },
-    ],
-    tools: [forecastTool],
-    tool_choice: { type: "tool", name: "save_forecast" }
-  };
+    const payload = {
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1024,
+      system: [
+        {
+          type: "text",
+          text: systemPrompt,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      messages: [{ role: "user", content: userPrompt }],
+      tools: [forecastTool],
+      tool_choice: { type: "tool", name: "save_forecast" },
+    };
 
     console.log("Anthropic payload:", JSON.stringify(payload));
 
@@ -861,21 +889,25 @@ Call the save_forecast function with your response.
 
     const data = await resp.json();
     const tokenUsage = data.usage || null;
-    const cacheMetrics = tokenUsage ? {
-      input_tokens: tokenUsage.input_tokens,
-      output_tokens: tokenUsage.output_tokens,
-      cache_creation_input_tokens: tokenUsage.cache_creation_input_tokens || 0,
-      cache_read_input_tokens: tokenUsage.cache_read_input_tokens || 0,
-    } : null;
+    const cacheMetrics = tokenUsage
+      ? {
+          input_tokens: tokenUsage.input_tokens,
+          output_tokens: tokenUsage.output_tokens,
+          cache_creation_input_tokens: tokenUsage.cache_creation_input_tokens || 0,
+          cache_read_input_tokens: tokenUsage.cache_read_input_tokens || 0,
+        }
+      : null;
 
     // Extract structured forecast from tool_use response
     const toolUseBlock = data?.content?.find((block: { type: string }) => block.type === "tool_use");
-    const forecastSections = toolUseBlock?.input as {
-      who_you_are_right_now?: string;
-      whats_happening_in_your_life?: string;
-      pivotal_life_theme_2026?: string;
-      what_is_becoming_tighter?: string;
-    } | undefined;
+    const forecastSections = toolUseBlock?.input as
+      | {
+          who_you_are_right_now?: string;
+          whats_happening_in_your_life?: string;
+          pivotal_life_theme_2026?: string;
+          what_is_becoming_tighter?: string;
+        }
+      | undefined;
 
     if (!forecastSections || !forecastSections.who_you_are_right_now) {
       logStep("REQUEST_COMPLETE", {
@@ -899,7 +931,7 @@ Call the save_forecast function with your response.
       `## WHO YOU ARE RIGHT NOW\n\n${forecastSections.who_you_are_right_now}`,
       `## WHAT'S HAPPENING IN YOUR LIFE\n\n${forecastSections.whats_happening_in_your_life}`,
       `## 2026 PIVOTAL LIFE THEME\n\n${forecastSections.pivotal_life_theme_2026}`,
-      `## WHAT IS BECOMING TIGHTER\n\n${forecastSections.what_is_becoming_tighter}`
+      `## WHAT IS BECOMING TIGHTER\n\n${forecastSections.what_is_becoming_tighter}`,
     ].join("\n\n");
 
     // Save to free_forecasts table (non-blocking failure)
