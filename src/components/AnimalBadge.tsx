@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface AnimalBadgeProps {
   animalSign: string;
+  inline?: boolean; // When true, renders inline for text wrap layout
 }
 
 interface AnimalData {
@@ -10,7 +11,7 @@ interface AnimalData {
   image_url: string;
 }
 
-export const AnimalBadge = ({ animalSign }: AnimalBadgeProps) => {
+export const AnimalBadge = ({ animalSign, inline = false }: AnimalBadgeProps) => {
   const [animalData, setAnimalData] = useState<AnimalData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,6 +45,38 @@ export const AnimalBadge = ({ animalSign }: AnimalBadgeProps) => {
     return null;
   }
 
+  // Inline mode: float left for text wrap on desktop
+  if (inline) {
+    return (
+      <>
+        {/* Mobile: centered above text */}
+        <div className="md:hidden flex flex-col items-center text-center mb-4">
+          <img
+            src={animalData.image_url}
+            alt={animalSign}
+            className="w-40 h-40 object-contain mb-2"
+          />
+          <p className="text-gold font-display text-lg italic">
+            "{animalData.phrase}"
+          </p>
+        </div>
+
+        {/* Desktop: float left for text wrap */}
+        <div className="hidden md:block float-left mr-6 mb-2">
+          <img
+            src={animalData.image_url}
+            alt={animalSign}
+            className="w-48 h-48 object-contain"
+          />
+          <p className="text-gold font-display text-base italic text-center mt-2">
+            "{animalData.phrase}"
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  // Standalone mode (original)
   return (
     <div className="mt-6 pt-6 border-t border-border/30 overflow-hidden">
       {/* Mobile: stacked centered */}
