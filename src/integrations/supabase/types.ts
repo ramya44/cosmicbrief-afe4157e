@@ -373,18 +373,21 @@ export type Database = {
           moon_sign: string
           sensitivity_point: string
           strain_leak: string
+          summary_interpretation: string | null
         }
         Insert: {
           emotional_pacing: string
           moon_sign: string
           sensitivity_point: string
           strain_leak: string
+          summary_interpretation?: string | null
         }
         Update: {
           emotional_pacing?: string
           moon_sign?: string
           sensitivity_point?: string
           strain_leak?: string
+          summary_interpretation?: string | null
         }
         Relationships: []
       }
@@ -393,18 +396,21 @@ export type Database = {
           default_orientation: string
           effort_misfire: string
           identity_limit: string
+          summary_interpretation: string | null
           sun_sign: string
         }
         Insert: {
           default_orientation: string
           effort_misfire: string
           identity_limit: string
+          summary_interpretation?: string | null
           sun_sign: string
         }
         Update: {
           default_orientation?: string
           effort_misfire?: string
           identity_limit?: string
+          summary_interpretation?: string | null
           sun_sign?: string
         }
         Relationships: []
