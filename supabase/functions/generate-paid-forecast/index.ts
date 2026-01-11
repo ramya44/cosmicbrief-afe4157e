@@ -165,8 +165,6 @@ const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 1000;
 const RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504];
 
-// Expected price for validation (in cents) - $20
-const EXPECTED_AMOUNT = 2000;
 
 function extractFirstJsonObject(text: string) {
   const cleaned = text
@@ -423,22 +421,9 @@ serve(async (req) => {
       });
     }
 
-    // Verify amount received
-    if (!session.amount_total || session.amount_total < EXPECTED_AMOUNT) {
-      logStep("REQUEST_COMPLETE", {
-        outcome: "fail",
-        reason: "insufficient_payment",
-        ip: clientIP,
-        deviceId: deviceId || null,
-        amount: session.amount_total,
-        expected: EXPECTED_AMOUNT,
-        latencyMs: Date.now() - requestStartTime,
-      });
-      return new Response(JSON.stringify({ error: "Invalid payment amount" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Log the amount paid (may be $0 if promotion code was applied)
+    const amountPaid = session.amount_total || 0;
+    logStep("Payment verified", { amountPaid, currency: session.currency });
 
     // Verify session is not too old (max 1 hour)
     const sessionCreated = session.created * 1000;
@@ -990,6 +975,7 @@ Return valid JSON only using this schema:
           totalAttempts,
           tokenUsage: null,
           deviceId,
+          amountPaid,
         });
 
         logStep("REQUEST_COMPLETE", {
@@ -1054,6 +1040,7 @@ Return valid JSON only using this schema:
         totalAttempts,
         tokenUsage,
         deviceId,
+        amountPaid,
       });
 
       logStep("REQUEST_COMPLETE", {
@@ -1095,6 +1082,7 @@ Return valid JSON only using this schema:
         totalAttempts,
         tokenUsage,
         deviceId,
+        amountPaid,
       });
 
       logStep("REQUEST_COMPLETE", {
@@ -1130,6 +1118,7 @@ Return valid JSON only using this schema:
       totalAttempts,
       tokenUsage,
       deviceId,
+      amountPaid,
     });
 
     logStep("Forecast saved successfully", { forecastId });
@@ -1321,6 +1310,7 @@ async function saveForecastToDb(
     totalAttempts: number;
     tokenUsage: { promptTokens?: number; completionTokens?: number; totalTokens?: number } | null;
     deviceId?: string;
+    amountPaid: number;
   },
 ): Promise<string | null> {
   // Extract birth date/time from UTC string
@@ -1342,7 +1332,7 @@ async function saveForecastToDb(
         birth_place: `${params.lat},${params.lon}`, // Store coords as fallback
         free_forecast: params.freeForecast || "",
         strategic_forecast: params.strategicForecast || {},
-        amount_paid: EXPECTED_AMOUNT,
+        amount_paid: params.amountPaid,
         model_used: params.modelUsed,
         generation_status: params.generationStatus,
         generation_error: params.generationError,
