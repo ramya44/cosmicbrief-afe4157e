@@ -279,7 +279,7 @@ const ResultsPage = () => {
                       style={{ animationDelay: `${100 + index * 100}ms`, animationFillMode: 'both' }}
                     >
                       <h3 className="font-display text-xl md:text-2xl text-gold mb-4">{section.title}</h3>
-                      <p className="text-cream/70 leading-relaxed text-base md:text-lg whitespace-pre-line">{content}</p>
+                      <p className="text-cream/90 leading-relaxed whitespace-pre-line">{content}</p>
                     </div>
                   );
                 })}
@@ -287,7 +287,7 @@ const ResultsPage = () => {
             ) : (
               // Fallback: plain text for legacy forecasts
               <div className="rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 md:p-8 animate-fade-up">
-                <p className="text-cream/70 leading-relaxed text-lg whitespace-pre-line">
+                <p className="text-cream/90 leading-relaxed whitespace-pre-line">
                   {freeForecast.forecast}
                 </p>
               </div>
