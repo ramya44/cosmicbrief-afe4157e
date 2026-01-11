@@ -51,7 +51,7 @@ export const AnimalBadge = ({ animalSign }: AnimalBadgeProps) => {
         <img
           src={animalData.image_url}
           alt={animalSign}
-          className="w-24 h-24 object-contain mb-4"
+          className="w-40 h-40 object-contain mb-4"
         />
         <p className="text-gold font-display text-lg italic">
           "{animalData.phrase}"
@@ -63,9 +63,9 @@ export const AnimalBadge = ({ animalSign }: AnimalBadgeProps) => {
         <img
           src={animalData.image_url}
           alt={animalSign}
-          className="float-left w-28 h-28 object-contain mr-6 mb-2"
+          className="float-left w-48 h-48 object-contain mr-6 mb-2"
         />
-        <p className="text-gold font-display text-xl italic leading-relaxed pt-8">
+        <p className="text-gold font-display text-xl italic leading-relaxed pt-16">
           "{animalData.phrase}"
         </p>
         <div className="clear-both" />
