@@ -167,6 +167,24 @@ export type Database = {
         }
         Relationships: []
       }
+      nakshatra_animal_lookup: {
+        Row: {
+          image_url: string | null
+          nakshatra_animal: string
+          phrase: string
+        }
+        Insert: {
+          image_url?: string | null
+          nakshatra_animal: string
+          phrase: string
+        }
+        Update: {
+          image_url?: string | null
+          nakshatra_animal?: string
+          phrase?: string
+        }
+        Relationships: []
+      }
       nakshatra_pressure_lookup: {
         Row: {
           intensity_reason: string
