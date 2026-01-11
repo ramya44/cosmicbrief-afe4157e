@@ -60,7 +60,6 @@ export async function fetchBirthChart(args: {
       bestDirection: r.bestDirection,
       syllables: r.syllables,
       birthStone: r.birthStone,
-      westernZodiac: r.westernZodiac,
     };
 
     logStep("Birth chart fetched successfully", {
