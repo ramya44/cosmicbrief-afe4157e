@@ -184,6 +184,7 @@ const ResultsPage = () => {
           freeForecastId: freeForecast.id,
           guestToken: freeGuestToken,
           freeForecastText: freeForecast.forecast, // For Stripe display only (truncated)
+          customerEmail: birthData?.email, // Pre-fill email at checkout if available
         },
       });
 
