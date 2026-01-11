@@ -1,6 +1,6 @@
 // OpenAI API call logic
 // supabase/functions/generate-forecast/lib/openai.ts
-import type { ForecastSections } from "./types.ts";
+import type { ForecastSections } from "../../_shared/lib/types.ts";
 
 export function buildForecastTool() {
   return {
