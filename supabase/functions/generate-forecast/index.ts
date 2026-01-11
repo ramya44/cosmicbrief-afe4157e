@@ -814,12 +814,12 @@ Call the save_forecast function with your response.
           who_you_are_right_now: {
             type: "string",
             description:
-              "2-3 concise paragraphs (max 150 words each) describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra) into ONE unified portrait with NO repetition between paragraphs. Each paragraph must add NEW information or perspective. Include at least one specific, concrete scenario that illustrates the pattern. Emphasize contradictions, show how usual strengths create friction, describe strain as lived experience. End implying a turning point without naming what happens next. Avoid therapy-speak and abstraction.",
+              "1-2 concise paragraphs (max 150 words each) describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra) into ONE unified portrait with NO repetition between paragraphs. Each paragraph must add NEW information or perspective. Include at least one specific, concrete scenario that illustrates the pattern. Emphasize contradictions, show how usual strengths create friction, describe strain as lived experience. End implying a turning point without naming what happens next. Avoid therapy-speak and abstraction.",
           },
           whats_happening_in_your_life: {
             type: "string",
             description:
-              "2 concise paragraphs (max 120 words each) describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme with specific reference to what this looks like in practice. Show how identity limits and emotional sensitivities are being tested through concrete situations. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available. Each paragraph must advance the narrative, not restate.",
+              "1-2 concise paragraphs (max 120 words each) describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme with specific reference to what this looks like in practice. Show how identity limits and emotional sensitivities are being tested through concrete situations. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available. Each paragraph must advance the narrative, not restate.",
           },
           pivotal_life_theme_2026: {
             type: "string",
