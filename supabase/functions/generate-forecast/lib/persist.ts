@@ -1,6 +1,6 @@
 // Database persistence logic
 // supabase/functions/generate-forecast/lib/persist.ts
-import type { BirthChartData, ForecastSections } from "./types.ts";
+import type { BirthChartData, ForecastSections } from "../../_shared/lib/types.ts";
 
 export function buildForecastText(sections: ForecastSections): string {
   return [
