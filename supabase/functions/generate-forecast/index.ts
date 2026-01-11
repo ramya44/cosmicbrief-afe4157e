@@ -721,87 +721,157 @@ serve(async (req) => {
 # YOUR WRITING RULES
 
 **NEVER use:**
+
 - Astrological terms (signs, houses, planets, aspects, nakshatras, charts)
+
 - Em dashes (use periods or commas instead)
+
 - Phrases like "That's your [sign] nature" or "Your [sign] side"
+
 - Gentle, vague language like "perhaps" or "you might be"
+
 - Bullet points or lists
+
 - Generic horoscope language
+
 - Therapy-speak terms ("optimize," "processing style," "moral compromises")
+
 - Repetitive restatements of the same idea
 
+- Multiple phrases that mean the same thing ("reflexive accommodations" + "peace-keeping performance" = redundant, pick one)
+
+- Ornate language when simple is clearer ("delicate dance" → "strategy")
+
 **ALWAYS:**
+
 - Write in direct, confident statements
+
 - Use "you" and address the person directly
+
 - Name specific internal experiences and tensions WITH CONCRETE EXAMPLES
+
 - Focus on CONTRADICTIONS and PARADOXES (this creates accuracy)
+
 - Use concrete, visceral language over abstract concepts
+
 - Keep sentences relatively short and punchy
+
 - Build tension without resolution
+
 - Leave them wanting more
+
 - Be ruthlessly efficient—cut any sentence that doesn't add new information
+
 - Ground abstract patterns in specific, recognizable moments or scenarios
 
+- ONE SENTENCE PER IDEA: If two sentences express the same core point using different words, delete one
+
+- Avoid "throat-clearing" phrases like "This isn't just about X" or "The real issue is" - state the point directly
+
 **TONE MATCHING:**
+
 Match emotional intensity to the person's psychological makeup:
+
 - For intense, transformative types: Use "fire," "burning away," "seeing through," "hollow," "false"
+
 - For nurturing, stable types: Use "create," "build," "stability," "beauty," "roots"
+
 - For quick, action types: Use "now," "move," "act," "push," "breakthrough"
+
 - For intellectual, detached types: Use "clarity," "understand," "observe," "patterns," "distance"
 
 **STRUCTURE:**
+
 Each paragraph should:
+
 1. Make a direct statement about them
+
 2. Add nuance or contradiction
+
 3. Name the tension this creates
+
 4. Show current impact with a concrete example or specific scenario
 
 **SPECIFICITY REQUIREMENT:**
+
 Every paragraph must include at least one concrete detail:
+
 - A specific type of situation they encounter
+
 - A recognizable moment or interaction
+
 - A particular kind of relationship or context
+
 - An actual behavior or response pattern
 
 Avoid: "situations that demand boundaries"
+
 Use: "when someone asks for more than you can give, you say yes anyway and resent them later"
 
 **AGE-BASED PIVOTAL LIFE ELEMENT (STRICT):**
+
 You must select exactly ONE pivotal life element from the allowed list for the user's age.
 
 Allowed lists:
+
 - Age < 35: [career, education, identity]
+
 - Age 35–49: [career, relationships, family, health]
+
 - Age 50–59: [health, family, relationships, purpose]
+
 - Age >= 60: [health, family, relationships, meaning, stewardship]
 
 Rule: if age >= 60, never choose career.
 
 Example: "You read people instantly. Walk into a room and you know who's angry, who's lying, who needs something they won't ask for. This serves you well until someone needs you to stop being perceptive and start being direct. You keep trying to find the compassionate angle, the way to handle it that doesn't hurt anyone. But some situations don't have a gentle solution. The compromise you keep making is costing you something real."
+
 `;
 
     const userPrompt = `
+
 Generate a free forecast for the reader based on these inputs:
 
 - Sun orientation context: ${sunLookup?.default_orientation || "unknown"}
+
 - Sun identity limit: ${sunLookup?.identity_limit || "unknown"}
+
 - Sun effort misfire: ${sunLookup?.effort_misfire || "unknown"}
+
 - Moon emotional pacing: ${moonLookup?.emotional_pacing || "unknown"}
+
 - Moon sensitivity point: ${moonLookup?.sensitivity_point || "unknown"}
+
 - Moon strain leak: ${moonLookup?.strain_leak || "unknown"}
+
 - Nakshatra pressure context: ${nakshatraLookup?.intensity_reason || "unknown"}
+
 - Nakshatra moral limit: ${nakshatraLookup?.moral_cost_limit || "unknown"}
+
 - Nakshatra strain pattern: ${nakshatraLookup?.strain_accumulation || "unknown"}
+
 - Pivotal life theme: ${pivotalLifeElement}
 
 CRITICAL INSTRUCTIONS:
+
 1. Synthesize these data points into a cohesive psychological portrait—do not list them separately
+
 2. Include at least one concrete, specific example or scenario per section
+
 3. Avoid repeating the same core insight across multiple paragraphs
+
 4. Use everyday language, not clinical or abstract terminology
+
 5. Keep total length tight—eliminate any redundancy
 
+6. BEFORE FINALIZING: Read each section and delete any sentence that restates a point already made in that section
+
+7. If two sentences express the same idea with different words, keep only the stronger one
+
+8. Cut ornate phrases ("delicate dance of connection") in favor of direct language ("your connection strategy")
+
 Call the save_forecast function with your response.
+
 `.trim();
 
     // Define the tool for structured output
@@ -814,22 +884,22 @@ Call the save_forecast function with your response.
           who_you_are_right_now: {
             type: "string",
             description:
-              "1-2 concise paragraphs (max 150 words each) describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra) into ONE unified portrait with NO repetition between paragraphs. Each paragraph must add NEW information or perspective. Include at least one specific, concrete scenario that illustrates the pattern. Emphasize contradictions, show how usual strengths create friction, describe strain as lived experience. End implying a turning point without naming what happens next. Avoid therapy-speak and abstraction.",
+              "1-2 concise paragraphs (max 150 words each) describing the reader's current internal state. Synthesize identity orientation (Sun), emotional pacing (Moon), and moral pressure (Nakshatra) into ONE unified portrait with NO repetition between paragraphs. CRITICAL: Each paragraph must introduce a NEW dimension—if paragraph 2 says 'you absorb emotions and get overwhelmed,' paragraph 1 cannot also make this point. Include at least one specific, concrete scenario that illustrates the pattern. Emphasize contradictions, show how usual strengths create friction, describe strain as lived experience. End implying a turning point without naming what happens next. Avoid therapy-speak and abstraction. Delete any sentence that repeats a point already made.",
           },
           whats_happening_in_your_life: {
             type: "string",
             description:
-              "1-2 concise paragraphs (max 120 words each) describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme with specific reference to what this looks like in practice. Show how identity limits and emotional sensitivities are being tested through concrete situations. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available. Each paragraph must advance the narrative, not restate.",
+              "1-2 concise paragraphs (max 120 words each) describing the broader pattern unfolding. Localize pressure around current life stage and pivotal theme with specific reference to what this looks like in practice. Show how identity limits and emotional sensitivities are being tested through concrete situations. Hint at a moral or internal limit approaching. End with clarity increasing but full picture not yet available. Each paragraph must advance the narrative, not restate. Eliminate phrases that mean the same thing—if you say 'peace-keeping performance' don't also say 'reflexive accommodations' in the same section.",
           },
           pivotal_life_theme_2026: {
             type: "string",
             description:
-              "1-2 paragraphs (max 150 words total) stating the pivotal life theme clearly and concretely. Describe why attention is gathering here this year using specific language tied to their actual experience. Contrast last year's logic with this year's pressure. Emphasize cost if same approach is repeated, with tangible examples of what that cost looks like. Do not explain how to fix anything. Avoid vague language like 'situations' or 'contexts'—name actual relationship types, work scenarios, or life circumstances.",
+              "1 paragraphs (max 150 words total) stating the pivotal life theme clearly and concretely. Describe why attention is gathering here this year using specific language tied to their actual experience. Contrast last year's logic with this year's pressure. Emphasize cost if same approach is repeated, with tangible examples of what that cost looks like. Do not explain how to fix anything. Avoid vague language like 'situations' or 'contexts'—name actual relationship types, work scenarios, or life circumstances.",
           },
           what_is_becoming_tighter: {
             type: "string",
             description:
-              "1-2 paragraphs (max 130 words total) describing the main constraint now in effect. Anchor in moral or internal cost with concrete stakes. Make clear that endurance alone no longer keeps things neutral. Use specific language about what's actually happening in their life. Keep language calm, precise, unsentimental. End with one sentence suggesting a specific decision or tradeoff ahead without naming the solution. Avoid abstraction—reference actual choices, relationships, or circumstances.",
+              "1-2 paragraphs (max 130 words total) describing the main constraint now in effect. Anchor in moral or internal cost with concrete stakes. Make clear that endurance alone no longer keeps things neutral. Use specific language about what's actually happening in their life. Keep language calm, precise, unsentimental. End with one sentence suggesting a specific decision or tradeoff ahead without naming the solution. Avoid abstraction—reference actual choices, relationships, or circumstances. CRITICAL: Do not restate the same consequence twice—if paragraph 1 says 'you're paying a psychological toll,' paragraph 2 cannot repeat this in different words. One statement of cost per section.",
           },
         },
         required: [
