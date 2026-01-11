@@ -3,27 +3,16 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
+// Shared utilities
+import { createLogger, hashToken } from "../_shared/lib/logger.ts";
+import { corsHeaders, getClientIP } from "../_shared/lib/http.ts";
+import type { RateLimitResult } from "../_shared/lib/types.ts";
+
+const logStep = createLogger("GENERATE-FORECAST");
+
 const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-// Consistent logging helper
-const logStep = (step: string, details?: Record<string, unknown>) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[GENERATE-FORECAST] ${step}${detailsStr}`);
-};
-
-// Hash token for logging (first 8 chars of SHA-256)
-async function hashToken(token: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(token);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray
-    .slice(0, 4)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
 
 // ============= INPUT VALIDATION & LIMITS =============
 const MAX_BIRTH_PLACE_LENGTH = 200;
@@ -44,11 +33,6 @@ const InputSchema = z.object({
   deviceId: z.string().uuid("Invalid device ID").optional(),
   captchaToken: z.string().max(MAX_CAPTCHA_TOKEN_LENGTH).optional(),
 });
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 // ============= ABUSE DETECTION & ALERTING =============
 const ABUSE_ALERT_THRESHOLD = 50; // Alert if more than 50 forecasts per hour
@@ -160,10 +144,6 @@ function cleanupMap(map: Map<string, { count: number; resetAt: number }>, now: n
   }
 }
 
-function getClientIP(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
-}
-
 function getUserAgent(req: Request): string {
   return req.headers.get("user-agent") || "";
 }
@@ -181,12 +161,6 @@ function detectTrafficSpike(): boolean {
   }
   recentRequestTimestamps.push(now);
   return recentRequestTimestamps.length > SPIKE_THRESHOLD;
-}
-
-interface RateLimitResult {
-  allowed: boolean;
-  requireCaptcha: boolean;
-  message?: string;
 }
 
 function checkRateLimits(ip: string, deviceId: string | undefined): RateLimitResult {
