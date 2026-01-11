@@ -31,6 +31,8 @@ const PaymentSuccessPage = () => {
     setIsStrategicLoading,
     setStripeSessionId,
     setCustomerEmail,
+    setPaidGuestToken,
+    setPaidForecastId,
   } = useForecastStore();
 
   // Detect logged-in user
@@ -98,8 +100,16 @@ const PaymentSuccessPage = () => {
           throw new Error(data?.error || 'Failed to generate forecast');
         }
 
-        // Success - store the forecast
+        // Success - store the forecast and IDs for sharing
         setStrategicForecast(data.forecast);
+        
+        // Store paid forecast ID and guest token for share functionality
+        if (data.forecastId) {
+          setPaidForecastId(data.forecastId);
+        }
+        if (data.guestToken) {
+          setPaidGuestToken(data.guestToken);
+        }
         
         // Extract customer email from forecast for display
         if (data.customerEmail) {
@@ -141,7 +151,7 @@ const PaymentSuccessPage = () => {
     };
 
     processPayment();
-  }, [searchParams, navigate, setIsPaid, setStrategicForecast, setIsStrategicLoading, setStripeSessionId, setCustomerEmail, failedEmail]);
+  }, [searchParams, navigate, setIsPaid, setStrategicForecast, setIsStrategicLoading, setStripeSessionId, setCustomerEmail, setPaidGuestToken, setPaidForecastId, failedEmail]);
 
   return (
     <div className="relative min-h-screen bg-celestial flex items-center justify-center">
