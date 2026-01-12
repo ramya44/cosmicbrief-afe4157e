@@ -79,18 +79,18 @@ function calculateHouseFromAscendant(planetSignId: number, ascendantSignId: numb
 
 function getSignLord(sign: string): string {
   const signLords: Record<string, string> = {
-    "Aries": "Mars",
-    "Taurus": "Venus",
-    "Gemini": "Mercury",
-    "Cancer": "Moon",
-    "Leo": "Sun",
-    "Virgo": "Mercury",
-    "Libra": "Venus",
-    "Scorpio": "Mars",
-    "Sagittarius": "Jupiter",
-    "Capricorn": "Saturn",
-    "Aquarius": "Saturn",
-    "Pisces": "Jupiter",
+    Aries: "Mars",
+    Taurus: "Venus",
+    Gemini: "Mercury",
+    Cancer: "Moon",
+    Leo: "Sun",
+    Virgo: "Mercury",
+    Libra: "Venus",
+    Scorpio: "Mars",
+    Sagittarius: "Jupiter",
+    Capricorn: "Saturn",
+    Aquarius: "Saturn",
+    Pisces: "Jupiter",
   };
   return signLords[sign] || "Unknown";
 }
@@ -98,17 +98,16 @@ function getSignLord(sign: string): string {
 export function buildUserPrompt(inputs: ForecastPromptInputs): string {
   // Format planetary positions
   const planetaryPositionsText = inputs.planetary_positions
-    .map(p => `- ${p.name} in ${p.sign} (${getOrdinal(p.house)} house from ascendant)`)
+    .map((p) => `- ${p.name} in ${p.sign} (${getOrdinal(p.house)} house from ascendant)`)
     .join("\n");
 
   // Format ascendant lord info
-  const ascendantLordInfo = inputs.ascendant_lord && inputs.ascendant_lord_position
-    ? `\n**Ascendant Lord:** ${inputs.ascendant_lord} in ${inputs.ascendant_lord_position}`
-    : "";
+  const ascendantLordInfo =
+    inputs.ascendant_lord && inputs.ascendant_lord_position
+      ? `\n**Ascendant Lord:** ${inputs.ascendant_lord} in ${inputs.ascendant_lord_position}`
+      : "";
 
   return `Create a free astrology forecast for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
-
-**TARGET FORECAST YEAR: 2026**
 
 The JSON should include:
 
@@ -118,17 +117,18 @@ The JSON should include:
    - One "astrology_note" with chart explanation
 
 2. **YOUR JOURNEY SO FAR: Key Patterns**
-   - 4-5 paragraphs summarizing their past as ONE flowing narrative
+   - 2-3 paragraphs summarizing their past as ONE flowing narrative
    - Connect past mahadasha periods to life themes (childhood, education, transformation, current era)
+   - CRITICAL: Only discuss dasha periods that occurred AFTER their birth date. 
+   - Do NOT make assumptions about childhood or early life unless you have dasha data that clearly falls within their lifetime after birth.
    - NO detailed breakdowns - just touch on key transitions
    - One "astrology_note" explaining dasha progression
 
 3. **WHAT'S NEXT: Path Forward**
-   - 3-4 paragraphs teasing what **2026** holds (general themes only)
-   - **Explicitly reference "2026"** - this is the year we're forecasting for
+   - 3-4 paragraphs teasing what the current year holds (general themes only)
    - Emphasize that timing matters
    - Create intrigue without giving specifics
-   - Mention "2026 is a pivotal year" or "2026 marks a setup phase"
+   - Mention this is a "pivotal year" or "setup phase"
 
 4. **UPGRADE SECTION**
    - Brief intro paragraph
@@ -396,11 +396,15 @@ Deno.serve(async (req) => {
         start: formatDate(currentMahaDasha.start_date),
         end: formatDate(currentMahaDasha.end_date),
       },
-      current_antardasha: currentDashaInfo?.antardasha || (currentAntarDasha ? {
-        name: currentAntarDasha.planet,
-        start: formatDate(currentAntarDasha.start_date),
-        end: formatDate(currentAntarDasha.end_date),
-      } : null),
+      current_antardasha:
+        currentDashaInfo?.antardasha ||
+        (currentAntarDasha
+          ? {
+              name: currentAntarDasha.planet,
+              start: formatDate(currentAntarDasha.start_date),
+              end: formatDate(currentAntarDasha.end_date),
+            }
+          : null),
       past_dashas: pastDashasText,
       moon_nakshatra: nakshatraInfo.name,
       ascendant_lord: ascendantLord,
@@ -438,19 +442,7 @@ Deno.serve(async (req) => {
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
       logStep("Claude API error", { status: claudeResponse.status, error: errorText });
-      
-      // Log to alerts table
-      await supabase.from("vedic_generation_alerts").insert({
-        kundli_id,
-        error_message: `Claude API error: ${claudeResponse.status} - ${errorText}`,
-        error_type: "free_generation",
-      });
-      
-      // Return friendly error with manual_generation flag
-      return jsonResponse({
-        manual_generation: true,
-        message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
-      });
+      return errorResponse(`Claude API error: ${claudeResponse.status}`, 500);
     }
 
     const claudeData = await claudeResponse.json();
@@ -471,7 +463,7 @@ Deno.serve(async (req) => {
       .map((maha: DashaPeriod) => {
         const antarDashas = calculateAntarDashas(maha);
         const antarDashasIn2026 = antarDashas.filter(
-          (antar: AntarDashaPeriod) => antar.start_date <= year2026End && antar.end_date >= year2026Start
+          (antar: AntarDashaPeriod) => antar.start_date <= year2026End && antar.end_date >= year2026Start,
         );
         return {
           maha_dasha: maha.planet,
@@ -490,9 +482,6 @@ Deno.serve(async (req) => {
       periods_2026: dashaPeriods2026.length,
     });
 
-    // Generate shareable link for free preview
-    const shareableLink = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}`;
-
     // Save the forecast and dasha data to the database
     const { error: updateError } = await supabase
       .from("user_kundli_details")
@@ -502,9 +491,6 @@ Deno.serve(async (req) => {
         forecast_generated_at: new Date().toISOString(),
         dasha_periods: formattedDashaPeriods,
         dasha_periods_2026: dashaPeriods2026,
-        shareable_link: shareableLink,
-        free_prompt_tokens: claudeData.usage?.input_tokens || null,
-        free_completion_tokens: claudeData.usage?.output_tokens || null,
       })
       .eq("id", kundli_id);
 
@@ -524,31 +510,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logStep("Error", { message: errMessage });
-    
-    // Try to log to alerts table if we have kundli_id
-    try {
-      const body = await req.clone().json().catch(() => ({}));
-      if (body.kundli_id) {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-        if (supabaseUrl && supabaseServiceKey) {
-          const supabase = createClient(supabaseUrl, supabaseServiceKey);
-          await supabase.from("vedic_generation_alerts").insert({
-            kundli_id: body.kundli_id,
-            error_message: errMessage,
-            error_type: "free_generation",
-          });
-        }
-      }
-    } catch (alertError) {
-      logStep("Failed to log alert", { error: alertError });
-    }
-    
-    // Return friendly error
-    return jsonResponse({
-      manual_generation: true,
-      message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
-    });
+    return errorResponse(errMessage, 500);
   }
 });
 
