@@ -2,7 +2,7 @@
 // calculate-sade-sati-status.ts
 
 import type { TransitLookupRow, SaturnTransit } from "./types.ts";
-import { getTransitData } from "./transit_data.ts";
+import { getTransitData } from "./transit-data.ts";
 
 export function calculateSadeSatiStatus(
   moonSign: string,

@@ -8,7 +8,7 @@ import {
   getDashaChangesInYear,
   getMoonNakshatra,
   formatDate,
-} from "./lib/dasha_calculator.ts";
+} from "./lib/dasha-calculator.ts";
 
 function logStep(step: string, details?: Record<string, unknown>) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
