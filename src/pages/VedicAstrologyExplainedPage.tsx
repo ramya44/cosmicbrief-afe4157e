@@ -37,7 +37,7 @@ const VedicAstrologyExplainedPage = () => {
         </header>
 
         <main className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
-          <article className="prose prose-invert prose-lg max-w-none">
+          <article className="prose prose-invert prose-lg max-w-none text-lg">
             <h1 className="text-4xl md:text-5xl font-bold text-cream mb-6">
               Vedic Astrology Basics for Western Astrologers
             </h1>
@@ -59,15 +59,16 @@ const VedicAstrologyExplainedPage = () => {
             </p>
             
             <p className="text-cream-muted leading-relaxed">
-              Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              <strong className="text-cream">Western Astrology</strong> uses the <strong className="text-cream">tropical zodiac</strong>, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
+
+Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.<strong className="text-cream">Western Astrology</strong> uses the <strong className="text-cream">tropical zodiac</strong>, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
             </p>
             
             <p className="text-cream-muted leading-relaxed">
               <strong className="text-cream">Vedic Astrology</strong> uses the <strong className="text-cream">sidereal zodiac</strong>, which is based on the actual positions of constellations in the sky. This system accounts for the precession of the equinoxes.
+            </p>
+            
+            <p className="text-cream-muted leading-relaxed">
+              Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.
             </p>
             
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
@@ -313,11 +314,11 @@ const VedicAstrologyExplainedPage = () => {
               To calculate your Vedic birth chart, you'll need the same information as for a Western chart:
             </p>
             
-            <ol className="text-cream-muted space-y-2 my-4 list-decimal list-inside">
+            <ul className="text-cream-muted space-y-2 my-4">
               <li>Date of birth</li>
               <li>Exact time of birth (as precise as possible)</li>
               <li>Place of birth</li>
-            </ol>
+            </ul>
             
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">First Steps in Reading Your Chart</h3>
             
@@ -342,7 +343,7 @@ const VedicAstrologyExplainedPage = () => {
             </h2>
             
             <p className="text-cream-muted leading-relaxed">
-              Many astrologers find value in using both Vedic and Western astrology, as they offer complementary perspectives.
+              Many astrologers find value in using both Vedic and Western astrology, as they offer complementary perspectives:
             </p>
             
             <p className="text-cream-muted leading-relaxed">
