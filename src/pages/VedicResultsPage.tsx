@@ -3,11 +3,15 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { ArrowLeft, Sparkles, Lock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Sparkles, Lock, ChevronRight, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
-
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 interface KundliDetails {
   id: string;
   birth_date: string;
@@ -382,26 +386,73 @@ const VedicResultsPage = () => {
             Back
           </Button>
           
-          {hasPaidForecast && (
-            <div className="flex gap-2">
-              <Button
-                variant={!isPaidView ? "default" : "ghost"}
-                size="sm"
-                onClick={() => navigate(`/vedic/results?id=${kundliId}`)}
-                className={!isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
+          <div className="flex items-center gap-2">
+            {hasPaidForecast && (
+              <div className="flex gap-2">
+                <Button
+                  variant={!isPaidView ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => navigate(`/vedic/results?id=${kundliId}`)}
+                  className={!isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
+                >
+                  Free Preview
+                </Button>
+                <Button
+                  variant={isPaidView ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => navigate(`/vedic/results?id=${kundliId}&paid=true`)}
+                  className={isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
+                >
+                  Complete Forecast
+                </Button>
+              </div>
+            )}
+            
+            {/* Profile Icon with Astrology Details Popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-cream-muted hover:text-cream hover:bg-gold/10"
+                >
+                  <User className="w-5 h-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-64 bg-midnight border-gold/30 p-4"
+                align="end"
               >
-                Free Preview
-              </Button>
-              <Button
-                variant={isPaidView ? "default" : "ghost"}
-                size="sm"
-                onClick={() => navigate(`/vedic/results?id=${kundliId}&paid=true`)}
-                className={isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
-              >
-                Complete Forecast
-              </Button>
-            </div>
-          )}
+                <h4 className="text-gold font-medium mb-3 text-sm">Your Vedic Profile</h4>
+                <div className="space-y-2.5 text-sm">
+                  {kundli.ascendant_sign && (
+                    <div className="flex justify-between">
+                      <span className="text-cream-muted">Ascendant</span>
+                      <span className="text-cream font-medium">{kundli.ascendant_sign}</span>
+                    </div>
+                  )}
+                  {kundli.moon_sign && (
+                    <div className="flex justify-between">
+                      <span className="text-cream-muted">Moon Sign</span>
+                      <span className="text-cream font-medium">{kundli.moon_sign}</span>
+                    </div>
+                  )}
+                  {kundli.sun_sign && (
+                    <div className="flex justify-between">
+                      <span className="text-cream-muted">Sun Sign</span>
+                      <span className="text-cream font-medium">{kundli.sun_sign}</span>
+                    </div>
+                  )}
+                  {kundli.nakshatra && (
+                    <div className="flex justify-between">
+                      <span className="text-cream-muted">Nakshatra</span>
+                      <span className="text-cream font-medium">{kundli.nakshatra}</span>
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </header>
 
@@ -428,33 +479,11 @@ const VedicResultsPage = () => {
             {' · '}{kundli.birth_place}
           </p>
           
-          <div className="flex flex-wrap justify-center gap-4 text-base font-bold text-cream-muted mt-6">
-            {kundli.ascendant_sign && (
-              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
-                Ascendant: {kundli.ascendant_sign}
-              </span>
-            )}
-            {kundli.moon_sign && (
-              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
-                Moon: {kundli.moon_sign}
-              </span>
-            )}
-            {kundli.sun_sign && (
-              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
-                Sun: {kundli.sun_sign}
-              </span>
-            )}
-            {kundli.nakshatra && (
-              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
-                Nakshatra: {kundli.nakshatra}
-              </span>
-            )}
-          </div>
         </div>
 
         {forecastToShow ? (
           <div className="max-w-3xl mx-auto">
-            <div className="bg-midnight/40 border border-border/30 rounded-2xl p-6 md:p-10 backdrop-blur-sm">
+            <div className="bg-midnight/40 md:border md:border-border/30 rounded-none md:rounded-2xl p-4 md:p-10 backdrop-blur-sm -mx-4 md:mx-0">
               {parsedForecast ? (
                 renderJsonForecast(parsedForecast, isPaidView && hasPaidForecast)
               ) : (
