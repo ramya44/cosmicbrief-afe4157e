@@ -529,18 +529,18 @@ const VedicResultsPage = () => {
                 <Button 
                   onClick={handleUpgrade}
                   disabled={isUpgrading}
-                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-4 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-xl w-full md:w-auto"
+                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-4 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-xl w-full md:w-auto min-w-0"
                 >
                   {isUpgrading ? (
-                    <>
-                      <LoadingSpinner />
-                      <span className="ml-2">Loading...</span>
-                    </>
+                    <span className="flex items-center justify-center">
+                      <span className="w-5 h-5 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin mr-2" />
+                      <span>Loading...</span>
+                    </span>
                   ) : (
-                    <>
+                    <span className="flex items-center justify-center">
                       <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span className="whitespace-nowrap">Unlock Complete Forecast — $59</span>
-                    </>
+                      <span>Unlock Complete Forecast — $59</span>
+                    </span>
                   )}
                 </Button>
 
