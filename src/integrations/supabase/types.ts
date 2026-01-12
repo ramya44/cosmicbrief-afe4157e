@@ -412,6 +412,9 @@ export type Database = {
       user_kundli_details: {
         Row: {
           animal_sign: string | null
+          ascendant_sign: string | null
+          ascendant_sign_id: number | null
+          ascendant_sign_lord: string | null
           best_direction: string | null
           birth_date: string
           birth_place: string
@@ -419,7 +422,6 @@ export type Database = {
           birth_symbol: string | null
           birth_time: string
           birth_time_utc: string | null
-          chandra_yogas: Json | null
           created_at: string
           dasha_periods: Json | null
           dasha_periods_2026: Json | null
@@ -430,18 +432,10 @@ export type Database = {
           forecast_model: string | null
           free_vedic_forecast: string | null
           ganam: string | null
-          has_mangal_dosha: boolean | null
-          has_mangal_exception: boolean | null
           id: string
-          inauspicious_yogas: Json | null
           latitude: number | null
           longitude: number | null
           lucky_color: string | null
-          major_yogas: Json | null
-          mangal_dosha_description: string | null
-          mangal_dosha_exceptions: Json | null
-          mangal_dosha_remedies: Json | null
-          mangal_dosha_type: string | null
           moon_sign: string | null
           moon_sign_id: number | null
           moon_sign_lord: string | null
@@ -451,7 +445,7 @@ export type Database = {
           nakshatra_id: number | null
           nakshatra_lord: string | null
           nakshatra_pada: number | null
-          soorya_yogas: Json | null
+          planetary_positions: Json | null
           sun_sign: string | null
           sun_sign_id: number | null
           sun_sign_lord: string | null
@@ -460,6 +454,9 @@ export type Database = {
         }
         Insert: {
           animal_sign?: string | null
+          ascendant_sign?: string | null
+          ascendant_sign_id?: number | null
+          ascendant_sign_lord?: string | null
           best_direction?: string | null
           birth_date: string
           birth_place: string
@@ -467,7 +464,6 @@ export type Database = {
           birth_symbol?: string | null
           birth_time: string
           birth_time_utc?: string | null
-          chandra_yogas?: Json | null
           created_at?: string
           dasha_periods?: Json | null
           dasha_periods_2026?: Json | null
@@ -478,18 +474,10 @@ export type Database = {
           forecast_model?: string | null
           free_vedic_forecast?: string | null
           ganam?: string | null
-          has_mangal_dosha?: boolean | null
-          has_mangal_exception?: boolean | null
           id?: string
-          inauspicious_yogas?: Json | null
           latitude?: number | null
           longitude?: number | null
           lucky_color?: string | null
-          major_yogas?: Json | null
-          mangal_dosha_description?: string | null
-          mangal_dosha_exceptions?: Json | null
-          mangal_dosha_remedies?: Json | null
-          mangal_dosha_type?: string | null
           moon_sign?: string | null
           moon_sign_id?: number | null
           moon_sign_lord?: string | null
@@ -499,7 +487,7 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_lord?: string | null
           nakshatra_pada?: number | null
-          soorya_yogas?: Json | null
+          planetary_positions?: Json | null
           sun_sign?: string | null
           sun_sign_id?: number | null
           sun_sign_lord?: string | null
@@ -508,6 +496,9 @@ export type Database = {
         }
         Update: {
           animal_sign?: string | null
+          ascendant_sign?: string | null
+          ascendant_sign_id?: number | null
+          ascendant_sign_lord?: string | null
           best_direction?: string | null
           birth_date?: string
           birth_place?: string
@@ -515,7 +506,6 @@ export type Database = {
           birth_symbol?: string | null
           birth_time?: string
           birth_time_utc?: string | null
-          chandra_yogas?: Json | null
           created_at?: string
           dasha_periods?: Json | null
           dasha_periods_2026?: Json | null
@@ -526,18 +516,10 @@ export type Database = {
           forecast_model?: string | null
           free_vedic_forecast?: string | null
           ganam?: string | null
-          has_mangal_dosha?: boolean | null
-          has_mangal_exception?: boolean | null
           id?: string
-          inauspicious_yogas?: Json | null
           latitude?: number | null
           longitude?: number | null
           lucky_color?: string | null
-          major_yogas?: Json | null
-          mangal_dosha_description?: string | null
-          mangal_dosha_exceptions?: Json | null
-          mangal_dosha_remedies?: Json | null
-          mangal_dosha_type?: string | null
           moon_sign?: string | null
           moon_sign_id?: number | null
           moon_sign_lord?: string | null
@@ -547,7 +529,7 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_lord?: string | null
           nakshatra_pada?: number | null
-          soorya_yogas?: Json | null
+          planetary_positions?: Json | null
           sun_sign?: string | null
           sun_sign_id?: number | null
           sun_sign_lord?: string | null
