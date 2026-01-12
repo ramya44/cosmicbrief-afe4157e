@@ -28,25 +28,33 @@ const LegacyUrlRedirectHelper = () => {
     // Only run on initial page load, not within hash router
     if (window.location.hash) return;
 
-    const params = new URLSearchParams(window.location.search);
+    const { origin, pathname, search } = window.location;
+    const params = new URLSearchParams(search);
+
+    // Important: Vedic pages use query param "id" too (kundli row id).
+    // If a user lands on a non-hash /vedic/* URL (static hosting), convert it to a hash route
+    // WITHOUT rewriting it to /results.
+    if (pathname.startsWith('/vedic/')) {
+      window.location.replace(`${origin}/#${pathname}${search}`);
+      return;
+    }
+
     const forecastId = params.get('forecastId') || params.get('id');
     const guestToken = params.get('guestToken') || params.get('guest_token');
 
     // If we have forecast params on the root or a non-hash path, redirect to hash route
     if (forecastId) {
       const tokenPart = guestToken ? `&guestToken=${encodeURIComponent(guestToken)}` : '';
-      const hashUrl = `${window.location.origin}/#/results?forecastId=${encodeURIComponent(forecastId)}${tokenPart}`;
+      const hashUrl = `${origin}/#/results?forecastId=${encodeURIComponent(forecastId)}${tokenPart}`;
       window.location.replace(hashUrl);
       return;
     }
 
-    // Check for SPA redirect from 404.html
+    // Generic SPA redirect fallback from 404.html
     const savedPath = sessionStorage.getItem('spa_redirect');
     if (savedPath) {
       sessionStorage.removeItem('spa_redirect');
-      // Convert path like /results?forecastId=... to hash format
-      const hashPath = `/#${savedPath}`;
-      window.location.replace(window.location.origin + hashPath);
+      window.location.replace(`${origin}/#${savedPath}`);
     }
   }, []);
 
