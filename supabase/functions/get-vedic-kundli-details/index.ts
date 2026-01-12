@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     const { data, error } = await supabase
       .from("user_kundli_details")
       .select(
-        "id, birth_date, birth_time, birth_place, moon_sign, sun_sign, nakshatra, free_vedic_forecast, forecast_generated_at, device_id"
+        "id, birth_date, birth_time, birth_place, moon_sign, sun_sign, nakshatra, ascendant_sign, free_vedic_forecast, paid_vedic_forecast, forecast_generated_at, email, device_id"
       )
       .eq("id", kundli_id)
       .maybeSingle();
