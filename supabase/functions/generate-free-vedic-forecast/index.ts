@@ -108,6 +108,8 @@ export function buildUserPrompt(inputs: ForecastPromptInputs): string {
 
   return `Create a free astrology forecast for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
+**TARGET FORECAST YEAR: 2026**
+
 The JSON should include:
 
 1. **WHO YOU ARE: Natural Orientation**
@@ -122,10 +124,11 @@ The JSON should include:
    - One "astrology_note" explaining dasha progression
 
 3. **WHAT'S NEXT: Path Forward**
-   - 3-4 paragraphs teasing what the current year holds (general themes only)
+   - 3-4 paragraphs teasing what **2026** holds (general themes only)
+   - **Explicitly reference "2026"** - this is the year we're forecasting for
    - Emphasize that timing matters
    - Create intrigue without giving specifics
-   - Mention this is a "pivotal year" or "setup phase"
+   - Mention "2026 is a pivotal year" or "2026 marks a setup phase"
 
 4. **UPGRADE SECTION**
    - Brief intro paragraph
