@@ -199,7 +199,7 @@ const VedicResultsPage = () => {
         return (
           <div key={key} className="bg-midnight/60 border border-gold/20 rounded-lg p-4 mt-4">
             <p className="text-gold text-sm font-medium mb-2">{item.label || 'The Astrology:'}</p>
-            <p className="text-cream-muted text-sm">{item.text}</p>
+            <p className="text-cream-muted text-sm">{renderMarkdownText(item.text || '')}</p>
           </div>
         );
       
@@ -209,7 +209,7 @@ const VedicResultsPage = () => {
             {item.items?.map((listItem, i) => (
               <li key={i} className="flex items-start gap-3 text-cream-muted">
                 <ChevronRight className="w-4 h-4 text-gold mt-1 flex-shrink-0" />
-                <span>{listItem}</span>
+                <span>{renderMarkdownText(listItem)}</span>
               </li>
             ))}
           </ul>
@@ -227,13 +227,13 @@ const VedicResultsPage = () => {
               {item.astrology && (
                 <div className="bg-midnight/60 border border-gold/20 rounded-lg p-4">
                   <p className="text-gold text-sm font-medium mb-2">The Astrology:</p>
-                  <p className="text-sm">{item.astrology}</p>
+                  <p className="text-sm">{renderMarkdownText(item.astrology)}</p>
                 </div>
               )}
               {item.key_actions && (
                 <div className="bg-gold/10 border border-gold/30 rounded-lg p-4">
                   <p className="text-gold text-sm font-medium mb-2">Key Actions:</p>
-                  <p className="text-sm">{item.key_actions}</p>
+                  <p className="text-sm">{renderMarkdownText(item.key_actions)}</p>
                 </div>
               )}
             </div>
@@ -254,7 +254,7 @@ const VedicResultsPage = () => {
                 {item.transitions?.map((t, i) => (
                   <tr key={i} className="bg-midnight/20">
                     <td className="px-4 py-3 text-cream font-medium whitespace-nowrap">{t.date}</td>
-                    <td className="px-4 py-3 text-cream-muted text-sm">{t.significance}</td>
+                    <td className="px-4 py-3 text-cream-muted text-sm">{renderMarkdownText(t.significance)}</td>
                   </tr>
                 ))}
               </tbody>
