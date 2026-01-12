@@ -12,7 +12,8 @@ function logStep(step: string, details?: Record<string, unknown>) {
 
 interface RequestBody {
   kundli_id: string;
-  device_id: string;
+  device_id?: string;
+  shared?: boolean; // Flag to indicate this is a shared link access
 }
 
 Deno.serve(async (req) => {
@@ -31,12 +32,16 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body: RequestBody = await req.json();
-    const { kundli_id, device_id } = body;
+    const { kundli_id, device_id, shared } = body;
 
-    if (!kundli_id) return new Response(JSON.stringify({ error: "kundli_id is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    if (!device_id) return new Response(JSON.stringify({ error: "device_id is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!kundli_id) {
+      return new Response(JSON.stringify({ error: "kundli_id is required" }), { 
+        status: 400, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      });
+    }
 
-    logStep("Fetching kundli", { kundli_id });
+    logStep("Fetching kundli", { kundli_id, shared: !!shared });
 
     const { data, error } = await supabase
       .from("user_kundli_details")
@@ -61,7 +66,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!data.device_id || data.device_id !== device_id) {
+    // For shared links: allow read-only access without device_id verification
+    // For normal access: require device_id match
+    const isSharedAccess = shared === true;
+    const isOwner = data.device_id && data.device_id === device_id;
+
+    if (!isSharedAccess && !isOwner) {
       // Deliberately 404 (not 403) to avoid leaking existence of rows
       return new Response(JSON.stringify({ error: "Not found" }), {
         status: 404,
@@ -69,10 +79,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Don't return device_id to client
-    const { device_id: _omit, ...safe } = data as any;
+    // Don't return device_id or email to client (privacy)
+    const { device_id: _omitDevice, email: _omitEmail, ...safe } = data as any;
 
-    return new Response(JSON.stringify(safe), {
+    // For shared access, also indicate it's read-only
+    const response = {
+      ...safe,
+      is_owner: isOwner,
+    };
+
+    logStep("Returning kundli data", { is_owner: isOwner, shared: isSharedAccess });
+
+    return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
