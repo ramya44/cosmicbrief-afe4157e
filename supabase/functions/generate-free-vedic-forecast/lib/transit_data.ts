@@ -1,6 +1,6 @@
 // get-transit-data.ts
 
-import type { TransitLookupRow } from "./types";
+import type { TransitLookupRow } from "./types.ts";
 
 export function getTransitData(category: string, year: number, transitsLookupTable: TransitLookupRow[]): any {
   /**

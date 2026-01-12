@@ -1,8 +1,8 @@
 // Rahu-Ketu transit impact utilities
 // describe-rahu-ketu-impact.ts
 
-import type { TransitLookupRow, RahuKetuTransit } from "./types";
-import { getTransitData } from "./get-transit-data";
+import type { TransitLookupRow, RahuKetuTransit } from "./types.ts";
+import { getTransitData } from "./transit_data.ts";
 
 export function describeRahuKetuImpact(
   moonSign: string,
