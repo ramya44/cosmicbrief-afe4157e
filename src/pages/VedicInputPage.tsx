@@ -158,6 +158,28 @@ const VedicInputPage = () => {
       };
       
       setBirthData(fullBirthData);
+
+      console.log('[VedicInputPage] Generating free Vedic forecast...');
+
+      // Generate the free Vedic forecast
+      const { data: forecastResult, error: forecastError } = await supabase.functions.invoke(
+        'generate-free-vedic-forecast',
+        {
+          body: {
+            kundli_id: saveResult.id,
+          },
+        }
+      );
+
+      if (forecastError) {
+        console.error('[VedicInputPage] Forecast generation error:', forecastError);
+        // Continue to results page even if forecast fails - it can be generated there
+      } else {
+        console.log('[VedicInputPage] Forecast generated:', { 
+          hasText: !!forecastResult?.forecast,
+          model: forecastResult?.model 
+        });
+      }
       
       console.log('[VedicInputPage] Navigating to /vedic/results with id:', saveResult.id);
       
