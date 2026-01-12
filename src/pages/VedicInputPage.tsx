@@ -64,9 +64,15 @@ const VedicInputPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm() || !placeCoords) return;
+    console.log('[VedicInputPage] Form submitted');
+    
+    if (!validateForm() || !placeCoords) {
+      console.log('[VedicInputPage] Validation failed or no coords', { placeCoords });
+      return;
+    }
 
     setIsSubmitting(true);
+    console.log('[VedicInputPage] Starting API calls...');
 
     try {
       // Reset paid state for new forecast entry
@@ -82,12 +88,14 @@ const VedicInputPage = () => {
           placeCoords.lat,
           placeCoords.lon
         );
+        console.log('[VedicInputPage] UTC conversion result:', birthDateTimeUtc);
       } catch (error) {
-        console.error('Error converting to UTC:', error);
+        console.error('[VedicInputPage] Error converting to UTC:', error);
       }
 
       // Use the UTC datetime or construct a local one
       const datetimeForApi = birthDateTimeUtc || `${formData.birthDate}T${formData.birthTime}:00`;
+      console.log('[VedicInputPage] Calling get-advanced-kundli with:', { datetimeForApi, lat: placeCoords.lat, lon: placeCoords.lon });
       
       // Call get-advanced-kundli edge function
       const { data: kundliData, error: kundliError } = await supabase.functions.invoke(
@@ -102,6 +110,8 @@ const VedicInputPage = () => {
         }
       );
 
+      console.log('[VedicInputPage] Kundli API response:', { kundliData, kundliError });
+      
       if (kundliError) {
         throw new Error(kundliError.message || 'Failed to fetch Kundli data');
       }
@@ -110,6 +120,8 @@ const VedicInputPage = () => {
         throw new Error(kundliData.error);
       }
 
+      console.log('[VedicInputPage] Calling save-kundli-details...');
+      
       // Save to database via save-kundli-details edge function
       const { data: saveResult, error: saveError } = await supabase.functions.invoke(
         'save-kundli-details',
@@ -127,6 +139,8 @@ const VedicInputPage = () => {
         }
       );
 
+      console.log('[VedicInputPage] Save result:', { saveResult, saveError });
+      
       if (saveError) {
         throw new Error(saveError.message || 'Failed to save Kundli details');
       }
@@ -145,10 +159,12 @@ const VedicInputPage = () => {
       
       setBirthData(fullBirthData);
       
+      console.log('[VedicInputPage] Navigating to /vedic/results with id:', saveResult.id);
+      
       // Navigate to results page with the record ID
       navigate(`/vedic/results?id=${saveResult.id}`);
     } catch (error) {
-      console.error('Error submitting Vedic form:', error);
+      console.error('[VedicInputPage] Error submitting Vedic form:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate Kundli. Please try again.');
     } finally {
       setIsSubmitting(false);
