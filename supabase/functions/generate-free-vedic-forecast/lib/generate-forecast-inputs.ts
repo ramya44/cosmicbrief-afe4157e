@@ -1,68 +1,109 @@
-// generate-forecast-inputs.ts
+// Generate forecast inputs from user data and calculated dashas
+import type { UserData, ForecastInputs, TransitLookupRow } from "./types.ts";
+import type { DashaPeriod, AntarDashaPeriod } from "./dasha-calculator.ts";
+import { formatDate } from "./dasha-calculator.ts";
 
-import type { UserData, DashaJson, TransitLookupRow, ForecastInputs, SaturnTransit } from "./types.ts";
-import { getCurrentDasha } from "./current_dasha.ts";
-import { findDashaChangesIn2026, formatDashaChanges } from "./dasha_changes_2026.ts";
-import { calculateSadeSatiStatus } from "./sade_sati_status.ts";
-import { describeRahuKetuImpact } from "./rahu_ketu_impact.ts";
-import { getTransitData } from "./transit_data.ts";
+interface DashaInfo {
+  currentMahaDasha: DashaPeriod;
+  currentAntarDasha: AntarDashaPeriod;
+  changes2025: AntarDashaPeriod[];
+  changes2026: AntarDashaPeriod[];
+}
+
+function formatDashaChanges(changes: AntarDashaPeriod[]): string {
+  if (changes.length === 0) {
+    return "No major Dasha changes";
+  }
+
+  return changes
+    .map((change) => {
+      const date = formatDate(change.start_date);
+      return `${change.maha_dasha_lord} Maha Dasha → ${change.planet} Antar Dasha (${date})`;
+    })
+    .join("; ");
+}
+
+function getAntarDashaAtDate(
+  changes2025: AntarDashaPeriod[],
+  targetDate: Date = new Date(2025, 6, 1), // Mid-2025
+): string {
+  // Find the antar dasha active at the target date
+  const activeAntar = changes2025.find((change) => change.start_date <= targetDate && change.end_date >= targetDate);
+
+  return activeAntar ? activeAntar.planet : "Unknown";
+}
 
 export function generateForecastInputs(
   userData: UserData,
-  dashaJson: DashaJson[],
+  dashaInfo: DashaInfo,
   transitsLookupTable: TransitLookupRow[],
 ): ForecastInputs {
-  /**
-   * Generate all inputs needed for LLM forecast generation
-   *
-   * @param userData - User's birth data
-   * @param dashaJson - The full dasha JSON
-   * @param transitsLookupTable - your database table
-   * @returns Complete forecast inputs object
-   */
+  const { currentMahaDasha, currentAntarDasha, changes2025, changes2026 } = dashaInfo;
 
-  // Get current Dashas
-  const [maha2025, antar2025] = getCurrentDasha(dashaJson, "2025-01-01");
-  const [maha2026, antar2026] = getCurrentDasha(dashaJson, "2026-01-01");
+  // Get transit data for 2025 and 2026
+  const transit2025 = transitsLookupTable.find((t) => t.year === 2025);
+  const transit2026 = transitsLookupTable.find((t) => t.year === 2026);
 
-  if (!maha2025 || !antar2025 || !maha2026 || !antar2026) {
-    throw new Error("Could not determine Dasha periods");
+  let transit2025Data: any = {};
+  let transit2026Data: any = {};
+
+  try {
+    if (transit2025) {
+      transit2025Data =
+        typeof transit2025.transit_data === "string" ? JSON.parse(transit2025.transit_data) : transit2025.transit_data;
+    }
+    if (transit2026) {
+      transit2026Data =
+        typeof transit2026.transit_data === "string" ? JSON.parse(transit2026.transit_data) : transit2026.transit_data;
+    }
+  } catch (e) {
+    console.error("Error parsing transit data:", e);
   }
 
-  // Get Dasha changes
-  const dashaChanges = findDashaChangesIn2026(dashaJson);
+  // Determine Sade Sati status based on Moon sign
+  const sadeSatiSigns2025 = transit2025Data.sade_sati_signs || [];
+  const sadeSatiSigns2026 = transit2026Data.sade_sati_signs || [];
 
-  // Calculate Sade Sati status
-  const sadeSati2025 = calculateSadeSatiStatus(userData.moon_sign, 2025, transitsLookupTable);
-  const sadeSati2026 = calculateSadeSatiStatus(userData.moon_sign, 2026, transitsLookupTable);
+  const sadeSati2025 = sadeSatiSigns2025.includes(userData.moon_sign)
+    ? `Sade Sati active (Saturn transiting ${userData.moon_sign})`
+    : "Not in Sade Sati";
 
-  // Get Rahu/Ketu impact
-  const rk2025 = describeRahuKetuImpact(userData.moon_sign, userData.sun_sign, 2025, transitsLookupTable);
-  const rk2026 = describeRahuKetuImpact(userData.moon_sign, userData.sun_sign, 2026, transitsLookupTable);
+  const sadeSati2026 = sadeSatiSigns2026.includes(userData.moon_sign)
+    ? `Sade Sati active (Saturn transiting ${userData.moon_sign})`
+    : "Not in Sade Sati";
 
-  // Get Saturn info
-  const saturn2026 = getTransitData("saturn", 2026, transitsLookupTable) as SaturnTransit;
-  const saturnDesc = saturn2026 ? `${saturn2026.sign} all year` : "Unknown";
+  // Get Rahu/Ketu positions
+  const rahuKetu2025 = transit2025Data.rahu_ketu || "Rahu in Meena, Ketu in Kanya";
+  const rahuKetu2026 = transit2026Data.rahu_ketu || "Rahu in Kumbha, Ketu in Simha";
 
-  // Format everything
+  // Get Saturn position
+  const saturn2026 = transit2026Data.saturn || "Saturn in Meena";
+
+  // Get the Antar Dasha that was active in 2025
+  const antarDasha2025 = getAntarDashaAtDate(changes2025);
+
+  // Format dasha changes for 2026
+  const dashaChanges2026 = formatDashaChanges(changes2026);
+
   return {
     birth_date: userData.birth_date,
     birth_location: userData.birth_location,
+    ascendant: userData.ascendant,
     sun_sign: userData.sun_sign,
     moon_sign: userData.moon_sign,
     nakshatra: userData.nakshatra,
-    maha_dasha_planet: maha2026.planet,
-    maha_dasha_start: maha2026.start,
-    maha_dasha_end: maha2026.end,
-    antar_dasha_planet: antar2026.planet,
-    antar_dasha_start: antar2026.start,
-    antar_dasha_end: antar2026.end,
-    dasha_changes_2026: formatDashaChanges(dashaChanges),
+    maha_dasha_planet: currentMahaDasha.planet,
+    maha_dasha_start: formatDate(currentMahaDasha.start_date),
+    maha_dasha_end: formatDate(currentMahaDasha.end_date),
+    antar_dasha_planet: currentAntarDasha.planet,
+    antar_dasha_start: formatDate(currentAntarDasha.start_date),
+    antar_dasha_end: formatDate(currentAntarDasha.end_date),
+    dasha_changes_2026: dashaChanges2026,
     sade_sati_2025: sadeSati2025,
-    rahu_ketu_2025: rk2025,
-    antar_dasha_2025: antar2025.planet,
     sade_sati_2026: sadeSati2026,
-    rahu_ketu_2026: rk2026,
-    saturn_2026: saturnDesc,
+    rahu_ketu_2025: rahuKetu2025,
+    rahu_ketu_2026: rahuKetu2026,
+    saturn_2026: saturn2026,
+    antar_dasha_2025: antarDasha2025,
   };
 }
