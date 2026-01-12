@@ -445,7 +445,11 @@ export type Database = {
           nakshatra_id: number | null
           nakshatra_lord: string | null
           nakshatra_pada: number | null
+          paid_amount: number | null
+          paid_at: string | null
+          paid_vedic_forecast: string | null
           planetary_positions: Json | null
+          stripe_session_id: string | null
           sun_sign: string | null
           sun_sign_id: number | null
           sun_sign_lord: string | null
@@ -487,7 +491,11 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_lord?: string | null
           nakshatra_pada?: number | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          paid_vedic_forecast?: string | null
           planetary_positions?: Json | null
+          stripe_session_id?: string | null
           sun_sign?: string | null
           sun_sign_id?: number | null
           sun_sign_lord?: string | null
@@ -529,7 +537,11 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_lord?: string | null
           nakshatra_pada?: number | null
+          paid_amount?: number | null
+          paid_at?: string | null
+          paid_vedic_forecast?: string | null
           planetary_positions?: Json | null
+          stripe_session_id?: string | null
           sun_sign?: string | null
           sun_sign_id?: number | null
           sun_sign_lord?: string | null

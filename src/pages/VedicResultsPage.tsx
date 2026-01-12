@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowLeft, Sparkles, Lock, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
+import { toast } from 'sonner';
 
 interface KundliDetails {
   id: string;
@@ -15,18 +16,50 @@ interface KundliDetails {
   moon_sign: string | null;
   sun_sign: string | null;
   nakshatra: string | null;
+  ascendant_sign: string | null;
   free_vedic_forecast: string | null;
+  paid_vedic_forecast: string | null;
   forecast_generated_at: string | null;
+  email: string | null;
+}
+
+interface ForecastSection {
+  heading: string;
+  content: ContentItem[];
+}
+
+interface ContentItem {
+  type: string;
+  text?: string;
+  label?: string;
+  items?: string[];
+  date_range?: string;
+  title?: string;
+  what_happening?: string;
+  astrology?: string;
+  key_actions?: string;
+  transitions?: { date: string; significance: string }[];
+  quarter?: string;
+  question?: string;
+  guidance?: string;
+}
+
+interface ForecastJson {
+  title: string;
+  subtitle: string;
+  sections: ForecastSection[];
 }
 
 const VedicResultsPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const kundliId = searchParams.get('id');
+  const isPaidView = searchParams.get('paid') === 'true';
 
   const [kundli, setKundli] = useState<KundliDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   useEffect(() => {
     const fetchKundli = async () => {
@@ -61,7 +94,187 @@ const VedicResultsPage = () => {
     fetchKundli();
   }, [kundliId]);
 
-  const renderForecast = (text: string) => {
+  const handleUpgrade = async () => {
+    if (!kundli) return;
+    
+    setIsUpgrading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-vedic-payment', {
+        body: { 
+          kundli_id: kundli.id,
+          email: kundli.email 
+        },
+      });
+
+      if (error || !data?.url) {
+        toast.error('Failed to start checkout');
+        setIsUpgrading(false);
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      toast.error('An error occurred');
+      setIsUpgrading(false);
+    }
+  };
+
+  const parseJsonForecast = (text: string): ForecastJson | null => {
+    try {
+      // Try to parse as JSON
+      const cleaned = text.trim();
+      if (cleaned.startsWith('{')) {
+        return JSON.parse(cleaned);
+      }
+      // Try to extract JSON from markdown code blocks
+      const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[1].trim());
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const renderJsonForecast = (forecast: ForecastJson, isPaid: boolean) => {
+    return (
+      <div className="space-y-10">
+        {forecast.sections.map((section, sIdx) => {
+          // Check if this is the upgrade section in free forecast
+          const isUpgradeSection = section.heading.toLowerCase().includes('want to know') || 
+                                   section.heading.toLowerCase().includes('specifics');
+          
+          if (isUpgradeSection && !isPaid) {
+            return null; // We'll render our own CTA instead
+          }
+
+          return (
+            <section key={sIdx} className="animate-fade-up" style={{ animationDelay: `${sIdx * 100}ms` }}>
+              <h2 className="text-2xl font-bold text-gold mb-6 font-display">{section.heading}</h2>
+              
+              <div className="space-y-4">
+                {section.content.map((item, iIdx) => renderContentItem(item, iIdx))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderContentItem = (item: ContentItem, key: number) => {
+    switch (item.type) {
+      case 'paragraph':
+        return (
+          <p key={key} className="text-cream-muted leading-relaxed text-lg font-serif">
+            {renderMarkdownText(item.text || '')}
+          </p>
+        );
+      
+      case 'astrology_note':
+        return (
+          <div key={key} className="bg-midnight/60 border border-gold/20 rounded-lg p-4 mt-4">
+            <p className="text-gold text-sm font-medium mb-2">{item.label || 'The Astrology:'}</p>
+            <p className="text-cream-muted text-sm">{item.text}</p>
+          </div>
+        );
+      
+      case 'benefits_list':
+        return (
+          <ul key={key} className="space-y-2 my-4">
+            {item.items?.map((listItem, i) => (
+              <li key={i} className="flex items-start gap-3 text-cream-muted">
+                <ChevronRight className="w-4 h-4 text-gold mt-1 flex-shrink-0" />
+                <span>{listItem}</span>
+              </li>
+            ))}
+          </ul>
+        );
+      
+      case 'period':
+        return (
+          <div key={key} className="bg-midnight/40 border border-border/30 rounded-xl p-6 mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-gold text-sm font-medium">{item.date_range}</span>
+            </div>
+            <h3 className="text-xl font-semibold text-cream mb-4">{item.title}</h3>
+            <div className="space-y-4 text-cream-muted font-serif">
+              <p className="leading-relaxed">{renderMarkdownText(item.what_happening || '')}</p>
+              {item.astrology && (
+                <div className="bg-midnight/60 border border-gold/20 rounded-lg p-4">
+                  <p className="text-gold text-sm font-medium mb-2">The Astrology:</p>
+                  <p className="text-sm">{item.astrology}</p>
+                </div>
+              )}
+              {item.key_actions && (
+                <div className="bg-gold/10 border border-gold/30 rounded-lg p-4">
+                  <p className="text-gold text-sm font-medium mb-2">Key Actions:</p>
+                  <p className="text-sm">{item.key_actions}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      
+      case 'transitions_table':
+        return (
+          <div key={key} className="overflow-hidden rounded-xl border border-border/30">
+            <table className="w-full">
+              <thead className="bg-midnight/60">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gold">Date</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gold">Significance</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/20">
+                {item.transitions?.map((t, i) => (
+                  <tr key={i} className="bg-midnight/20">
+                    <td className="px-4 py-3 text-cream font-medium whitespace-nowrap">{t.date}</td>
+                    <td className="px-4 py-3 text-cream-muted text-sm">{t.significance}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      
+      case 'theme':
+        return (
+          <div key={key} className="border-l-2 border-gold/50 pl-4 py-2">
+            <h4 className="text-lg font-semibold text-cream mb-2">{item.title}</h4>
+            <p className="text-cream-muted font-serif">{renderMarkdownText(item.text || '')}</p>
+          </div>
+        );
+      
+      case 'decision':
+        return (
+          <div key={key} className="bg-midnight/40 border border-border/30 rounded-xl p-5 mb-4">
+            <span className="text-gold text-sm font-medium">{item.quarter}</span>
+            <h4 className="text-lg font-semibold text-cream mt-2 mb-3">{item.question}</h4>
+            <p className="text-cream-muted font-serif">{renderMarkdownText(item.guidance || '')}</p>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  const renderMarkdownText = (text: string) => {
+    const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="text-cream">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={i}>{part.slice(1, -1)}</em>;
+      }
+      return part;
+    });
+  };
+
+  const renderMarkdownForecast = (text: string) => {
     const lines = text.split('\n');
     const elements: JSX.Element[] = [];
     let key = 0;
@@ -75,7 +288,7 @@ const VedicResultsPage = () => {
         );
       } else if (line.startsWith('## ')) {
         elements.push(
-          <h2 key={key++} className="text-2xl font-bold text-gold mt-10 mb-4">
+          <h2 key={key++} className="text-2xl font-bold text-gold mt-10 mb-4 font-display">
             {line.replace('## ', '')}
           </h2>
         );
@@ -87,26 +300,16 @@ const VedicResultsPage = () => {
         );
       } else if (line.startsWith('- ')) {
         elements.push(
-          <li key={key++} className="text-cream-muted ml-4 my-1">
+          <li key={key++} className="text-cream-muted ml-4 my-1 font-serif">
             {line.replace('- ', '')}
           </li>
         );
       } else if (line.startsWith('---')) {
         elements.push(<hr key={key++} className="border-border/30 my-8" />);
       } else if (line.trim()) {
-        const parts = line.split(/(\*\*[^*]+\*\*)/g);
         elements.push(
-          <p key={key++} className="text-cream-muted leading-relaxed my-3">
-            {parts.map((part, i) => {
-              if (part.startsWith('**') && part.endsWith('**')) {
-                return (
-                  <strong key={i} className="text-cream">
-                    {part.replace(/\*\*/g, '')}
-                  </strong>
-                );
-              }
-              return part;
-            })}
+          <p key={key++} className="text-cream-muted leading-relaxed my-3 text-lg font-serif">
+            {renderMarkdownText(line)}
           </p>
         );
       }
@@ -136,6 +339,10 @@ const VedicResultsPage = () => {
     );
   }
 
+  const hasPaidForecast = !!kundli.paid_vedic_forecast;
+  const forecastToShow = (isPaidView && hasPaidForecast) ? kundli.paid_vedic_forecast : kundli.free_vedic_forecast;
+  const parsedForecast = forecastToShow ? parseJsonForecast(forecastToShow) : null;
+
   return (
     <div className="relative min-h-screen bg-celestial">
       <StarField />
@@ -151,15 +358,38 @@ const VedicResultsPage = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
+          
+          {hasPaidForecast && (
+            <div className="flex gap-2">
+              <Button
+                variant={!isPaidView ? "default" : "ghost"}
+                size="sm"
+                onClick={() => navigate(`/vedic/results?id=${kundliId}`)}
+                className={!isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
+              >
+                Free Preview
+              </Button>
+              <Button
+                variant={isPaidView ? "default" : "ghost"}
+                size="sm"
+                onClick={() => navigate(`/vedic/results?id=${kundliId}&paid=true`)}
+                className={isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
+              >
+                Complete Forecast
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 
       <main className="relative z-10 container mx-auto px-4 py-12">
         {/* Title Section */}
         <div className="text-center mb-12 animate-fade-up">
-          <p className="text-gold text-sm uppercase tracking-widest mb-2">Your Personalized Reading</p>
+          <p className="text-gold text-sm uppercase tracking-widest mb-2">
+            {isPaidView && hasPaidForecast ? 'Your Complete Reading' : 'Your Personalized Reading'}
+          </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
-            2026 Cosmic Brief
+            {isPaidView && hasPaidForecast ? 'Complete 2026 Forecast' : '2026 Cosmic Brief'}
           </h1>
           <p className="text-cream-muted">
             {(() => {
@@ -176,6 +406,11 @@ const VedicResultsPage = () => {
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 text-base font-bold text-cream-muted mt-6">
+            {kundli.ascendant_sign && (
+              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
+                Ascendant: {kundli.ascendant_sign}
+              </span>
+            )}
             {kundli.moon_sign && (
               <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
                 Moon: {kundli.moon_sign}
@@ -194,9 +429,74 @@ const VedicResultsPage = () => {
           </div>
         </div>
 
-        {kundli.free_vedic_forecast ? (
-          <div className="max-w-3xl mx-auto bg-midnight/40 border border-border/30 rounded-2xl p-6 md:p-10 backdrop-blur-sm">
-            <div className="prose prose-invert max-w-none">{renderForecast(kundli.free_vedic_forecast)}</div>
+        {forecastToShow ? (
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-midnight/40 border border-border/30 rounded-2xl p-6 md:p-10 backdrop-blur-sm">
+              {parsedForecast ? (
+                renderJsonForecast(parsedForecast, isPaidView && hasPaidForecast)
+              ) : (
+                <div className="prose prose-invert max-w-none">
+                  {renderMarkdownForecast(forecastToShow)}
+                </div>
+              )}
+            </div>
+
+            {/* Upgrade CTA - Only show on free forecast */}
+            {!hasPaidForecast && (
+              <div className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-8 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-gold" />
+                  </div>
+                </div>
+                
+                <h3 className="text-2xl font-display text-cream mb-3">
+                  Want the Complete 2026 Roadmap?
+                </h3>
+                
+                <p className="text-cream-muted mb-6 max-w-lg mx-auto">
+                  Get month-by-month guidance, specific timing for key decisions, 
+                  and detailed analysis of every transition point in your year ahead.
+                </p>
+
+                <ul className="text-left max-w-md mx-auto mb-8 space-y-3">
+                  {[
+                    "Month-by-month breakdown with exact dates",
+                    "8-12 key transition points explained",
+                    "Quarterly decision guidance",
+                    "Pivotal themes and action windows",
+                    "Complete pratyantardasha timing"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-cream-muted">
+                      <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button 
+                  onClick={handleUpgrade}
+                  disabled={isUpgrading}
+                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-8 py-6 text-lg rounded-xl"
+                >
+                  {isUpgrading ? (
+                    <>
+                      <LoadingSpinner />
+                      <span className="ml-2">Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-5 h-5 mr-2" />
+                      Unlock Complete Forecast — $59
+                    </>
+                  )}
+                </Button>
+
+                <p className="text-cream-muted/60 text-sm mt-4">
+                  One-time payment • Instant access
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-12">
