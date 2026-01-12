@@ -231,11 +231,17 @@ async function getPlanetPositions(
   }
 
   const data = await response.json();
-  logStep("Planet positions received", { 
-    planetCount: data.data?.planet_positions?.length || 0 
+  
+  // The API returns planet_position (singular), not planet_positions
+  const planetPositionsArray = data.data?.planet_position || data.data?.planet_positions || [];
+  
+  // Log raw response structure for debugging
+  logStep("Planet positions raw response", { 
+    hasData: !!data.data,
+    dataKeys: data.data ? Object.keys(data.data) : [],
+    planetCount: planetPositionsArray.length,
+    rawSample: planetPositionsArray[0] ? JSON.stringify(planetPositionsArray[0]).substring(0, 300) : null
   });
-
-  const planetPositions = data.data?.planet_positions || [];
   
   // Extract planets and find Ascendant
   let ascendant_sign = "";
@@ -244,7 +250,7 @@ async function getPlanetPositions(
   
   const positions: PlanetPosition[] = [];
   
-  for (const planet of planetPositions) {
+  for (const planet of planetPositionsArray) {
     const position: PlanetPosition = {
       id: planet.id,
       name: planet.name,
@@ -278,7 +284,7 @@ async function getPlanetPositions(
   };
 }
 
-// Get Vimshottari Dasha periods
+// Get Vimshottari Dasha periods (uses kundli endpoint which includes dasha)
 async function getVimshottariDasha(
   accessToken: string,
   datetime: string,
@@ -293,8 +299,9 @@ async function getVimshottariDasha(
     la: "en",
   });
 
-  const url = `https://api.prokerala.com/v2/astrology/vimshottari-dasha?${params}`;
-  logStep("Calling vimshottari-dasha API", { url });
+  // Use the kundli endpoint which includes dasha_periods
+  const url = `https://api.prokerala.com/v2/astrology/kundli?${params}`;
+  logStep("Calling kundli API for dasha periods", { url });
 
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -302,12 +309,19 @@ async function getVimshottariDasha(
 
   if (!response.ok) {
     const errorText = await response.text();
-    logStep("Vimshottari dasha API error", { status: response.status, error: errorText });
-    throw new Error(`Vimshottari dasha API error: ${response.status}`);
+    logStep("Kundli API error", { status: response.status, error: errorText });
+    throw new Error(`Kundli API error: ${response.status}`);
   }
 
   const data = await response.json();
-  logStep("Vimshottari dasha received");
+  
+  // Log raw response structure for debugging
+  logStep("Kundli raw response", { 
+    hasData: !!data.data,
+    dataKeys: data.data ? Object.keys(data.data) : [],
+    hasDashaPeriods: !!data.data?.dasha_periods,
+    dashaSample: data.data?.dasha_periods?.[0] ? JSON.stringify(data.data.dasha_periods[0]).substring(0, 200) : null
+  });
 
   // Return the dasha periods in a simplified format
   const dashaPeriods = data.data?.dasha_periods || [];
