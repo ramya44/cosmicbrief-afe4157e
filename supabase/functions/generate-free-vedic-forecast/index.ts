@@ -478,6 +478,9 @@ Deno.serve(async (req) => {
       periods_2026: dashaPeriods2026.length,
     });
 
+    // Generate shareable link for free preview
+    const shareableLink = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}`;
+
     // Save the forecast and dasha data to the database
     const { error: updateError } = await supabase
       .from("user_kundli_details")
@@ -487,6 +490,9 @@ Deno.serve(async (req) => {
         forecast_generated_at: new Date().toISOString(),
         dasha_periods: formattedDashaPeriods,
         dasha_periods_2026: dashaPeriods2026,
+        shareable_link: shareableLink,
+        free_prompt_tokens: claudeData.usage?.input_tokens || null,
+        free_completion_tokens: claudeData.usage?.output_tokens || null,
       })
       .eq("id", kundli_id);
 

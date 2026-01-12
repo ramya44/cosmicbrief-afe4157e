@@ -453,6 +453,7 @@ export type Database = {
           paid_prompt_tokens: number | null
           paid_vedic_forecast: string | null
           planetary_positions: Json | null
+          shareable_link: string | null
           stripe_session_id: string | null
           sun_sign: string | null
           sun_sign_id: number | null
@@ -503,6 +504,7 @@ export type Database = {
           paid_prompt_tokens?: number | null
           paid_vedic_forecast?: string | null
           planetary_positions?: Json | null
+          shareable_link?: string | null
           stripe_session_id?: string | null
           sun_sign?: string | null
           sun_sign_id?: number | null
@@ -553,6 +555,7 @@ export type Database = {
           paid_prompt_tokens?: number | null
           paid_vedic_forecast?: string | null
           planetary_positions?: Json | null
+          shareable_link?: string | null
           stripe_session_id?: string | null
           sun_sign?: string | null
           sun_sign_id?: number | null
