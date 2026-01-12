@@ -114,9 +114,9 @@
     font-family: var(--font-display);
   }
 
-  /* Consistent paragraph sizing */
+  /* Consistent paragraph styling */
   p, li {
-    @apply text-lg leading-relaxed;
+    @apply text-lg leading-relaxed text-cream-muted;
   }
 
   /* Tables use serif font */
