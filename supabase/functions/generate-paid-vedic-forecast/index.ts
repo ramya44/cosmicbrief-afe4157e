@@ -444,6 +444,9 @@ Deno.serve(async (req) => {
       usage: claudeData.usage,
     });
 
+    // Generate shareable link for paid forecast (includes paid=true)
+    const shareableLink = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}&paid=true`;
+
     // Save the paid forecast
     const { error: updateError } = await supabase
       .from("user_kundli_details")
@@ -452,6 +455,9 @@ Deno.serve(async (req) => {
         stripe_session_id: session_id,
         paid_amount: session.amount_total,
         paid_at: new Date().toISOString(),
+        shareable_link: shareableLink,
+        paid_prompt_tokens: claudeData.usage?.input_tokens || null,
+        paid_completion_tokens: claudeData.usage?.output_tokens || null,
       })
       .eq("id", kundli_id);
 
