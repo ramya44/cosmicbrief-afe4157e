@@ -392,6 +392,19 @@ Due to this difference, your Sun sign (and all other planetary positions) will t
             </Link>
           </div>
         </main>
+
+        {/* Sticky Mobile CTA */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-midnight/95 backdrop-blur-md border-t border-border/30 p-4">
+          <Link to="/vedic/input" className="block">
+            <Button size="lg" className="w-full bg-gold hover:bg-gold/90 text-midnight font-bold text-base py-5">
+              <Sparkles className="w-5 h-5 mr-2" />
+              Generate My Vedic Forecast
+            </Button>
+          </Link>
+        </div>
+        
+        {/* Bottom padding to account for sticky CTA on mobile */}
+        <div className="h-24 md:hidden" />
       </div>
     </>;
 };
