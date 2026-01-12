@@ -54,10 +54,10 @@ export const AnimalBadge = ({ animalSign, inline = false }: AnimalBadgeProps) =>
           <img
             src={animalData.image_url}
             alt={animalSign}
-            className="w-40 h-40 object-contain mb-2"
+            className="w-60 h-60 object-contain mb-2"
           />
           <p className="text-gold font-display text-lg italic">
-            "{animalData.phrase}"
+            {animalData.phrase}
           </p>
         </div>
 
@@ -66,10 +66,10 @@ export const AnimalBadge = ({ animalSign, inline = false }: AnimalBadgeProps) =>
           <img
             src={animalData.image_url}
             alt={animalSign}
-            className="w-48 h-48 object-contain"
+            className="w-72 h-72 object-contain"
           />
           <p className="text-gold font-display text-base italic text-center mt-2">
-            "{animalData.phrase}"
+            {animalData.phrase}
           </p>
         </div>
       </>
