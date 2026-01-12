@@ -154,18 +154,28 @@ const VedicResultsPage = () => {
         </div>
       </header>
 
-      <main className="relative z-10 container mx-auto px-4 py-12 max-w-3xl">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-cream mb-4">
-            Your 2026 Cosmic Brief
+      <main className="relative z-10 container mx-auto px-4 py-12">
+        {/* Title Section */}
+        <div className="text-center mb-12 animate-fade-up">
+          <p className="text-gold text-sm uppercase tracking-widest mb-2">Your Personalized Reading</p>
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
+            2026 Cosmic Brief
           </h1>
+          <p className="text-cream-muted">
+            {(() => {
+              const [year, month, day] = kundli.birth_date.split('-').map(Number);
+              return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            })()}
+            {kundli.birth_time && (() => {
+              const [hours, minutes] = kundli.birth_time.split(':').map(Number);
+              const period = hours >= 12 ? 'PM' : 'AM';
+              const hour12 = hours % 12 || 12;
+              return ` · ${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+            })()}
+            {' · '}{kundli.birth_place}
+          </p>
           
-          <div className="text-cream-muted space-y-1 mb-6">
-            <p className="text-base">Born {kundli.birth_date} at {kundli.birth_time}</p>
-            <p className="text-base">{kundli.birth_place}</p>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-4 text-base font-bold text-cream-muted">
+          <div className="flex flex-wrap justify-center gap-4 text-base font-bold text-cream-muted mt-6">
             {kundli.moon_sign && (
               <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
                 Moon: {kundli.moon_sign}
@@ -185,7 +195,7 @@ const VedicResultsPage = () => {
         </div>
 
         {kundli.free_vedic_forecast ? (
-          <div className="bg-midnight/40 border border-border/30 rounded-2xl p-6 md:p-10 backdrop-blur-sm">
+          <div className="max-w-3xl mx-auto bg-midnight/40 border border-border/30 rounded-2xl p-6 md:p-10 backdrop-blur-sm">
             <div className="prose prose-invert max-w-none">{renderForecast(kundli.free_vedic_forecast)}</div>
           </div>
         ) : (
