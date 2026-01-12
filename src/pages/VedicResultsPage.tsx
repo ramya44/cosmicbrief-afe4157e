@@ -65,6 +65,7 @@ const VedicResultsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isInlineCTAVisible, setIsInlineCTAVisible] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const inlineCTARef = useRef<HTMLDivElement>(null);
 
   // Track when inline CTA is visible to hide sticky CTA
@@ -93,23 +94,28 @@ const VedicResultsPage = () => {
 
       const deviceId = getDeviceId();
 
-      const { data, error: fnError } = await supabase.functions.invoke('get-vedic-kundli-details', {
+      // First try with device_id (owner access)
+      let { data, error: fnError } = await supabase.functions.invoke('get-vedic-kundli-details', {
         body: { kundli_id: kundliId, device_id: deviceId },
       });
 
-      if (fnError) {
-        setError('Failed to load your forecast');
-        setLoading(false);
-        return;
-      }
-
-      if (!data) {
-        setError('Forecast not found');
-        setLoading(false);
-        return;
+      // If not found with device_id, try as shared link
+      if (fnError || !data) {
+        const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
+          body: { kundli_id: kundliId, shared: true },
+        });
+        
+        if (sharedResult.error || !sharedResult.data) {
+          setError('Forecast not found');
+          setLoading(false);
+          return;
+        }
+        
+        data = sharedResult.data;
       }
 
       setKundli(data);
+      setIsOwner(data.is_owner || false);
       setLoading(false);
     };
 
@@ -511,8 +517,8 @@ const VedicResultsPage = () => {
               )}
             </div>
 
-            {/* Upgrade CTA - Only show on free forecast */}
-            {!hasPaidForecast && (
+            {/* Upgrade CTA - Only show on free forecast for owners */}
+            {!hasPaidForecast && isOwner && (
               <div ref={inlineCTARef} className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-6 md:p-8 text-center overflow-hidden mx-0">
                 <div className="flex justify-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
