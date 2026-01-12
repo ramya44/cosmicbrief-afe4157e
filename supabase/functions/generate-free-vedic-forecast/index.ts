@@ -13,72 +13,53 @@ Deno.serve(async (req) => {
   }
 });
 
-
 // generate-forecast-inputs.ts
 
-import type { UserData, DashaJson, TransitLookupRow, ForecastInputs, SaturnTransit } from './types';
-import { getCurrentDasha } from './get-current-dasha';
-import { findDashaChangesIn2026 } from './find-dasha-changes-in-2026';
-import { calculateSadeSatiStatus } from './calculate-sade-sati-status';
-import { describeRahuKetuImpact } from './describe-rahu-ketu-impact';
-import { formatDashaChanges } from './format-dasha-changes';
-import { getTransitData } from './get-transit-data';
+import type { UserData, DashaJson, TransitLookupRow, ForecastInputs, SaturnTransit } from "./types";
+import { getCurrentDasha } from "./get-current-dasha";
+import { findDashaChangesIn2026 } from "./find-dasha-changes-in-2026";
+import { calculateSadeSatiStatus } from "./calculate-sade-sati-status";
+import { describeRahuKetuImpact } from "./describe-rahu-ketu-impact";
+import { formatDashaChanges } from "./format-dasha-changes";
+import { getTransitData } from "./get-transit-data";
 
 export function generateForecastInputs(
   userData: UserData,
   dashaJson: DashaJson[],
-  transitsLookupTable: TransitLookupRow[]
+  transitsLookupTable: TransitLookupRow[],
 ): ForecastInputs {
   /**
    * Generate all inputs needed for LLM forecast generation
-   * 
+   *
    * @param userData - User's birth data
    * @param dashaJson - The full dasha JSON
    * @param transitsLookupTable - your database table
    * @returns Complete forecast inputs object
    */
-  
+
   // Get current Dashas
   const [maha2025, antar2025] = getCurrentDasha(dashaJson, "2025-01-01");
   const [maha2026, antar2026] = getCurrentDasha(dashaJson, "2026-01-01");
-  
+
   if (!maha2025 || !antar2025 || !maha2026 || !antar2026) {
     throw new Error("Could not determine Dasha periods");
   }
-  
+
   // Get Dasha changes
   const dashaChanges = findDashaChangesIn2026(dashaJson);
-  
+
   // Calculate Sade Sati status
-  const sadeSati2025 = calculateSadeSatiStatus(
-    userData.moon_sign,
-    2025,
-    transitsLookupTable
-  );
-  const sadeSati2026 = calculateSadeSatiStatus(
-    userData.moon_sign,
-    2026,
-    transitsLookupTable
-  );
-  
+  const sadeSati2025 = calculateSadeSatiStatus(userData.moon_sign, 2025, transitsLookupTable);
+  const sadeSati2026 = calculateSadeSatiStatus(userData.moon_sign, 2026, transitsLookupTable);
+
   // Get Rahu/Ketu impact
-  const rk2025 = describeRahuKetuImpact(
-    userData.moon_sign,
-    userData.sun_sign,
-    2025,
-    transitsLookupTable
-  );
-  const rk2026 = describeRahuKetuImpact(
-    userData.moon_sign,
-    userData.sun_sign,
-    2026,
-    transitsLookupTable
-  );
-  
+  const rk2025 = describeRahuKetuImpact(userData.moon_sign, userData.sun_sign, 2025, transitsLookupTable);
+  const rk2026 = describeRahuKetuImpact(userData.moon_sign, userData.sun_sign, 2026, transitsLookupTable);
+
   // Get Saturn info
-  const saturn2026 = getTransitData('saturn', 2026, transitsLookupTable) as SaturnTransit;
+  const saturn2026 = getTransitData("saturn", 2026, transitsLookupTable) as SaturnTransit;
   const saturnDesc = saturn2026 ? `${saturn2026.sign} all year` : "Unknown";
-  
+
   // Format everything
   return {
     birth_date: userData.birth_date,
@@ -98,15 +79,14 @@ export function generateForecastInputs(
     antar_dasha_2025: antar2025.planet,
     sade_sati_2026: sadeSati2026,
     rahu_ketu_2026: rk2026,
-    saturn_2026: saturnDesc
+    saturn_2026: saturnDesc,
   };
 }
 
-
 // index.ts
 
-import type { UserData, DashaJson, TransitLookupRow, ForecastInputs } from './types';
-import { generateForecastInputs } from './generate-forecast-inputs';
+import type { UserData, DashaJson, TransitLookupRow, ForecastInputs } from "./types";
+import { generateForecastInputs } from "./generate-forecast-inputs";
 
 const SYSTEM_PROMPT = `You are an expert Vedic astrologer who writes personalized forecasts in accessible, engaging language. Your writing style is:
 
@@ -176,7 +156,7 @@ End with:
 2026: ${inputs.sade_sati_2026}; ${inputs.rahu_ketu_2026}; ${inputs.antar_dasha_planet} Antar Dasha
 
 ### Section 3: Your Biggest 2026 Moment (200-250 words)
-Focus on: ${inputs.dasha_changes_2026 !== 'No major Dasha changes' ? inputs.dasha_changes_2026 : inputs.sade_sati_2026}
+Focus on: ${inputs.dasha_changes_2026 !== "No major Dasha changes" ? inputs.dasha_changes_2026 : inputs.sade_sati_2026}
 
 Describe:
 - What changes and when (specific date if applicable)
@@ -219,32 +199,31 @@ End with:
 export async function generateFreeForecast(
   userData: UserData,
   dashaJson: DashaJson[],
-  transitsLookupTable: TransitLookupRow[]
+  transitsLookupTable: TransitLookupRow[],
 ): Promise<string> {
   /**
    * Main function to generate free forecast
-   * 
+   *
    * @param userData - User's birth information
    * @param dashaJson - Full Dasha periods from API
    * @param transitsLookupTable - Transit lookup table from database
    * @returns Generated forecast text
    */
-  
+
   // Generate inputs
   const inputs = generateForecastInputs(userData, dashaJson, transitsLookupTable);
-  
+
   // Build prompt
   const userPrompt = buildUserPrompt(inputs);
-  
+
   // Call Claude API (you'll implement this)
   // const response = await callClaudeAPI(SYSTEM_PROMPT, userPrompt);
   // return response;
-  
+
   // For now, return the prompt for testing
   return userPrompt;
 }
 
 // Export everything
 export { SYSTEM_PROMPT };
-export type * from './types';
-```
+export type * from "./types";
