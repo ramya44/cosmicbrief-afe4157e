@@ -401,7 +401,7 @@ const VedicInputPage = () => {
             Your information is used only to generate your personalized forecast. We never sell information, ever.
           </p>
           <p 
-            className="text-center text-sm text-muted-foreground mt-3 animate-fade-up"
+            className="text-center text-xs text-muted-foreground mt-3 animate-fade-up"
             style={{ animationDelay: '350ms', animationFillMode: 'both' }}
           >
             <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology?</a>
