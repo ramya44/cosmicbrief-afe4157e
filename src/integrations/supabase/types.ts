@@ -565,6 +565,39 @@ export type Database = {
         }
         Relationships: []
       }
+      vedic_generation_alerts: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          error_type: string | null
+          id: string
+          kundli_id: string
+          notes: string | null
+          notified: boolean | null
+          resolved: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          error_type?: string | null
+          id?: string
+          kundli_id: string
+          notes?: string | null
+          notified?: boolean | null
+          resolved?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          error_type?: string | null
+          id?: string
+          kundli_id?: string
+          notes?: string | null
+          notified?: boolean | null
+          resolved?: boolean | null
+        }
+        Relationships: []
+      }
       vedic_moon_pacing_lookup: {
         Row: {
           emotional_pacing: string

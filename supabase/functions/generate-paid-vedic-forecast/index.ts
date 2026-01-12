@@ -432,7 +432,22 @@ Deno.serve(async (req) => {
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
       logStep("Claude API error", { status: claudeResponse.status, error: errorText });
-      throw new Error(`Claude API error: ${claudeResponse.status}`);
+      
+      // Log to alerts table
+      await supabase.from("vedic_generation_alerts").insert({
+        kundli_id,
+        error_message: `Claude API error: ${claudeResponse.status} - ${errorText}`,
+        error_type: "paid_generation",
+      });
+      
+      // Return friendly error with manual_generation flag
+      return new Response(JSON.stringify({
+        manual_generation: true,
+        message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200, // Return 200 so frontend handles gracefully
+      });
     }
 
     const claudeData = await claudeResponse.json();
@@ -478,9 +493,33 @@ Deno.serve(async (req) => {
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logStep("Error", { message: errMessage });
-    return new Response(JSON.stringify({ error: errMessage }), {
+    
+    // Try to log to alerts table
+    try {
+      const body = await req.clone().json().catch(() => ({}));
+      if (body.kundli_id) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (supabaseUrl && supabaseServiceKey) {
+          const alertSupabase = createClient(supabaseUrl, supabaseServiceKey);
+          await alertSupabase.from("vedic_generation_alerts").insert({
+            kundli_id: body.kundli_id,
+            error_message: errMessage,
+            error_type: "paid_generation",
+          });
+        }
+      }
+    } catch (alertError) {
+      logStep("Failed to log alert", { error: alertError });
+    }
+    
+    // Return friendly error
+    return new Response(JSON.stringify({
+      manual_generation: true,
+      message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: 200,
     });
   }
 });
