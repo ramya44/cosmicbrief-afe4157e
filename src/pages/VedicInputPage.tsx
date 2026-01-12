@@ -225,7 +225,7 @@ const VedicInputPage = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-celestial overflow-hidden">
+    <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
       <StarField />
 
       {/* Back button */}
@@ -404,7 +404,7 @@ const VedicInputPage = () => {
             className="text-center text-sm text-muted-foreground mt-3 animate-fade-up"
             style={{ animationDelay: '350ms', animationFillMode: 'both' }}
           >
-            <a href="/#/2026-astrology-forecast" className="text-gold hover:underline">2026 Forecast</a>
+            <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology?</a>
             {' · '}
             <a href="/#/privacy" className="text-gold hover:underline">Privacy Policy</a>
             {' · '}
