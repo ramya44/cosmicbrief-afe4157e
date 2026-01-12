@@ -61,7 +61,7 @@ const Index = () => {
 
           {/* Subtle footer text */}
           <p 
-            className="mt-16 text-sm text-muted-foreground animate-fade-up"
+            className="mt-16 text-base text-muted-foreground animate-fade-up"
             style={{ animationDelay: '500ms', animationFillMode: 'both' }}
           >
             No zodiac signs. This forecast uses the position of the stars at your birth, based on ancient techniques refined over centuries.
@@ -69,7 +69,7 @@ const Index = () => {
           
           {/* Footer links */}
           <p 
-            className="mt-6 text-xs text-muted-foreground animate-fade-up"
+            className="mt-6 text-sm text-muted-foreground animate-fade-up"
             style={{ animationDelay: '600ms', animationFillMode: 'both' }}
           >
             <a href="/#/2026-astrology-forecast" className="text-gold hover:underline">2026 Forecast</a>
