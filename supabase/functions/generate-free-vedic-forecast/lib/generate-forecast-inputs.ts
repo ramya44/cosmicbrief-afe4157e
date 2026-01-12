@@ -1,7 +1,7 @@
 // Generate forecast inputs from user data and calculated dashas
 import type { UserData, ForecastInputs, TransitLookupRow } from "./types.ts";
-import type { DashaPeriod, AntarDashaPeriod } from "./dasha_calculator.ts";
-import { formatDate } from "./dasha_calculator.ts";
+import type { DashaPeriod, AntarDashaPeriod } from "./dasha-calculator.ts";
+import { formatDate } from "./dasha-calculator.ts";
 
 interface DashaInfo {
   currentMahaDasha: DashaPeriod;

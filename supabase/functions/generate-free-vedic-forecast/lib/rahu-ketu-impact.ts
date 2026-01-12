@@ -2,7 +2,7 @@
 // describe-rahu-ketu-impact.ts
 
 import type { TransitLookupRow, RahuKetuTransit } from "./types.ts";
-import { getTransitData } from "./transit_data.ts";
+import { getTransitData } from "./transit-data.ts";
 
 export function describeRahuKetuImpact(
   moonSign: string,
