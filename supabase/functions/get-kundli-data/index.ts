@@ -109,8 +109,6 @@ interface KundliResult {
   // Planetary positions
   planetary_positions: PlanetPosition[];
   
-  // Dasha (from Vimshottari endpoint)
-  dasha_periods: unknown;
 }
 
 // Get birth details (nakshatra, signs, etc.)
@@ -284,61 +282,6 @@ async function getPlanetPositions(
   };
 }
 
-// Get Vimshottari Dasha periods (uses kundli endpoint which includes dasha)
-async function getVimshottariDasha(
-  accessToken: string,
-  datetime: string,
-  latitude: number,
-  longitude: number,
-  ayanamsa: number
-): Promise<unknown> {
-  const params = new URLSearchParams({
-    datetime,
-    coordinates: `${latitude},${longitude}`,
-    ayanamsa: ayanamsa.toString(),
-    la: "en",
-  });
-
-  // Use the kundli endpoint which includes dasha_periods
-  const url = `https://api.prokerala.com/v2/astrology/kundli?${params}`;
-  logStep("Calling kundli API for dasha periods", { url });
-
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    logStep("Kundli API error", { status: response.status, error: errorText });
-    throw new Error(`Kundli API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  
-  // Log raw response structure for debugging
-  logStep("Kundli raw response", { 
-    hasData: !!data.data,
-    dataKeys: data.data ? Object.keys(data.data) : [],
-    hasDashaPeriods: !!data.data?.dasha_periods,
-    dashaSample: data.data?.dasha_periods?.[0] ? JSON.stringify(data.data.dasha_periods[0]).substring(0, 200) : null
-  });
-
-  // Return the dasha periods in a simplified format
-  const dashaPeriods = data.data?.dasha_periods || [];
-  
-  // deno-lint-ignore no-explicit-any
-  return dashaPeriods.map((period: any) => ({
-    name: period.dasha_lord?.name || "",
-    start: period.start || "",
-    end: period.end || "",
-    // deno-lint-ignore no-explicit-any
-    antardasha: (period.antardasha || []).map((antar: any) => ({
-      name: antar.antardasha_lord?.name || "",
-      start: antar.start || "",
-      end: antar.end || "",
-    })),
-  }));
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -363,17 +306,15 @@ serve(async (req) => {
 
     const accessToken = await getAccessToken();
 
-    // Call all three APIs in parallel for speed
-    const [birthDetails, planetData, dashaPeriods] = await Promise.all([
+    // Call both APIs in parallel for speed
+    const [birthDetails, planetData] = await Promise.all([
       getBirthDetails(accessToken, input.datetime, input.latitude, input.longitude, input.ayanamsa),
       getPlanetPositions(accessToken, input.datetime, input.latitude, input.longitude, input.ayanamsa),
-      getVimshottariDasha(accessToken, input.datetime, input.latitude, input.longitude, input.ayanamsa),
     ]);
 
     const result: KundliResult = {
       ...birthDetails,
       ...planetData,
-      dasha_periods: dashaPeriods,
     };
 
     logStep("Kundli data retrieved successfully", {
