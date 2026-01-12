@@ -156,24 +156,28 @@ const VedicResultsPage = () => {
 
       <main className="relative z-10 container mx-auto px-4 py-12 max-w-3xl">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/30 rounded-full mb-6">
-            <Sparkles className="w-4 h-4 text-gold" />
-            <span className="text-gold text-sm font-medium">Your 2026 Vedic Forecast</span>
+          <h1 className="text-4xl md:text-5xl font-bold text-cream mb-4">
+            Your 2026 Cosmic Brief
+          </h1>
+          
+          <div className="text-cream-muted space-y-1 mb-6">
+            <p className="text-base">Born {kundli.birth_date} at {kundli.birth_time}</p>
+            <p className="text-base">{kundli.birth_place}</p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-4 text-sm text-cream-muted">
+          <div className="flex flex-wrap justify-center gap-4 text-base font-bold text-cream-muted">
             {kundli.moon_sign && (
-              <span className="px-3 py-1 bg-midnight/50 rounded-full border border-border/30">
+              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
                 Moon: {kundli.moon_sign}
               </span>
             )}
             {kundli.sun_sign && (
-              <span className="px-3 py-1 bg-midnight/50 rounded-full border border-border/30">
+              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
                 Sun: {kundli.sun_sign}
               </span>
             )}
             {kundli.nakshatra && (
-              <span className="px-3 py-1 bg-midnight/50 rounded-full border border-border/30">
+              <span className="px-4 py-1.5 bg-midnight/50 rounded-full border border-border/30">
                 Nakshatra: {kundli.nakshatra}
               </span>
             )}
