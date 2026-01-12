@@ -48,7 +48,16 @@ export async function convertBirthTimeToUtc(
   
   // Create a Unix timestamp for the local time (treating it as UTC temporarily)
   const tempDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
-  const timestamp = Math.floor(tempDate.getTime() / 1000);
+  const timestampMs = tempDate.getTime();
+  
+  // For dates before Unix epoch (1970), use longitude-based fallback
+  // TimeZoneDB API requires positive timestamps
+  if (timestampMs < 0) {
+    console.log('Pre-1970 date detected, using longitude-based fallback');
+    return calculateFallback(birthDate, birthTime, lon);
+  }
+  
+  const timestamp = Math.floor(timestampMs / 1000);
 
   try {
     const { data, error } = await supabase.functions.invoke('get-timezone', {
