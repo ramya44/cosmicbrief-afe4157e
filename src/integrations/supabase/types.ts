@@ -388,6 +388,24 @@ export type Database = {
         }
         Relationships: []
       }
+      transits_2026_lookup: {
+        Row: {
+          created_at: string
+          id: string
+          transit_data: Json
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          transit_data: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          transit_data?: Json
+        }
+        Relationships: []
+      }
       user_kundli_details: {
         Row: {
           animal_sign: string | null
