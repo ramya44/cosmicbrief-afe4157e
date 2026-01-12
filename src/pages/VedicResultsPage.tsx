@@ -286,8 +286,8 @@ const VedicResultsPage = () => {
       
       case 'theme':
         return (
-          <div key={key} className="border-l-2 border-gold/50 pl-4 py-2">
-            <h4 className="text-lg font-semibold text-cream mb-2">{item.title}</h4>
+          <div key={key} className="bg-midnight/40 border border-border/30 rounded-xl p-5 mb-4">
+            <h4 className="text-lg font-semibold text-cream mb-2">{renderMarkdownText(item.title || '')}</h4>
             <p className="text-cream-muted font-serif">{renderMarkdownText(item.text || '')}</p>
           </div>
         );
@@ -411,17 +411,17 @@ const VedicResultsPage = () => {
                   variant={!isPaidView ? "default" : "ghost"}
                   size="sm"
                   onClick={() => navigate(`/vedic/results?id=${kundliId}`)}
-                  className={!isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
+                  className={!isPaidView ? "bg-gold text-midnight font-sans" : "text-cream-muted font-sans"}
                 >
-                  Free Preview
+                  Synopsis
                 </Button>
                 <Button
                   variant={isPaidView ? "default" : "ghost"}
                   size="sm"
                   onClick={() => navigate(`/vedic/results?id=${kundliId}&paid=true`)}
-                  className={isPaidView ? "bg-gold text-midnight" : "text-cream-muted"}
+                  className={isPaidView ? "bg-gold text-midnight font-sans" : "text-cream-muted font-sans"}
                 >
-                  Complete Forecast
+                  Full Cosmic Brief
                 </Button>
               </div>
             )}
@@ -477,13 +477,13 @@ const VedicResultsPage = () => {
       <main className="relative z-10 container mx-auto px-4 py-12">
         {/* Title Section */}
         <div className="text-center mb-12 animate-fade-up">
-          <p className="text-gold text-sm uppercase tracking-widest mb-2">
+          <p className="text-gold text-sm uppercase tracking-widest mb-2 font-sans">
             {isPaidView && hasPaidForecast ? 'Your Complete Reading' : 'Your Personalized Reading'}
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
             {isPaidView && hasPaidForecast ? 'Complete 2026 Forecast' : '2026 Cosmic Brief'}
           </h1>
-          <p className="text-cream-muted">
+          <p className="text-cream-muted font-sans">
             {(() => {
               const [year, month, day] = kundli.birth_date.split('-').map(Number);
               return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -547,7 +547,7 @@ const VedicResultsPage = () => {
                 <Button 
                   onClick={handleUpgrade}
                   disabled={isUpgrading}
-                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-4 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-xl w-full md:w-auto min-w-0"
+                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-4 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-xl w-full md:w-auto min-w-0 font-sans"
                 >
                   {isUpgrading ? (
                     <span className="flex items-center justify-center">
@@ -557,7 +557,7 @@ const VedicResultsPage = () => {
                   ) : (
                     <span className="flex items-center justify-center">
                       <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span>Unlock Complete Forecast —</span>
+                      <span>Unlock Full Cosmic Brief —</span>
                       <span className="line-through text-midnight/50 mx-1">$99</span>
                       <span>$59</span>
                     </span>
@@ -584,7 +584,7 @@ const VedicResultsPage = () => {
           <Button 
             onClick={handleUpgrade}
             disabled={isUpgrading}
-            className="w-full bg-gold hover:bg-gold-light text-midnight font-semibold py-5 text-base rounded-xl"
+            className="w-full bg-gold hover:bg-gold-light text-midnight font-semibold py-5 text-base rounded-xl font-sans"
           >
             {isUpgrading ? (
               <span className="flex items-center justify-center">
@@ -594,7 +594,7 @@ const VedicResultsPage = () => {
             ) : (
               <span className="flex items-center justify-center">
                 <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Unlock Complete Forecast —</span>
+                <span>Unlock Full Cosmic Brief —</span>
                 <span className="line-through text-midnight/50 mx-1">$99</span>
                 <span>$59</span>
               </span>
