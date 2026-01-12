@@ -388,21 +388,24 @@ export type Database = {
         }
         Relationships: []
       }
-      transits_2026_lookup: {
+      transits_lookup: {
         Row: {
           created_at: string
           id: string
           transit_data: Json
+          year: number
         }
         Insert: {
           created_at?: string
           id: string
           transit_data: Json
+          year?: number
         }
         Update: {
           created_at?: string
           id?: string
           transit_data?: Json
+          year?: number
         }
         Relationships: []
       }
