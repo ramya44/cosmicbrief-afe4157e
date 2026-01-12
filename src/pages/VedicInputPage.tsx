@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,17 @@ import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+const FORM_STORAGE_KEY = 'vedic_input_form_data';
+
+interface SavedFormData {
+  birthDate: string;
+  birthTime: string;
+  birthPlace: string;
+  email: string;
+  placeCoords: { lat: number; lon: number } | null;
+  deviceId: string;
+}
 
 const VedicInputPage = () => {
   const navigate = useNavigate();
@@ -27,6 +38,45 @@ const VedicInputPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingForecast, setIsGeneratingForecast] = useState(false);
+
+  // Load saved form data on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(FORM_STORAGE_KEY);
+      if (saved) {
+        const parsed: SavedFormData = JSON.parse(saved);
+        const currentDeviceId = getDeviceId();
+        // Only restore if same device
+        if (parsed.deviceId === currentDeviceId) {
+          setFormData({
+            birthDate: parsed.birthDate || '',
+            birthTime: parsed.birthTime || '',
+            birthPlace: parsed.birthPlace || '',
+            email: parsed.email || '',
+          });
+          if (parsed.placeCoords) {
+            setPlaceCoords(parsed.placeCoords);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[VedicInputPage] Error loading saved form data:', e);
+    }
+  }, []);
+
+  // Save form data on changes
+  useEffect(() => {
+    try {
+      const dataToSave: SavedFormData = {
+        ...formData,
+        placeCoords,
+        deviceId: getDeviceId(),
+      };
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error('[VedicInputPage] Error saving form data:', e);
+    }
+  }, [formData, placeCoords]);
 
   const today = new Date().toISOString().split('T')[0];
   const minDate = '1900-01-01';
@@ -196,6 +246,9 @@ const VedicInputPage = () => {
       }
       
       console.log('[VedicInputPage] Navigating to /vedic/results with id:', saveResult.id);
+      
+      // Clear saved form data after successful submission
+      localStorage.removeItem(FORM_STORAGE_KEY);
       
       // Navigate to results page with the record ID
       navigate(`/vedic/results?id=${saveResult.id}`);
