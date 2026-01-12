@@ -578,33 +578,6 @@ const VedicResultsPage = () => {
         )}
       </main>
 
-      {/* Sticky Mobile CTA - Only show on free forecast when inline CTA is not visible */}
-      {!hasPaidForecast && forecastToShow && !isInlineCTAVisible && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-midnight/95 backdrop-blur-md border-t border-gold/30 p-4">
-          <Button 
-            onClick={handleUpgrade}
-            disabled={isUpgrading}
-            className="w-full bg-gold hover:bg-gold-light text-midnight font-semibold py-5 text-base rounded-xl font-sans"
-          >
-            {isUpgrading ? (
-              <span className="flex items-center justify-center">
-                <span className="w-5 h-5 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin mr-2" />
-                <span>Loading...</span>
-              </span>
-            ) : (
-              <span className="flex items-center justify-center">
-                <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Unlock Full Cosmic Brief —</span>
-                <span className="line-through text-midnight/50 mx-1">$99</span>
-                <span>$59</span>
-              </span>
-            )}
-          </Button>
-        </div>
-      )}
-      
-      {/* Bottom padding to account for sticky CTA on mobile */}
-      {!hasPaidForecast && forecastToShow && <div className="h-20 md:hidden" />}
     </div>
   );
 };
