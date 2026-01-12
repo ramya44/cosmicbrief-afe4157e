@@ -1,6 +1,12 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, jsonResponse, errorResponse } from "../_shared/lib/http.ts";
 import type { UserData, DashaJson, TransitLookupRow, ForecastInputs } from "./lib/types.ts";
 import { generateForecastInputs } from "./lib/generate-forecast-inputs.ts";
+
+function logStep(step: string, details?: Record<string, unknown>) {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
+  console.log(`[generate-free-vedic-forecast] ${step}${detailsStr}`);
+}
 
 const SYSTEM_PROMPT = `You are an expert Vedic astrologer who writes personalized forecasts in accessible, engaging language. Your writing style is:
 
@@ -110,32 +116,8 @@ End with:
 - Ensure free version creates value while leaving them wanting more`;
 }
 
-export async function generateFreeForecast(
-  userData: UserData,
-  dashaJson: DashaJson[],
-  transitsLookupTable: TransitLookupRow[],
-): Promise<string> {
-  /**
-   * Main function to generate free forecast
-   *
-   * @param userData - User's birth information
-   * @param dashaJson - Full Dasha periods from API
-   * @param transitsLookupTable - Transit lookup table from database
-   * @returns Generated forecast text
-   */
-
-  // Generate inputs
-  const inputs = generateForecastInputs(userData, dashaJson, transitsLookupTable);
-
-  // Build prompt
-  const userPrompt = buildUserPrompt(inputs);
-
-  // Call Claude API (you'll implement this)
-  // const response = await callClaudeAPI(SYSTEM_PROMPT, userPrompt);
-  // return response;
-
-  // For now, return the prompt for testing
-  return userPrompt;
+interface RequestBody {
+  kundli_id: string;
 }
 
 Deno.serve(async (req) => {
@@ -144,13 +126,144 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // TODO: Implement free Vedic forecast generation
-    return jsonResponse({ message: "Not yet implemented" });
+    logStep("Request received");
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anthropicApiKey = Deno.env.get("ANTHROPIC_API_KEY");
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Supabase configuration missing");
+    }
+
+    if (!anthropicApiKey) {
+      throw new Error("ANTHROPIC_API_KEY is not configured");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const body: RequestBody = await req.json();
+    const { kundli_id } = body;
+
+    if (!kundli_id) {
+      return errorResponse("kundli_id is required", 400);
+    }
+
+    logStep("Fetching kundli details", { kundli_id });
+
+    // Fetch the kundli details
+    const { data: kundliData, error: kundliError } = await supabase
+      .from("user_kundli_details")
+      .select("*")
+      .eq("id", kundli_id)
+      .single();
+
+    if (kundliError || !kundliData) {
+      logStep("Kundli not found", { error: kundliError?.message });
+      return errorResponse("Kundli details not found", 404);
+    }
+
+    logStep("Kundli details fetched", { 
+      moon_sign: kundliData.moon_sign,
+      sun_sign: kundliData.sun_sign,
+      nakshatra: kundliData.nakshatra 
+    });
+
+    // Fetch transit data from lookup table
+    const { data: transitsData, error: transitsError } = await supabase
+      .from("transits_lookup")
+      .select("*");
+
+    if (transitsError) {
+      logStep("Error fetching transits", { error: transitsError.message });
+      return errorResponse("Failed to fetch transit data", 500);
+    }
+
+    logStep("Transit data fetched", { count: transitsData?.length || 0 });
+
+    // Prepare user data
+    const userData: UserData = {
+      birth_date: kundliData.birth_date,
+      birth_location: kundliData.birth_place,
+      sun_sign: kundliData.sun_sign || "Unknown",
+      moon_sign: kundliData.moon_sign || "Unknown",
+      nakshatra: kundliData.nakshatra || "Unknown",
+    };
+
+    // Get dasha periods from kundli data
+    const dashaJson: DashaJson[] = kundliData.dasha_periods || [];
+
+    // Convert transits to expected format
+    const transitsLookupTable: TransitLookupRow[] = (transitsData || []).map((row: any) => ({
+      id: row.id,
+      year: row.year,
+      transit_data: typeof row.transit_data === "string" 
+        ? row.transit_data 
+        : JSON.stringify(row.transit_data),
+    }));
+
+    logStep("Generating forecast inputs");
+
+    // Generate the forecast inputs
+    const forecastInputs = generateForecastInputs(userData, dashaJson, transitsLookupTable);
+
+    logStep("Forecast inputs generated", { 
+      maha_dasha: forecastInputs.maha_dasha_planet,
+      antar_dasha: forecastInputs.antar_dasha_planet 
+    });
+
+    // Build the prompt
+    const userPrompt = buildUserPrompt(forecastInputs);
+
+    logStep("Calling Claude Sonnet 4.5");
+
+    // Call Claude API
+    const claudeResponse = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": anthropicApiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        messages: [
+          {
+            role: "user",
+            content: userPrompt,
+          },
+        ],
+        system: SYSTEM_PROMPT,
+      }),
+    });
+
+    if (!claudeResponse.ok) {
+      const errorText = await claudeResponse.text();
+      logStep("Claude API error", { status: claudeResponse.status, error: errorText });
+      return errorResponse(`Claude API error: ${claudeResponse.status}`, 500);
+    }
+
+    const claudeData = await claudeResponse.json();
+    const forecastText = claudeData.content?.[0]?.text || "";
+
+    logStep("Forecast generated", { 
+      length: forecastText.length,
+      model: claudeData.model,
+      usage: claudeData.usage 
+    });
+
+    return jsonResponse({
+      forecast: forecastText,
+      inputs: forecastInputs,
+      model: claudeData.model,
+      usage: claudeData.usage,
+    });
   } catch (error) {
-    return errorResponse(error instanceof Error ? error.message : "Unknown error", 500);
+    const errMessage = error instanceof Error ? error.message : "Unknown error";
+    logStep("Error", { message: errMessage });
+    return errorResponse(errMessage, 500);
   }
 });
 
-// Export everything
 export { SYSTEM_PROMPT };
-export type * from "./lib/types.ts";
