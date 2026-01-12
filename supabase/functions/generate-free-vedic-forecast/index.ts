@@ -8,7 +8,10 @@ import {
   getDashaChangesInYear,
   getMoonNakshatra,
   formatDate,
+  calculateMahaDashas,
+  calculateAntarDashas,
 } from "./lib/dasha-calculator.ts";
+import type { DashaPeriod, AntarDashaPeriod } from "./lib/dasha-calculator.ts";
 
 function logStep(step: string, details?: Record<string, unknown>) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -322,13 +325,61 @@ Deno.serve(async (req) => {
       usage: claudeData.usage,
     });
 
-    // Save the forecast to the database
+    // Calculate full dasha periods for persistence
+    const allMahaDashas = calculateMahaDashas(birthDate, moonLongitude);
+    
+    // Format full dasha periods for storage
+    const formattedDashaPeriods = allMahaDashas.map((maha: DashaPeriod) => {
+      const antarDashas = calculateAntarDashas(maha);
+      return {
+        name: maha.planet,
+        start: formatDate(maha.start_date),
+        end: formatDate(maha.end_date),
+        antardasha: antarDashas.map((antar: AntarDashaPeriod) => ({
+          name: antar.planet,
+          start: formatDate(antar.start_date),
+          end: formatDate(antar.end_date),
+        })),
+      };
+    });
+
+    // Filter 2026 periods
+    const year2026Start = new Date(2026, 0, 1);
+    const year2026End = new Date(2026, 11, 31);
+    
+    const dashaPeriods2026 = allMahaDashas
+      .filter((maha: DashaPeriod) => maha.start_date <= year2026End && maha.end_date >= year2026Start)
+      .map((maha: DashaPeriod) => {
+        const antarDashas = calculateAntarDashas(maha);
+        const antarDashasIn2026 = antarDashas.filter(
+          (antar: AntarDashaPeriod) => antar.start_date <= year2026End && antar.end_date >= year2026Start
+        );
+        return {
+          maha_dasha: maha.planet,
+          maha_start: formatDate(maha.start_date),
+          maha_end: formatDate(maha.end_date),
+          antar_dashas_in_2026: antarDashasIn2026.map((antar: AntarDashaPeriod) => ({
+            name: antar.planet,
+            start: formatDate(antar.start_date),
+            end: formatDate(antar.end_date),
+          })),
+        };
+      });
+
+    logStep("Dasha periods formatted for persistence", {
+      total_mahas: formattedDashaPeriods.length,
+      periods_2026: dashaPeriods2026.length,
+    });
+
+    // Save the forecast and dasha data to the database
     const { error: updateError } = await supabase
       .from("user_kundli_details")
       .update({
         free_vedic_forecast: forecastText,
         forecast_model: claudeData.model,
         forecast_generated_at: new Date().toISOString(),
+        dasha_periods: formattedDashaPeriods,
+        dasha_periods_2026: dashaPeriods2026,
       })
       .eq("id", kundli_id);
 
