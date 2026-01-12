@@ -47,7 +47,7 @@ const Index = () => {
           animationDelay: '300ms',
           animationFillMode: 'both'
         }}>
-            <Button variant="hero" size="xl" onClick={() => navigate('/input')} className="group">
+            <Button variant="hero" size="xl" onClick={() => navigate('/vedic/input')} className="group">
               Get My Brief
               <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
             </Button>
