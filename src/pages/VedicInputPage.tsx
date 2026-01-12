@@ -275,7 +275,7 @@ const VedicInputPage = () => {
                 max={today}
                 value={formData.birthDate}
                 onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20 text-left"
                 disabled={isSubmitting}
               />
               {errors.birthDate && (
@@ -297,7 +297,7 @@ const VedicInputPage = () => {
                 type="time"
                 value={formData.birthTime}
                 onChange={(e) => setFormData({ ...formData, birthTime: e.target.value })}
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20 text-left"
                 disabled={isSubmitting}
               />
               {errors.birthTime && (
