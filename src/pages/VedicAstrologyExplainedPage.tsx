@@ -42,11 +42,11 @@ const VedicAstrologyExplainedPage = () => {
               Vedic Astrology Basics for Western Astrologers
             </h1>
             
-            <p className="mb-8">
+            <p className="text-xl text-cream-muted leading-relaxed mb-8">
               Vedic astrology, also known as <strong className="text-cream">Jyotish</strong> (meaning "science of light"), is the ancient astrological system that originated in India over 5,000 years ago. While it shares some similarities with Western astrology, Vedic astrology has distinct philosophical foundations, calculation methods, and interpretive techniques that make it a unique and powerful predictive tool.
             </p>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               If you're already familiar with Western astrology, learning Vedic astrology will expand your astrological toolkit and provide you with complementary insights into personality, life events, and karmic patterns.
             </p>
 
@@ -54,29 +54,33 @@ const VedicAstrologyExplainedPage = () => {
               The Fundamental Difference: Sidereal vs. Tropical Zodiac
             </h2>
             
-            <p>The most important distinction between Vedic and Western astrology is the zodiac system used:
+            <p className="text-cream-muted leading-relaxed">
+              The most important distinction between Vedic and Western astrology is the zodiac system used:
             </p>
             
-            <p><strong className="text-cream">Western Astrology</strong> uses the <strong className="text-cream">tropical zodiac</strong>, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
+            <p className="text-cream-muted leading-relaxed">
+
+Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.<strong className="text-cream">Western Astrology</strong> uses the <strong className="text-cream">tropical zodiac</strong>, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
             </p>
             
-            <p><strong className="text-cream">Vedic Astrology</strong> uses the <strong className="text-cream">sidereal zodiac</strong>, which is based on the actual positions of constellations in the sky. This system accounts for the precession of the equinoxes.
+            <p className="text-cream-muted leading-relaxed">
+              <strong className="text-cream">Vedic Astrology</strong> uses the <strong className="text-cream">sidereal zodiac</strong>, which is based on the actual positions of constellations in the sky. This system accounts for the precession of the equinoxes.
             </p>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.
             </p>
             
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
               <h3 className="text-xl font-semibold text-gold mb-3">The Ayanamsa</h3>
-              <p className="m-0">
+              <p className="text-cream-muted m-0">
                 The difference between the tropical and sidereal zodiacs is called the <strong className="text-cream">ayanamsa</strong>. Currently, this difference is approximately 24 degrees, meaning most planets in a Vedic chart will be about 24 degrees earlier than in a Western chart.
               </p>
             </div>
 
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Why Does This Matter?</h3>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Vedic astrologers believe that the sidereal zodiac reflects the actual astronomical positions and thus provides more accurate predictions, while Western astrologers argue that the tropical zodiac better represents the archetypal energies tied to Earth's seasons. Both systems work effectively within their own frameworks.
             </p>
 
@@ -139,32 +143,32 @@ const VedicAstrologyExplainedPage = () => {
             
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">The Rasi Chart (Birth Chart)</h3>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               The main Vedic birth chart is called the <strong className="text-cream">rasi chart</strong> or D-1 chart. Unlike the circular charts you're used to in Western astrology, Vedic charts are typically displayed as squares or diamonds, with the twelve houses arranged in a specific pattern.
             </p>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               <strong className="text-cream">Important:</strong> In Vedic astrology, the Ascendant (Lagna) is placed in a fixed position in the chart, and the houses are numbered from there. The houses are whole sign houses, meaning each entire sign equals one house.
             </p>
 
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">The Navamsa Chart (D-9)</h3>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Vedic astrology uses multiple divisional charts (Vargas) to analyze different life areas. The most important is the <strong className="text-cream">Navamsa</strong> (D-9), which divides each sign into nine parts and is crucial for understanding marriage, dharma, and the soul's evolution. Think of it as a harmonic chart that reveals deeper karmic patterns.
             </p>
 
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Rahu and Ketu: The Lunar Nodes</h3>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               While Western astrology often mentions the North and South Nodes, Vedic astrology gives them planetary status:
             </p>
             
-            <ul className="space-y-2 my-4">
+            <ul className="text-cream-muted space-y-2 my-4">
               <li><strong className="text-cream">Rahu</strong> (North Node): Represents desires, obsessions, worldly ambitions, and where you're heading in this lifetime. It's considered a shadow planet with malefic tendencies.</li>
               <li><strong className="text-cream">Ketu</strong> (South Node): Represents past life karma, spiritual detachment, liberation, and what you're moving away from. Also a shadow planet, it brings sudden events and spiritual insights.</li>
             </ul>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               These nodes are always exactly opposite each other and play a crucial role in Vedic predictions, especially during their planetary periods.
             </p>
 
@@ -172,18 +176,18 @@ const VedicAstrologyExplainedPage = () => {
               Nakshatras: The Lunar Mansions
             </h2>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               One of the most distinctive features of Vedic astrology is the use of <strong className="text-cream">nakshatras</strong>, the 27 (or 28) lunar mansions that divide the zodiac into segments of 13°20' each. Each nakshatra has its own deity, symbol, planetary ruler, and qualities.
             </p>
             
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
               <h3 className="text-xl font-semibold text-gold mb-3">Why Nakshatras Matter</h3>
-              <p className="m-0">
+              <p className="text-cream-muted m-0">
                 Your Moon's nakshatra is considered one of the most important factors in Vedic astrology. It reveals your emotional nature, instinctive reactions, and deeper psychological patterns. It's also crucial for determining your Dasha periods and for relationship compatibility.
               </p>
             </div>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Each planet in your chart falls within a specific nakshatra, adding layers of meaning beyond the zodiac sign. For example, three people might all have their Moon in Vedic Taurus, but if one is in Krittika nakshatra, another in Rohini, and another in Mrigashira, their emotional expressions will be distinctly different.
             </p>
 
@@ -191,29 +195,31 @@ const VedicAstrologyExplainedPage = () => {
               The Dasha System: Vedic Predictive Timing
             </h2>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Perhaps the most powerful predictive tool in Vedic astrology is the <strong className="text-cream">Dasha system</strong>, which has no direct equivalent in Western astrology (though it's somewhat comparable to profections or time-lord techniques).
             </p>
             
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Vimshottari Dasha</h3>
             
-            <p>The most commonly used system is <strong className="text-cream">Vimshottari Dasha</strong>, a 120-year cycle divided among the nine planets. Each person moves through planetary periods in a specific order based on their Moon's nakshatra at birth.
+            <p className="text-cream-muted leading-relaxed">
+              The most commonly used system is <strong className="text-cream">Vimshottari Dasha</strong>, a 120-year cycle divided among the nine planets. Each person moves through planetary periods in a specific order based on their Moon's nakshatra at birth.
             </p>
             
-            <p>The sequence of planetary periods is: Sun (6 years) → Moon (10 years) → Mars (7 years) → Rahu (18 years) → Jupiter (16 years) → Saturn (19 years) → Mercury (17 years) → Ketu (7 years) → Venus (20 years).
+            <p className="text-cream-muted leading-relaxed">
+              The sequence of planetary periods is: Sun (6 years) → Moon (10 years) → Mars (7 years) → Rahu (18 years) → Jupiter (16 years) → Saturn (19 years) → Mercury (17 years) → Ketu (7 years) → Venus (20 years).
             </p>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Each major period (Maha Dasha) is subdivided into sub-periods (Antar Dasha), and even further into sub-sub-periods, creating a precise timing system for predicting when certain themes will dominate your life.
             </p>
             
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">How to Use Dashas</h3>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               During a planet's Dasha period, the themes represented by that planet, its house position, sign placement, and aspects become activated in your life. For example:
             </p>
             
-            <ul className="space-y-2 my-4">
+            <ul className="text-cream-muted space-y-2 my-4">
               <li>During <strong className="text-cream">Venus Dasha</strong>, you might experience significant relationship developments, artistic pursuits, or material pleasures</li>
               <li>During <strong className="text-cream">Saturn Dasha</strong>, you may face challenges, responsibilities, and important life lessons that lead to maturity</li>
               <li>During <strong className="text-cream">Jupiter Dasha</strong>, expansion, learning, spiritual growth, and good fortune are emphasized</li>
@@ -223,13 +229,13 @@ const VedicAstrologyExplainedPage = () => {
               Planetary Strengths and Dignities
             </h2>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Like Western astrology, Vedic astrology recognizes planetary dignities, though with some differences:
             </p>
             
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Basic Dignities</h3>
             
-            <ul className="space-y-2 my-4">
+            <ul className="text-cream-muted space-y-2 my-4">
               <li><strong className="text-cream">Exaltation</strong> (Uccha): The sign where a planet functions at its highest potential</li>
               <li><strong className="text-cream">Debilitation</strong> (Neecha): The sign opposite exaltation, where the planet is weakened</li>
               <li><strong className="text-cream">Own Sign</strong> (Svakshetra): The sign(s) ruled by the planet</li>
@@ -239,7 +245,7 @@ const VedicAstrologyExplainedPage = () => {
             
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Shadbala: Six-Fold Strength</h3>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Vedic astrology uses a sophisticated calculation system called <strong className="text-cream">Shadbala</strong> to determine planetary strength based on six different factors, including positional strength, directional strength, temporal strength, and more. This provides a nuanced understanding of how effectively each planet can deliver results.
             </p>
 
@@ -247,17 +253,17 @@ const VedicAstrologyExplainedPage = () => {
               Yogas: Planetary Combinations
             </h2>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               A unique feature of Vedic astrology is the emphasis on <strong className="text-cream">yogas</strong> (planetary combinations) that create specific life outcomes. There are hundreds of yogas ranging from highly auspicious to challenging:
             </p>
             
-            <ul className="space-y-2 my-4">
+            <ul className="text-cream-muted space-y-2 my-4">
               <li><strong className="text-cream">Raja Yoga:</strong> Combinations that create success, status, and power, typically formed when lords of angles and trines connect.</li>
               <li><strong className="text-cream">Dhana Yoga:</strong> Wealth-producing combinations involving the 2nd, 5th, 9th, and 11th house lords.</li>
               <li><strong className="text-cream">Gaja Kesari Yoga:</strong> Formed when Jupiter and Moon are in mutual kendras (angles), bringing wisdom and prosperity.</li>
             </ul>
             
-            <p>
+            <p className="text-cream-muted leading-relaxed">
               Understanding yogas helps Vedic astrologers make predictions about specific life outcomes and potentials that might not be immediately obvious from simply looking at individual planetary placements.
             </p>
 
