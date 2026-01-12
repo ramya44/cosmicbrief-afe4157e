@@ -1,7 +1,7 @@
 // Current Dasha period utilities
 // get-current-dasha.ts
 
-import type { DashaJson, MahaDasha, AntarDasha } from "./types";
+import type { DashaJson, MahaDasha, AntarDasha } from "./types.ts";
 
 export function getCurrentDasha(dashaJson: DashaJson[], targetDate?: string): [MahaDasha | null, AntarDasha | null] {
   /**

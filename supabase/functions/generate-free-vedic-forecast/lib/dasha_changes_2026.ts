@@ -1,7 +1,14 @@
 // 2026 Dasha transition utilities
 // find-dasha-changes-in-2026.ts
 
-import type { DashaJson, DashaChange } from "./types";
+import type { DashaJson, DashaChange } from "./types.ts";
+
+export function formatDashaChanges(changes: DashaChange[]): string {
+  if (changes.length === 0) {
+    return "No major Dasha changes";
+  }
+  return changes.map(c => c.description).join("; ");
+}
 
 export function findDashaChangesIn2026(dashaJson: DashaJson[]): DashaChange[] {
   /**
