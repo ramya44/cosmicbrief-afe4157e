@@ -295,6 +295,8 @@ Due to this difference, your Sun sign (and all other planetary positions) will t
             <p className="text-cream-muted leading-relaxed">
               Vedic astrology is deeply rooted in Hindu philosophy, particularly the concepts of <strong className="text-cream">karma</strong> (the law of cause and effect) and <strong className="text-cream">dharma</strong> (one's duty or righteous path).
             </p>
+
+            <br />
             
             <p className="text-cream-muted leading-relaxed">
               Your birth chart is seen as a karmic blueprint showing the results of past actions and the lessons you're meant to learn in this lifetime. The chart doesn't cause events; rather, it reflects your karmic patterns and the timing of their manifestation.
