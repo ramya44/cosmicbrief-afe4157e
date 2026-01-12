@@ -1,30 +1,22 @@
-// Transit data utilities for Vedic forecast generation
+// get-transit-data.ts
 
-from datetime import datetime
+import type { TransitLookupRow } from "./types";
 
-# ============================================
-# DATABASE QUERY HELPER
-# ============================================
+export function getTransitData(category: string, year: number, transitsLookupTable: TransitLookupRow[]): any {
+  /**
+   * Query transit data from your table
+   *
+   * @param category - 'rahu_ketu', 'jupiter', 'saturn', 'eclipses', 'mercury_retrograde'
+   * @param year - 2025 or 2026
+   * @param transitsLookupTable - your database table array
+   * @returns transit_data parsed from JSON
+   */
+  const result = transitsLookupTable.find((row) => row.id === category && row.year === year);
 
-def get_transit_data(category, year, transits_lookup_table):
-    """
-    Query transit data from your table
-    
-    Args:
-        category: 'rahu_ketu', 'jupiter', 'saturn', 'eclipses', 'mercury_retrograde'
-        year: 2025 or 2026
-        transits_lookup_table: your database table/dataframe
-    
-    Returns:
-        transit_data dict/list
-    """
-    result = transits_lookup_table[
-        (transits_lookup_table['category'] == category) & 
-        (transits_lookup_table['year'] == year)
-    ]
-    
-    if result.empty:
-        return None
-    
-    # Return the transit_data JSON
-    return result.iloc[0]['transit_data']
+  if (!result) {
+    return null;
+  }
+
+  // Parse the JSON string
+  return JSON.parse(result.transit_data);
+}
