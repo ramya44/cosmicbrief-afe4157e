@@ -253,6 +253,23 @@ Deno.serve(async (req) => {
       usage: claudeData.usage 
     });
 
+    // Save the forecast to the database
+    const { error: updateError } = await supabase
+      .from("user_kundli_details")
+      .update({
+        free_vedic_forecast: forecastText,
+        forecast_model: claudeData.model,
+        forecast_generated_at: new Date().toISOString(),
+      })
+      .eq("id", kundli_id);
+
+    if (updateError) {
+      logStep("Failed to save forecast", { error: updateError.message });
+      // Still return the forecast even if saving failed
+    } else {
+      logStep("Forecast saved to database");
+    }
+
     return jsonResponse({
       forecast: forecastText,
       inputs: forecastInputs,

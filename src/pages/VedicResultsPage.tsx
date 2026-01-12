@@ -1,10 +1,139 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { ArrowLeft } from 'lucide-react';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { ArrowLeft, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface KundliDetails {
+  id: string;
+  birth_date: string;
+  birth_time: string;
+  birth_place: string;
+  moon_sign: string | null;
+  sun_sign: string | null;
+  nakshatra: string | null;
+  free_vedic_forecast: string | null;
+  forecast_generated_at: string | null;
+}
 
 const VedicResultsPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const kundliId = searchParams.get('id');
+  
+  const [kundli, setKundli] = useState<KundliDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchKundli = async () => {
+      if (!kundliId) {
+        setError('No kundli ID provided');
+        setLoading(false);
+        return;
+      }
+
+      const { data, error: fetchError } = await supabase
+        .from('user_kundli_details')
+        .select('id, birth_date, birth_time, birth_place, moon_sign, sun_sign, nakshatra, free_vedic_forecast, forecast_generated_at')
+        .eq('id', kundliId)
+        .maybeSingle();
+
+      if (fetchError) {
+        setError('Failed to load your forecast');
+        setLoading(false);
+        return;
+      }
+
+      if (!data) {
+        setError('Forecast not found');
+        setLoading(false);
+        return;
+      }
+
+      setKundli(data);
+      setLoading(false);
+    };
+
+    fetchKundli();
+  }, [kundliId]);
+
+  // Simple markdown renderer for the forecast
+  const renderForecast = (text: string) => {
+    const lines = text.split('\n');
+    const elements: JSX.Element[] = [];
+    let key = 0;
+
+    for (const line of lines) {
+      if (line.startsWith('### ')) {
+        elements.push(
+          <h3 key={key++} className="text-xl font-semibold text-cream mt-8 mb-4">
+            {line.replace('### ', '')}
+          </h3>
+        );
+      } else if (line.startsWith('## ')) {
+        elements.push(
+          <h2 key={key++} className="text-2xl font-bold text-gold mt-10 mb-4">
+            {line.replace('## ', '')}
+          </h2>
+        );
+      } else if (line.startsWith('**') && line.endsWith('**')) {
+        elements.push(
+          <p key={key++} className="font-semibold text-cream-muted my-2">
+            {line.replace(/\*\*/g, '')}
+          </p>
+        );
+      } else if (line.startsWith('- ')) {
+        elements.push(
+          <li key={key++} className="text-cream-muted ml-4 my-1">
+            {line.replace('- ', '')}
+          </li>
+        );
+      } else if (line.startsWith('---')) {
+        elements.push(<hr key={key++} className="border-border/30 my-8" />);
+      } else if (line.trim()) {
+        // Handle inline bold
+        const parts = line.split(/(\*\*[^*]+\*\*)/g);
+        elements.push(
+          <p key={key++} className="text-cream-muted leading-relaxed my-3">
+            {parts.map((part, i) => {
+              if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={i} className="text-cream">{part.replace(/\*\*/g, '')}</strong>;
+              }
+              return part;
+            })}
+          </p>
+        );
+      }
+    }
+
+    return elements;
+  };
+
+  if (loading) {
+    return (
+      <div className="relative min-h-screen bg-celestial flex items-center justify-center">
+        <StarField />
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error || !kundli) {
+    return (
+      <div className="relative min-h-screen bg-celestial">
+        <StarField />
+        <div className="relative z-10 container mx-auto px-4 py-12 text-center">
+          <p className="text-cream-muted mb-4">{error || 'Something went wrong'}</p>
+          <Button onClick={() => navigate('/vedic/input')}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-celestial">
@@ -25,8 +154,63 @@ const VedicResultsPage = () => {
         </div>
       </header>
 
-      <main className="relative z-10 container mx-auto px-4 py-12">
-        {/* Empty page placeholder */}
+      <main className="relative z-10 container mx-auto px-4 py-12 max-w-3xl">
+        {/* Kundli Summary */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/30 rounded-full mb-6">
+            <Sparkles className="w-4 h-4 text-gold" />
+            <span className="text-gold text-sm font-medium">Your 2026 Vedic Forecast</span>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-4 text-sm text-cream-muted">
+            {kundli.moon_sign && (
+              <span className="px-3 py-1 bg-midnight/50 rounded-full border border-border/30">
+                Moon: {kundli.moon_sign}
+              </span>
+            )}
+            {kundli.sun_sign && (
+              <span className="px-3 py-1 bg-midnight/50 rounded-full border border-border/30">
+                Sun: {kundli.sun_sign}
+              </span>
+            )}
+            {kundli.nakshatra && (
+              <span className="px-3 py-1 bg-midnight/50 rounded-full border border-border/30">
+                Nakshatra: {kundli.nakshatra}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Forecast Content */}
+        {kundli.free_vedic_forecast ? (
+          <div className="bg-midnight/40 border border-border/30 rounded-2xl p-6 md:p-10 backdrop-blur-sm">
+            <div className="prose prose-invert max-w-none">
+              {renderForecast(kundli.free_vedic_forecast)}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <LoadingSpinner />
+            <p className="text-cream-muted mt-4">Generating your forecast...</p>
+          </div>
+        )}
+
+        {/* Upgrade CTA */}
+        <div className="mt-12 text-center">
+          <Button 
+            size="lg"
+            className="bg-gold hover:bg-gold/90 text-midnight font-semibold px-8"
+            onClick={() => {
+              // TODO: Navigate to payment/upgrade flow
+            }}
+          >
+            <Sparkles className="w-5 h-5 mr-2" />
+            Unlock Full 2026 Forecast
+          </Button>
+          <p className="text-cream-muted text-sm mt-3">
+            Get month-by-month guidance and personalized timing
+          </p>
+        </div>
       </main>
     </div>
   );

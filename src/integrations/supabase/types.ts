@@ -426,6 +426,9 @@ export type Database = {
           deity: string | null
           device_id: string | null
           email: string | null
+          forecast_generated_at: string | null
+          forecast_model: string | null
+          free_vedic_forecast: string | null
           ganam: string | null
           has_mangal_dosha: boolean | null
           has_mangal_exception: boolean | null
@@ -471,6 +474,9 @@ export type Database = {
           deity?: string | null
           device_id?: string | null
           email?: string | null
+          forecast_generated_at?: string | null
+          forecast_model?: string | null
+          free_vedic_forecast?: string | null
           ganam?: string | null
           has_mangal_dosha?: boolean | null
           has_mangal_exception?: boolean | null
@@ -516,6 +522,9 @@ export type Database = {
           deity?: string | null
           device_id?: string | null
           email?: string | null
+          forecast_generated_at?: string | null
+          forecast_model?: string | null
+          free_vedic_forecast?: string | null
           ganam?: string | null
           has_mangal_dosha?: boolean | null
           has_mangal_exception?: boolean | null
