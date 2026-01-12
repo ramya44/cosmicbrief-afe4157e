@@ -295,8 +295,8 @@ const VedicResultsPage = () => {
       case 'decision':
         return (
           <div key={key} className="bg-midnight/40 border border-border/30 rounded-xl p-5 mb-4">
-            <span className="text-gold text-sm font-medium">{item.quarter}</span>
-            <h4 className="text-lg font-semibold text-cream mt-2 mb-3">{item.question}</h4>
+            <span className="text-gold text-base font-medium">{item.quarter}</span>
+            <h4 className="text-lg font-semibold text-cream mt-2 mb-3">{renderMarkdownText(item.question || '')}</h4>
             <p className="text-cream-muted font-serif">{renderMarkdownText(item.guidance || '')}</p>
           </div>
         );
