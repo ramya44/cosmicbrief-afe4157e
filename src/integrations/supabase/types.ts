@@ -430,6 +430,8 @@ export type Database = {
           email: string | null
           forecast_generated_at: string | null
           forecast_model: string | null
+          free_completion_tokens: number | null
+          free_prompt_tokens: number | null
           free_vedic_forecast: string | null
           ganam: string | null
           id: string
@@ -447,6 +449,8 @@ export type Database = {
           nakshatra_pada: number | null
           paid_amount: number | null
           paid_at: string | null
+          paid_completion_tokens: number | null
+          paid_prompt_tokens: number | null
           paid_vedic_forecast: string | null
           planetary_positions: Json | null
           stripe_session_id: string | null
@@ -476,6 +480,8 @@ export type Database = {
           email?: string | null
           forecast_generated_at?: string | null
           forecast_model?: string | null
+          free_completion_tokens?: number | null
+          free_prompt_tokens?: number | null
           free_vedic_forecast?: string | null
           ganam?: string | null
           id?: string
@@ -493,6 +499,8 @@ export type Database = {
           nakshatra_pada?: number | null
           paid_amount?: number | null
           paid_at?: string | null
+          paid_completion_tokens?: number | null
+          paid_prompt_tokens?: number | null
           paid_vedic_forecast?: string | null
           planetary_positions?: Json | null
           stripe_session_id?: string | null
@@ -522,6 +530,8 @@ export type Database = {
           email?: string | null
           forecast_generated_at?: string | null
           forecast_model?: string | null
+          free_completion_tokens?: number | null
+          free_prompt_tokens?: number | null
           free_vedic_forecast?: string | null
           ganam?: string | null
           id?: string
@@ -539,6 +549,8 @@ export type Database = {
           nakshatra_pada?: number | null
           paid_amount?: number | null
           paid_at?: string | null
+          paid_completion_tokens?: number | null
+          paid_prompt_tokens?: number | null
           paid_vedic_forecast?: string | null
           planetary_positions?: Json | null
           stripe_session_id?: string | null
