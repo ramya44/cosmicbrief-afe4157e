@@ -66,7 +66,7 @@ const Index = () => {
           animationDelay: '600ms',
           animationFillMode: 'both'
         }}>
-            <a href="/#/2026-astrology-forecast" className="text-gold hover:underline">2026 Forecast</a>
+            <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology</a>
             {' · '}
             <a href="/#/privacy" className="text-gold hover:underline">Privacy Policy</a>
             {' · '}
