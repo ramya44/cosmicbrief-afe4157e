@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, jsonResponse, errorResponse } from "../_shared/lib/http.ts";
-import type { UserData, TransitLookupRow, ForecastInputs } from "./lib/types.ts";
+import type { UserData, TransitLookupRow, PlanetaryPosition } from "./lib/types.ts";
 import { generateForecastInputs } from "./lib/generate-forecast-inputs.ts";
 import {
   getCurrentMahaDasha,
@@ -12,6 +12,13 @@ import {
   calculateAntarDashas,
 } from "./lib/dasha-calculator.ts";
 import type { DashaPeriod, AntarDashaPeriod } from "./lib/dasha-calculator.ts";
+import {
+  getPast3Mahadashas,
+  getCurrentDasha,
+  formatPastDashasForPrompt,
+  formatCurrentDashaForPrompt,
+  type DashaJson,
+} from "./lib/dasha-prompt-helpers.ts";
 
 function logStep(step: string, details?: Record<string, unknown>) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -27,106 +34,203 @@ const SYSTEM_PROMPT = `You are an expert Vedic astrologer who writes personalize
 
 When writing forecasts:
 1. Lead with WHAT the person will experience (the practical reality)
-2. Follow with WHY (the astrological explanation) in a separate "The Astrology" section
-3. Use plain language for the main content ("life chapter" not "Maha Dasha")
-4. Save technical terms for the astrology sections
+2. Follow with WHY (the astrological explanation) in separate "astrology_note" sections
+3. Use plain language for the main content
+4. Save technical terms for the astrology notes
 5. Make predictions specific and actionable
 6. Describe personality traits directly without using phrases like "the Pisces in you" or "your Aquarius heart"
 
-For free forecasts:
-- Create intrigue without giving away the full analysis
-- Use strategic teasers that make the paid version essential
-- Focus on the most dramatic/important elements
-- End with a clear value proposition for upgrading`;
+Return ONLY valid JSON. No markdown code blocks, no additional text before or after the JSON.`;
 
-export function buildUserPrompt(inputs: ForecastInputs): string {
-  return `Create a FREE 2026 Vedic astrology forecast with the following structure:
+interface ForecastPromptInputs {
+  birth_date: string;
+  birth_time: string;
+  birth_location: string;
+  ascendant_sign: string;
+  ascendant_degree?: number;
+  planetary_positions: {
+    name: string;
+    sign: string;
+    house: number;
+  }[];
+  current_mahadasha: {
+    name: string;
+    start: string;
+    end: string;
+  };
+  current_antardasha: {
+    name: string;
+    start: string;
+    end: string;
+  } | null;
+  past_dashas: string;
+  moon_nakshatra: string;
+  ascendant_lord?: string;
+  ascendant_lord_position?: string;
+}
 
-## INPUT DATA:
-- Birth date: ${inputs.birth_date}
-- Birth location: ${inputs.birth_location}
-- Ascendant (Lagna): ${inputs.ascendant}
-- Sun sign (Rashi): ${inputs.sun_sign}
-- Moon sign (Rashi): ${inputs.moon_sign}
-- Moon nakshatra: ${inputs.nakshatra}
-- Current Maha Dasha: ${inputs.maha_dasha_planet} (${inputs.maha_dasha_start} to ${inputs.maha_dasha_end})
-- Current Antar Dasha: ${inputs.antar_dasha_planet} (${inputs.antar_dasha_start} to ${inputs.antar_dasha_end})
-- Dasha changes in 2026: ${inputs.dasha_changes_2026}
+function calculateHouseFromAscendant(planetSignId: number, ascendantSignId: number): number {
+  // House is calculated as the distance from the ascendant sign
+  // If planet is in ascendant sign, it's in the 1st house
+  let house = planetSignId - ascendantSignId + 1;
+  if (house <= 0) house += 12;
+  return house;
+}
 
-## MAJOR 2025 CONTEXT:
-- Sade Sati status in 2025: ${inputs.sade_sati_2025}
-- Rahu/Ketu in 2025: ${inputs.rahu_ketu_2025}
-- Antar Dasha in 2025: ${inputs.antar_dasha_2025}
+function getSignLord(sign: string): string {
+  const signLords: Record<string, string> = {
+    "Aries": "Mars",
+    "Taurus": "Venus",
+    "Gemini": "Mercury",
+    "Cancer": "Moon",
+    "Leo": "Sun",
+    "Virgo": "Mercury",
+    "Libra": "Venus",
+    "Scorpio": "Mars",
+    "Sagittarius": "Jupiter",
+    "Capricorn": "Saturn",
+    "Aquarius": "Saturn",
+    "Pisces": "Jupiter",
+  };
+  return signLords[sign] || "Unknown";
+}
 
-## MAJOR 2026 TRANSITS:
-- Sade Sati status: ${inputs.sade_sati_2026}
-- Rahu/Ketu: ${inputs.rahu_ketu_2026} (shift date: January 18, 2026)
-- Saturn: ${inputs.saturn_2026}
+export function buildUserPrompt(inputs: ForecastPromptInputs): string {
+  // Format planetary positions
+  const planetaryPositionsText = inputs.planetary_positions
+    .map(p => `- ${p.name} in ${p.sign} (${getOrdinal(p.house)} house from ascendant)`)
+    .join("\n");
 
-## OUTPUT STRUCTURE:
+  // Format ascendant lord info
+  const ascendantLordInfo = inputs.ascendant_lord && inputs.ascendant_lord_position
+    ? `\n**Ascendant Lord:** ${inputs.ascendant_lord} in ${inputs.ascendant_lord_position}`
+    : "";
 
-### Section 1: Your Natural Orientation (150-200 words)
-Describe their personality based on Ascendant, Sun sign, Moon sign, and nakshatra. Focus on:
-- Core approach to life and how they present to the world (Ascendant traits)
-- Emotional nature and inner world (Moon sign traits)
-- Spiritual/creative essence and soul purpose (Sun sign traits)
-- Unique gifts and deeper patterns (nakshatra qualities)
+  return `Create a free astrology forecast for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
-IMPORTANT: Describe traits directly. Instead of "Your Aquarius Moon" or "The Pisces in you", simply describe what they're like: "You're naturally intuitive and drawn to..." or "Your emotional world is..."
+The JSON should include:
 
-End with:
-**The Astrology:**  
-Ascendant in ${inputs.ascendant}. Moon in ${inputs.moon_sign} in ${inputs.nakshatra} nakshatra. Sun in ${inputs.sun_sign}.
+1. **WHO YOU ARE: Natural Orientation**
+   - 2-3 paragraphs describing personality based on ascendant, sun, moon signs
+   - How they process the world and key traits
+   - One "astrology_note" with chart explanation
 
-### Section 2: How 2026 Differs From 2025 (150-200 words)
-Compare what 2025 felt like vs what 2026 will bring. Use this framing:
-- "2025 was the wake-up call. 2026 is the response."
-- Describe 2025's pressure/realizations
-- Explain how 2026 shifts to action/building
-- Keep it specific to their transits
+2. **YOUR JOURNEY SO FAR: Key Patterns**
+   - 4-5 paragraphs summarizing their past as ONE flowing narrative
+   - Connect past mahadasha periods to life themes (childhood, education, transformation, current era)
+   - NO detailed breakdowns - just touch on key transitions
+   - One "astrology_note" explaining dasha progression
 
-End with:
-**The Astrology:**  
-2025: ${inputs.sade_sati_2025}; ${inputs.rahu_ketu_2025}; ${inputs.antar_dasha_2025} Antar Dasha
-2026: ${inputs.sade_sati_2026}; ${inputs.rahu_ketu_2026}; ${inputs.antar_dasha_planet} Antar Dasha
+3. **WHAT'S NEXT: Path Forward**
+   - 3-4 paragraphs teasing what the current year holds (general themes only)
+   - Emphasize that timing matters
+   - Create intrigue without giving specifics
+   - Mention this is a "pivotal year" or "setup phase"
 
-### Section 3: Your Biggest 2026 Moment (FIRST SENTENCE ONLY)
-Focus on: ${inputs.dasha_changes_2026 !== "No major Dasha changes" ? inputs.dasha_changes_2026 : inputs.sade_sati_2026}
+4. **UPGRADE SECTION**
+   - Brief intro paragraph
+   - "benefits_list" with 5 specific items
+   - "cta" with main text and subtext
 
-Write ONLY the opening sentence that identifies the date and what shifts. Example:
-"The defining moment of your year happens around [DATE], when [BRIEF DESCRIPTION OF SHIFT]."
+**Birth Details:**
+Date: ${inputs.birth_date}
+Time: ${inputs.birth_time}
+Location: ${inputs.birth_location}
 
-STOP AFTER THIS SENTENCE. Do not explain what the phases feel like, what changes, or provide any guidance.
+**Ascendant:** ${inputs.ascendant_sign}${inputs.ascendant_degree ? ` at ${inputs.ascendant_degree.toFixed(1)}°` : ""}${ascendantLordInfo}
 
-Then immediately add:
+**Key Planets:**
+${planetaryPositionsText}
 
-### 🔒 What The Full Forecast Reveals:
+**Moon Nakshatra:** ${inputs.moon_nakshatra}
 
-Your complete 2026 forecast unlocks:
+**Current Dasha Period:**
+- Mahadasha: ${inputs.current_mahadasha.name} (${inputs.current_mahadasha.start} to ${inputs.current_mahadasha.end})
+- Antardasha: ${inputs.current_antardasha?.name || "Unknown"} (${inputs.current_antardasha?.start || "?"} to ${inputs.current_antardasha?.end || "?"})
 
-- **Exactly what's shifting** and why [DATE] marks your personal new year within the year
-- **Month-by-month guidance** for all 12 months with precise timing for major decisions
-- **Detailed house-by-house analysis** showing exactly which life areas are activated when (career, relationships, finances, health)
-- **Precise action windows** for launching projects, making commitments, and strategic moves
-- **Your specific transformation timeline** and how each phase builds toward your bigger vision
-- **How to navigate each phase** for maximum results without burning out
-- **Immediate actionable guidance** on what to prioritize right now based on your current planetary cycle
+**Past Dasha Periods:**
+${inputs.past_dashas}
 
-End with:
-**The Astrology:**  
-[Technical explanation with exact dates and planetary positions for the major shift]
+Return valid JSON only. Use markdown within text fields for emphasis (**bold**, *italic*).
 
----
+Output format:
+{
+  "title": "Your Life Forecast",
+  "subtitle": "Born [date] • [location]",
+  "sections": [
+    {
+      "heading": "Who You Are: Your Natural Orientation",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "..."
+        },
+        {
+          "type": "paragraph",
+          "text": "..."
+        },
+        {
+          "type": "astrology_note",
+          "label": "Why This Is:",
+          "text": "..."
+        }
+      ]
+    },
+    {
+      "heading": "Your Journey So Far: Key Patterns",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "..."
+        },
+        {
+          "type": "astrology_note",
+          "label": "The Astrology:",
+          "text": "..."
+        }
+      ]
+    },
+    {
+      "heading": "What's Next: Your Path Forward",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "..."
+        }
+      ]
+    },
+    {
+      "heading": "Want to Know the Specifics?",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "The complete 2026 forecast includes:"
+        },
+        {
+          "type": "benefits_list",
+          "items": [
+            "Month-by-month breakdown of opportunities and challenges",
+            "Specific dates for major decisions and pivotal moments",
+            "Strategic guidance on career, relationships, and finances",
+            "Key transition points where energy shifts",
+            "Critical decisions to make in each quarter"
+          ]
+        },
+        {
+          "type": "cta",
+          "text": "Upgrade to the Full 2026 Forecast",
+          "subtext": "Get the complete roadmap for navigating your most pivotal year yet."
+        }
+      ]
+    }
+  ]
+}`;
+}
 
-## WRITING GUIDELINES:
-- Keep total length under 800 words
-- Use present tense for 2026 predictions
-- Be specific about dates when available
-- Make the paywall benefits concrete and chart-specific
-- Ensure free version creates value while leaving them wanting more
-- NO upgrade CTA language—the UI will handle that
-- In Section 3, write ONLY the first sentence, then go straight to the paywall feature list
-- Use the Ascendant to describe their outer personality and life approach in Section 1`;
+function getOrdinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 interface RequestBody {
@@ -180,21 +284,30 @@ Deno.serve(async (req) => {
       moon_sign: kundliData.moon_sign,
       sun_sign: kundliData.sun_sign,
       nakshatra: kundliData.nakshatra,
-      ascendant: kundliData.ascendant,
+      ascendant: kundliData.ascendant_sign,
     });
 
     // Get planetary positions from kundli data
-    const planetaryPositions = kundliData.planetary_positions || [];
+    const planetaryPositions: PlanetaryPosition[] = kundliData.planetary_positions || [];
 
     // Find Moon position
-    const moonPosition = planetaryPositions.find((p: any) => p.name === "Moon");
+    const moonPosition = planetaryPositions.find((p) => p.name === "Moon");
     if (!moonPosition) {
       return errorResponse("Moon position not found in kundli data", 400);
     }
 
     // Find Ascendant
-    const ascendantPosition = planetaryPositions.find((p: any) => p.name === "Ascendant");
-    const ascendantSign = ascendantPosition?.sign || kundliData.ascendant || "Unknown";
+    const ascendantPosition = planetaryPositions.find((p) => p.name === "Ascendant");
+    const ascendantSign = ascendantPosition?.sign || kundliData.ascendant_sign || "Unknown";
+    const ascendantSignId = ascendantPosition?.sign_id || 1;
+    const ascendantDegree = ascendantPosition?.degree;
+    const ascendantLord = getSignLord(ascendantSign);
+
+    // Find ascendant lord position
+    const ascendantLordPosition = planetaryPositions.find((p) => p.name === ascendantLord);
+    const ascendantLordPositionText = ascendantLordPosition
+      ? `${ascendantLordPosition.sign} (${getOrdinal(calculateHouseFromAscendant(ascendantLordPosition.sign_id, ascendantSignId))} house)`
+      : undefined;
 
     logStep("Moon position found", {
       moon_degree: moonPosition.full_degree,
@@ -221,73 +334,82 @@ Deno.serve(async (req) => {
 
     // Calculate current Antar Dasha
     const currentAntarDasha = getCurrentAntarDasha(birthDate, moonLongitude);
-    if (!currentAntarDasha) {
-      return errorResponse("Could not calculate current Antar Dasha", 500);
-    }
 
     logStep("Current dashas calculated", {
       maha_dasha: currentMahaDasha.planet,
-      antar_dasha: currentAntarDasha.planet,
+      antar_dasha: currentAntarDasha?.planet,
     });
 
-    // Get dasha changes in 2025 and 2026
-    const changes2025 = getDashaChangesInYear(birthDate, moonLongitude, 2025);
-    const changes2026 = getDashaChangesInYear(birthDate, moonLongitude, 2026);
+    // Calculate full dasha periods for helpers
+    const allMahaDashas = calculateMahaDashas(birthDate, moonLongitude);
 
-    logStep("Dasha changes calculated", {
-      changes_2025: changes2025.antarDashaChanges.length,
-      changes_2026: changes2026.antarDashaChanges.length,
+    // Format for dasha prompt helpers
+    const formattedDashaPeriods: DashaJson[] = allMahaDashas.map((maha: DashaPeriod) => {
+      const antarDashas = calculateAntarDashas(maha);
+      return {
+        name: maha.planet,
+        start: formatDate(maha.start_date),
+        end: formatDate(maha.end_date),
+        antardasha: antarDashas.map((antar: AntarDashaPeriod) => ({
+          name: antar.planet,
+          start: formatDate(antar.start_date),
+          end: formatDate(antar.end_date),
+        })),
+      };
     });
 
-    // Fetch transit data from lookup table
-    const { data: transitsData, error: transitsError } = await supabase.from("transits_lookup").select("*");
+    // Get past dashas using the helper
+    const pastDashas = getPast3Mahadashas(formattedDashaPeriods);
+    const pastDashasText = formatPastDashasForPrompt(pastDashas);
 
-    if (transitsError) {
-      logStep("Error fetching transits", { error: transitsError.message });
-      return errorResponse("Failed to fetch transit data", 500);
-    }
+    // Get current dasha info using helper
+    const currentDashaInfo = getCurrentDasha(formattedDashaPeriods);
 
-    logStep("Transit data fetched", { count: transitsData?.length || 0 });
+    logStep("Dasha helpers applied", {
+      past_dashas_count: pastDashas.length,
+      current_dasha: currentDashaInfo?.mahadasha?.name,
+    });
 
-    // Prepare user data
-    const userData: UserData = {
+    // Prepare planetary positions for prompt (key planets only)
+    const keyPlanets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Rahu", "Ketu"];
+    const keyPlanetaryPositions = planetaryPositions
+      .filter((p) => keyPlanets.includes(p.name))
+      .map((p) => ({
+        name: p.name,
+        sign: p.sign,
+        house: calculateHouseFromAscendant(p.sign_id, ascendantSignId),
+      }));
+
+    // Build prompt inputs
+    const promptInputs: ForecastPromptInputs = {
       birth_date: kundliData.birth_date,
+      birth_time: kundliData.birth_time,
       birth_location: kundliData.birth_place,
-      ascendant: ascendantSign,
-      sun_sign: kundliData.sun_sign || "Unknown",
-      moon_sign: moonPosition.sign || "Unknown",
-      nakshatra: nakshatraInfo.name,
+      ascendant_sign: ascendantSign,
+      ascendant_degree: ascendantDegree,
+      planetary_positions: keyPlanetaryPositions,
+      current_mahadasha: currentDashaInfo?.mahadasha || {
+        name: currentMahaDasha.planet,
+        start: formatDate(currentMahaDasha.start_date),
+        end: formatDate(currentMahaDasha.end_date),
+      },
+      current_antardasha: currentDashaInfo?.antardasha || (currentAntarDasha ? {
+        name: currentAntarDasha.planet,
+        start: formatDate(currentAntarDasha.start_date),
+        end: formatDate(currentAntarDasha.end_date),
+      } : null),
+      past_dashas: pastDashasText,
+      moon_nakshatra: nakshatraInfo.name,
+      ascendant_lord: ascendantLord,
+      ascendant_lord_position: ascendantLordPositionText,
     };
-
-    // Convert transits to expected format
-    const transitsLookupTable: TransitLookupRow[] = (transitsData || []).map((row: any) => ({
-      id: row.id,
-      year: row.year,
-      transit_data: typeof row.transit_data === "string" ? row.transit_data : JSON.stringify(row.transit_data),
-    }));
-
-    logStep("Generating forecast inputs");
-
-    // Prepare dasha info in the format expected by generateForecastInputs
-    const dashaInfo = {
-      currentMahaDasha,
-      currentAntarDasha,
-      changes2025: changes2025.antarDashaChanges,
-      changes2026: changes2026.antarDashaChanges,
-    };
-
-    // Generate the forecast inputs
-    const forecastInputs = generateForecastInputs(userData, dashaInfo, transitsLookupTable);
-
-    logStep("Forecast inputs generated", {
-      maha_dasha: forecastInputs.maha_dasha_planet,
-      antar_dasha: forecastInputs.antar_dasha_planet,
-    });
 
     // Build the prompt
-    const userPrompt = buildUserPrompt(forecastInputs);
+    const userPrompt = buildUserPrompt(promptInputs);
 
-    logStep("Calling Claude Sonnet 4.5");
+    logStep("Calling Claude Sonnet 4.5", {
+      prompt_length: userPrompt.length,
+    });
 
     // Call Claude API
     const claudeResponse = await fetch("https://api.anthropic.com/v1/messages", {
@@ -299,7 +421,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1500,
+        max_tokens: 2500,
         messages: [
           {
             role: "user",
@@ -325,28 +447,10 @@ Deno.serve(async (req) => {
       usage: claudeData.usage,
     });
 
-    // Calculate full dasha periods for persistence
-    const allMahaDashas = calculateMahaDashas(birthDate, moonLongitude);
-    
-    // Format full dasha periods for storage
-    const formattedDashaPeriods = allMahaDashas.map((maha: DashaPeriod) => {
-      const antarDashas = calculateAntarDashas(maha);
-      return {
-        name: maha.planet,
-        start: formatDate(maha.start_date),
-        end: formatDate(maha.end_date),
-        antardasha: antarDashas.map((antar: AntarDashaPeriod) => ({
-          name: antar.planet,
-          start: formatDate(antar.start_date),
-          end: formatDate(antar.end_date),
-        })),
-      };
-    });
-
-    // Filter 2026 periods
+    // Filter 2026 periods for storage
     const year2026Start = new Date(2026, 0, 1);
     const year2026End = new Date(2026, 11, 31);
-    
+
     const dashaPeriods2026 = allMahaDashas
       .filter((maha: DashaPeriod) => maha.start_date <= year2026End && maha.end_date >= year2026Start)
       .map((maha: DashaPeriod) => {
@@ -392,7 +496,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse({
       forecast: forecastText,
-      inputs: forecastInputs,
+      inputs: promptInputs,
       model: claudeData.model,
       usage: claudeData.usage,
     });
