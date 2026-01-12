@@ -11,7 +11,7 @@ export function getTransitData(category: string, year: number, transitsLookupTab
    * @param transitsLookupTable - your database table array
    * @returns transit_data parsed from JSON
    */
-  const result = transitsLookupTable.find((row) => row.id === category && row.year === year);
+  const result = transitsLookupTable.find((row) => String(row.id) === category && row.year === year);
 
   if (!result) {
     return null;

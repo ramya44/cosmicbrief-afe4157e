@@ -92,3 +92,13 @@ export interface DashaChange {
   maha?: string;
   description: string;
 }
+
+// Transit data types for lookup
+export interface RahuKetuTransit {
+  rahu_sign: string;
+  ketu_sign: string;
+}
+
+export interface SaturnTransit {
+  sign: string;
+}
