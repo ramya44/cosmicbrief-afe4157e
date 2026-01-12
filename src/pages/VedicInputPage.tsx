@@ -386,7 +386,7 @@ const VedicInputPage = () => {
                   </>
                 ) : (
                   <>
-                    Generate My 2026 Forecast
+                    Generate my 2026 Brief
                     <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
                   </>
                 )}
