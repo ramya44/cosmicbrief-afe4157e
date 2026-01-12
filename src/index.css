@@ -114,6 +114,11 @@
     font-family: var(--font-display);
   }
 
+  /* Consistent paragraph sizing */
+  p, li {
+    @apply text-lg leading-relaxed;
+  }
+
   /* Tables use serif font */
   table, th, td {
     font-family: var(--font-display);
