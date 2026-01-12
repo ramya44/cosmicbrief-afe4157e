@@ -33,14 +33,14 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { kundli_id, email } = await req.json();
-    logStep("Request body parsed", { kundli_id, email });
+    const { kundli_id } = await req.json();
+    logStep("Request body parsed", { kundli_id });
 
     if (!kundli_id) {
       throw new Error("kundli_id is required");
     }
 
-    // Fetch kundli details to get birth data
+    // Fetch kundli details to get birth data and email
     const { data: kundliData, error: kundliError } = await supabase
       .from("user_kundli_details")
       .select("*")
@@ -51,7 +51,9 @@ serve(async (req) => {
       throw new Error("Kundli not found");
     }
 
-    logStep("Kundli data fetched", { birth_date: kundliData.birth_date });
+    // Use email from database (more secure than client-provided)
+    const email = kundliData.email;
+    logStep("Kundli data fetched", { birth_date: kundliData.birth_date, email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
