@@ -541,8 +541,7 @@ const VedicResultsPage = () => {
                     "Month-by-month breakdown with exact dates",
                     "8-12 key transition points explained",
                     "Quarterly decision guidance",
-                    "Pivotal themes and action windows",
-                    "Complete pratyantardasha timing"
+                    "Pivotal themes and action windows"
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-3 text-cream-muted text-sm md:text-base">
                       <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
