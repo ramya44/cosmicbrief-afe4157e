@@ -32,22 +32,27 @@ const LegacyUrlRedirectHelper = () => {
     const { origin, pathname, search } = window.location;
     const params = new URLSearchParams(search);
 
-    // Important: Vedic pages use query param "id" too (kundli row id).
-    // If a user lands on a non-hash /vedic/* URL (static hosting), convert it to a hash route
-    // WITHOUT rewriting it to /results.
-    if (pathname.startsWith('/vedic/')) {
-      window.location.replace(`${origin}/#${pathname}${search}`);
+    // If we're on root path without any special params, don't redirect
+    if (pathname === '/' && !params.get('forecastId') && !params.get('id')) {
       return;
     }
 
+    // Handle forecast deep links with query params
     const forecastId = params.get('forecastId') || params.get('id');
     const guestToken = params.get('guestToken') || params.get('guest_token');
 
-    // If we have forecast params on the root or a non-hash path, redirect to hash route
-    if (forecastId) {
+    // If we have forecast params on the root, redirect to hash route results
+    if (pathname === '/' && forecastId) {
       const tokenPart = guestToken ? `&guestToken=${encodeURIComponent(guestToken)}` : '';
       const hashUrl = `${origin}/#/results?forecastId=${encodeURIComponent(forecastId)}${tokenPart}`;
       window.location.replace(hashUrl);
+      return;
+    }
+
+    // For any non-root path without a hash, convert to hash-based route
+    // This handles /vedic/*, /vedic-astrology-explained, /privacy, etc.
+    if (pathname !== '/') {
+      window.location.replace(`${origin}/#${pathname}${search}`);
       return;
     }
 
