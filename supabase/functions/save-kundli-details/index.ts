@@ -71,6 +71,21 @@ function get2026Dashas(dashaPeriods: MahaDasha[]): DashaPeriod2026[] {
   return activePeriods;
 }
 
+interface PlanetPosition {
+  id: number;
+  name: string;
+  sign: string;
+  sign_id: number;
+  sign_lord: string;
+  degree: number;
+  full_degree: number;
+  is_retrograde: boolean;
+  nakshatra?: string;
+  nakshatra_id?: number;
+  nakshatra_pada?: number;
+  nakshatra_lord?: string;
+}
+
 interface KundliInput {
   // Birth details
   birth_date: string;
@@ -105,16 +120,13 @@ interface KundliInput {
     sun_sign_id: number;
     sun_sign_lord: string;
     zodiac_sign: string;
-    has_mangal_dosha: boolean;
-    mangal_dosha_description: string;
-    has_mangal_exception: boolean;
-    mangal_dosha_type: string | null;
-    mangal_dosha_exceptions: unknown[];
-    mangal_dosha_remedies: unknown[];
-    major_yogas: unknown[];
-    chandra_yogas: unknown[];
-    soorya_yogas: unknown[];
-    inauspicious_yogas: unknown[];
+    // Ascendant (Lagna)
+    ascendant_sign: string;
+    ascendant_sign_id: number;
+    ascendant_sign_lord: string;
+    // Planetary positions
+    planetary_positions: PlanetPosition[];
+    // Dasha
     dasha_periods: MahaDasha[];
   };
 }
@@ -183,19 +195,13 @@ serve(async (req) => {
       birth_stone: kundli_data.birth_stone,
       zodiac_sign: kundli_data.zodiac_sign,
       
-      // Mangal Dosha
-      has_mangal_dosha: kundli_data.has_mangal_dosha,
-      mangal_dosha_description: kundli_data.mangal_dosha_description,
-      has_mangal_exception: kundli_data.has_mangal_exception,
-      mangal_dosha_type: kundli_data.mangal_dosha_type,
-      mangal_dosha_exceptions: kundli_data.mangal_dosha_exceptions,
-      mangal_dosha_remedies: kundli_data.mangal_dosha_remedies,
+      // Ascendant (Lagna)
+      ascendant_sign: kundli_data.ascendant_sign,
+      ascendant_sign_id: kundli_data.ascendant_sign_id,
+      ascendant_sign_lord: kundli_data.ascendant_sign_lord,
       
-      // Yogas
-      major_yogas: kundli_data.major_yogas,
-      chandra_yogas: kundli_data.chandra_yogas,
-      soorya_yogas: kundli_data.soorya_yogas,
-      inauspicious_yogas: kundli_data.inauspicious_yogas,
+      // Planetary positions
+      planetary_positions: kundli_data.planetary_positions,
       
       // Dasha - full and 2026-specific
       dasha_periods: kundli_data.dasha_periods,

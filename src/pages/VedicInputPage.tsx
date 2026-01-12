@@ -98,11 +98,11 @@ const VedicInputPage = () => {
 
       // Use the UTC datetime or construct a local one
       const datetimeForApi = birthDateTimeUtc || `${formData.birthDate}T${formData.birthTime}:00`;
-      console.log('[VedicInputPage] Calling get-advanced-kundli with:', { datetimeForApi, lat: placeCoords.lat, lon: placeCoords.lon });
+      console.log('[VedicInputPage] Calling get-kundli-data with:', { datetimeForApi, lat: placeCoords.lat, lon: placeCoords.lon });
       
-      // Call get-advanced-kundli edge function
+      // Call get-kundli-data edge function (uses birth-details + planet-position APIs)
       const { data: kundliData, error: kundliError } = await supabase.functions.invoke(
-        'get-advanced-kundli',
+        'get-kundli-data',
         {
           body: {
             datetime: datetimeForApi,
