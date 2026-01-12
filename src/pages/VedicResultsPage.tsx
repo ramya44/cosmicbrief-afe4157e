@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { ArrowLeft, Sparkles, Lock, ChevronRight, User } from 'lucide-react';
+import { ArrowLeft, Sparkles, Lock, ChevronRight, User, Share2, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ interface KundliDetails {
   paid_vedic_forecast: string | null;
   forecast_generated_at: string | null;
   email: string | null;
+  shareable_link?: string | null;
 }
 
 interface ForecastSection {
@@ -573,6 +574,25 @@ const VedicResultsPage = () => {
                 <p className="text-cream-muted/60 text-sm mt-4">
                   One-time payment • Instant access
                 </p>
+              </div>
+            )}
+
+            {/* Share CTA - Show for paid forecasts */}
+            {hasPaidForecast && isOwner && kundli.shareable_link && (
+              <div className="mt-12 text-center">
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(kundli.shareable_link!);
+                    toast.success('Link copied to clipboard!', {
+                      description: 'Share your Cosmic Brief with friends and family.',
+                    });
+                  }}
+                  variant="outline"
+                  className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share my Cosmic Brief
+                </Button>
               </div>
             )}
           </div>
