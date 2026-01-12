@@ -8,6 +8,7 @@ import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplet
 import { VedicLoadingScreen } from '@/components/VedicLoadingScreen';
 import { useForecastStore } from '@/store/forecastStore';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
+import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -125,6 +126,8 @@ const VedicInputPage = () => {
       console.log('[VedicInputPage] Calling save-kundli-details...');
       
       // Save to database via save-kundli-details edge function
+      const deviceId = getDeviceId();
+
       const { data: saveResult, error: saveError } = await supabase.functions.invoke(
         'save-kundli-details',
         {
@@ -136,6 +139,7 @@ const VedicInputPage = () => {
             latitude: placeCoords.lat,
             longitude: placeCoords.lon,
             email: formData.email,
+            device_id: deviceId,
             kundli_data: kundliData,
           },
         }
