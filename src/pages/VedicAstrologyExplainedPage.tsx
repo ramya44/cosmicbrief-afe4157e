@@ -385,7 +385,7 @@ Due to this difference, your Sun sign (and all other planetary positions) will t
             </p>
             
             <Link to="/vedic/input">
-              <Button size="lg" className="bg-gold hover:bg-gold/90 text-midnight font-semibold px-8">
+              <Button size="lg" className="bg-gold hover:bg-gold/90 text-midnight font-bold text-xl px-8">
                 <Sparkles className="w-5 h-5 mr-2" />
                 Generate My Vedic Forecast
               </Button>
