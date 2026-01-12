@@ -3,28 +3,23 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { ArrowLeft, Sparkles } from 'lucide-react';
-
 const VedicAstrologyExplainedPage = () => {
-  return (
-    <>
+  return <>
       <Helmet>
         <title>Vedic Astrology Basics for Western Astrologers | Cosmic Brief</title>
-        <meta 
-          name="description" 
-          content="Learn the fundamentals of Vedic astrology (Jyotish), including the sidereal zodiac, nakshatras, dasha periods, and how it differs from Western astrology." 
-        />
+        <meta name="description" content="Learn the fundamentals of Vedic astrology (Jyotish), including the sidereal zodiac, nakshatras, dasha periods, and how it differs from Western astrology." />
         <link rel="canonical" href="https://cosmicbrief.app/#/vedic-astrology-explained" />
         <script type="application/ld+json">
           {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "Vedic Astrology Basics for Western Astrologers",
-            "description": "A comprehensive guide to Vedic astrology fundamentals for those familiar with Western astrology.",
-            "author": {
-              "@type": "Organization",
-              "name": "Cosmic Brief"
-            }
-          })}
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "Vedic Astrology Basics for Western Astrologers",
+          "description": "A comprehensive guide to Vedic astrology fundamentals for those familiar with Western astrology.",
+          "author": {
+            "@type": "Organization",
+            "name": "Cosmic Brief"
+          }
+        })}
         </script>
       </Helmet>
 
@@ -47,11 +42,11 @@ const VedicAstrologyExplainedPage = () => {
               Vedic Astrology Basics for Western Astrologers
             </h1>
             
-            <p className="text-xl text-cream-muted leading-relaxed mb-8">
+            <p className="text-cream-muted leading-relaxed mb-8 text-base font-serif">
               Vedic astrology, also known as <strong className="text-cream">Jyotish</strong> (meaning "science of light"), is the ancient astrological system that originated in India over 5,000 years ago. While it shares some similarities with Western astrology, Vedic astrology has distinct philosophical foundations, calculation methods, and interpretive techniques that make it a unique and powerful predictive tool.
             </p>
             
-            <p className="text-cream-muted leading-relaxed">
+            <p className="text-cream-muted leading-relaxed text-base font-serif">
               If you're already familiar with Western astrology, learning Vedic astrology will expand your astrological toolkit and provide you with complementary insights into personality, life events, and karmic patterns.
             </p>
 
@@ -59,32 +54,34 @@ const VedicAstrologyExplainedPage = () => {
               The Fundamental Difference: Sidereal vs. Tropical Zodiac
             </h2>
             
-            <p className="text-cream-muted leading-relaxed">
-              The most important distinction between Vedic and Western astrology is the zodiac system used:
+            <p className="text-cream-muted leading-relaxed text-base font-serif">The most important distinction between Vedic and Western astrology is the zodiac system used:
+
+          </p>
+            
+            <p className="text-cream-muted leading-relaxed text-base">Western Astrology uses the tropical zodiac, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
+
+            <strong className="text-cream">Western Astrology</strong> uses the <strong className="text-cream">tropical zodiac</strong>, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
             </p>
             
-            <p className="text-cream-muted leading-relaxed">
-              <strong className="text-cream">Western Astrology</strong> uses the <strong className="text-cream">tropical zodiac</strong>, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
+            <p className="text-cream-muted leading-relaxed text-base">Vedic Astrology uses the sidereal zodiac, which is based on the actual positions of constellations in the sky. This system accounts for the precession of the equinoxes.
+
+            <strong className="text-cream">Vedic Astrology</strong> uses the <strong className="text-cream">sidereal zodiac</strong>, which is based on the actual positions of constellations in the sky. This system accounts for the precession of the equinoxes.
             </p>
             
-            <p className="text-cream-muted leading-relaxed">
-              <strong className="text-cream">Vedic Astrology</strong> uses the <strong className="text-cream">sidereal zodiac</strong>, which is based on the actual positions of constellations in the sky. This system accounts for the precession of the equinoxes.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
+            <p className="text-cream-muted leading-relaxed text-base">
               Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.
             </p>
             
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
               <h3 className="text-xl font-semibold text-gold mb-3">The Ayanamsa</h3>
-              <p className="text-cream-muted m-0">
+              <p className="text-cream-muted m-0 font-serif">
                 The difference between the tropical and sidereal zodiacs is called the <strong className="text-cream">ayanamsa</strong>. Currently, this difference is approximately 24 degrees, meaning most planets in a Vedic chart will be about 24 degrees earlier than in a Western chart.
               </p>
             </div>
 
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Why Does This Matter?</h3>
             
-            <p className="text-cream-muted leading-relaxed">
+            <p className="text-cream-muted leading-relaxed text-base font-serif">
               Vedic astrologers believe that the sidereal zodiac reflects the actual astronomical positions and thus provides more accurate predictions, while Western astrologers argue that the tropical zodiac better represents the archetypal energies tied to Earth's seasons. Both systems work effectively within their own frameworks.
             </p>
 
@@ -205,13 +202,14 @@ const VedicAstrologyExplainedPage = () => {
             
             <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Vimshottari Dasha</h3>
             
-            <p className="text-cream-muted leading-relaxed">
-              The most commonly used system is <strong className="text-cream">Vimshottari Dasha</strong>, a 120-year cycle divided among the nine planets. Each person moves through planetary periods in a specific order based on their Moon's nakshatra at birth.
+            <p className="text-cream-muted leading-relaxed">The most commonly used system is Vimshottari Dasha, a 120-year cycle divided among the nine planets. Each person moves through planetary periods in a specific order based on their Moon's nakshatra at birth.
+
+            <strong className="text-cream">Vimshottari Dasha</strong>, a 120-year cycle divided among the nine planets. Each person moves through planetary periods in a specific order based on their Moon's nakshatra at birth.
             </p>
             
-            <p className="text-cream-muted leading-relaxed">
-              The sequence of planetary periods is: Sun (6 years) → Moon (10 years) → Mars (7 years) → Rahu (18 years) → Jupiter (16 years) → Saturn (19 years) → Mercury (17 years) → Ketu (7 years) → Venus (20 years).
-            </p>
+            <p className="text-cream-muted leading-relaxed">The sequence of planetary periods is: Sun (6 years) → Moon (10 years) → Mars (7 years) → Rahu (18 years) → Jupiter (16 years) → Saturn (19 years) → Mercury (17 years) → Ketu (7 years) → Venus (20 years).
+
+          </p>
             
             <p className="text-cream-muted leading-relaxed">
               Each major period (Maha Dasha) is subdivided into sub-periods (Antar Dasha), and even further into sub-sub-periods, creating a precise timing system for predicting when certain themes will dominate your life.
@@ -387,10 +385,7 @@ const VedicAstrologyExplainedPage = () => {
             </p>
             
             <Link to="/vedic/input">
-              <Button 
-                size="lg"
-                className="bg-gold hover:bg-gold/90 text-midnight font-semibold px-8"
-              >
+              <Button size="lg" className="bg-gold hover:bg-gold/90 text-midnight font-semibold px-8">
                 <Sparkles className="w-5 h-5 mr-2" />
                 Generate My Vedic Forecast
               </Button>
@@ -398,8 +393,6 @@ const VedicAstrologyExplainedPage = () => {
           </div>
         </main>
       </div>
-    </>
-  );
+    </>;
 };
-
 export default VedicAstrologyExplainedPage;
