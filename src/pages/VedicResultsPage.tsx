@@ -120,27 +120,50 @@ const VedicResultsPage = () => {
   };
 
   const parseJsonForecast = (text: string): ForecastJson | null => {
+    if (!text) return null;
+    
     try {
-      // Try to parse as JSON
-      const cleaned = text.trim();
-      if (cleaned.startsWith('{')) {
-        return JSON.parse(cleaned);
-      }
-      // Try to extract JSON from markdown code blocks
+      let cleaned = text.trim();
+      
+      // Try to extract JSON from markdown code blocks first
       const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[1].trim());
+        cleaned = jsonMatch[1].trim();
       }
+      
+      // Try to parse as JSON
+      if (cleaned.startsWith('{')) {
+        const parsed = JSON.parse(cleaned);
+        
+        // Validate structure
+        if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
+          console.log('[VedicResultsPage] Successfully parsed JSON with', parsed.sections.length, 'sections');
+          return parsed as ForecastJson;
+        } else {
+          console.log('[VedicResultsPage] Parsed JSON but missing sections:', Object.keys(parsed || {}));
+          return null;
+        }
+      }
+      
+      console.log('[VedicResultsPage] Not JSON format, first 50 chars:', cleaned.substring(0, 50));
       return null;
-    } catch {
+    } catch (e) {
+      console.error('[VedicResultsPage] JSON parse error:', e);
       return null;
     }
   };
 
   const renderJsonForecast = (forecast: ForecastJson, isPaid: boolean) => {
+    if (!forecast?.sections || !Array.isArray(forecast.sections)) {
+      console.error('[VedicResultsPage] Invalid forecast structure:', forecast);
+      return <p className="text-cream-muted">Unable to render forecast</p>;
+    }
+
     return (
       <div className="space-y-10">
         {forecast.sections.map((section, sIdx) => {
+          if (!section?.heading) return null;
+          
           // Check if this is the upgrade section in free forecast
           const isUpgradeSection = section.heading.toLowerCase().includes('want to know') || 
                                    section.heading.toLowerCase().includes('specifics');
@@ -154,7 +177,7 @@ const VedicResultsPage = () => {
               <h2 className="text-2xl font-bold text-gold mb-6 font-display">{section.heading}</h2>
               
               <div className="space-y-4">
-                {section.content.map((item, iIdx) => renderContentItem(item, iIdx))}
+                {section.content?.map((item, iIdx) => renderContentItem(item, iIdx))}
               </div>
             </section>
           );
