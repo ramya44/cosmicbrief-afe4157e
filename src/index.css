@@ -55,9 +55,9 @@
     --shadow-glow: 0 0 60px -10px hsl(45 80% 55% / 0.15);
     --shadow-card: 0 25px 50px -12px hsl(222 47% 2% / 0.5);
 
-    /* Typography */
+  /* Typography */
     --font-display: 'Cormorant Garamond', Georgia, serif;
-    --font-body: 'Inter', system-ui, sans-serif;
+    --font-body: 'Cormorant Garamond', Georgia, serif;
 
     --sidebar-background: 222 40% 8%;
     --sidebar-foreground: 45 20% 92%;
@@ -111,6 +111,11 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
+  /* Tables use serif font */
+  table, th, td {
     font-family: var(--font-display);
   }
 }
