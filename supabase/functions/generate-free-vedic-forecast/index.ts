@@ -438,7 +438,19 @@ Deno.serve(async (req) => {
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
       logStep("Claude API error", { status: claudeResponse.status, error: errorText });
-      return errorResponse(`Claude API error: ${claudeResponse.status}`, 500);
+      
+      // Log to alerts table
+      await supabase.from("vedic_generation_alerts").insert({
+        kundli_id,
+        error_message: `Claude API error: ${claudeResponse.status} - ${errorText}`,
+        error_type: "free_generation",
+      });
+      
+      // Return friendly error with manual_generation flag
+      return jsonResponse({
+        manual_generation: true,
+        message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
+      });
     }
 
     const claudeData = await claudeResponse.json();
@@ -512,7 +524,31 @@ Deno.serve(async (req) => {
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logStep("Error", { message: errMessage });
-    return errorResponse(errMessage, 500);
+    
+    // Try to log to alerts table if we have kundli_id
+    try {
+      const body = await req.clone().json().catch(() => ({}));
+      if (body.kundli_id) {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL");
+        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (supabaseUrl && supabaseServiceKey) {
+          const supabase = createClient(supabaseUrl, supabaseServiceKey);
+          await supabase.from("vedic_generation_alerts").insert({
+            kundli_id: body.kundli_id,
+            error_message: errMessage,
+            error_type: "free_generation",
+          });
+        }
+      }
+    } catch (alertError) {
+      logStep("Failed to log alert", { error: alertError });
+    }
+    
+    // Return friendly error
+    return jsonResponse({
+      manual_generation: true,
+      message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
+    });
   }
 });
 

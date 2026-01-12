@@ -11,7 +11,7 @@ const VedicPaymentSuccessPage = () => {
   const sessionId = searchParams.get('session_id');
   const kundliId = searchParams.get('kundli_id');
 
-  const [status, setStatus] = useState<'generating' | 'success' | 'error'>('generating');
+  const [status, setStatus] = useState<'generating' | 'success' | 'error' | 'manual'>('generating');
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -38,6 +38,13 @@ const VedicPaymentSuccessPage = () => {
           console.error('Generation error:', error);
           setStatus('error');
           toast.error('Failed to generate your forecast');
+          return;
+        }
+
+        if (data?.manual_generation) {
+          // Generation failed but we'll handle it manually
+          setProgress(100);
+          setStatus('manual');
           return;
         }
 
@@ -121,20 +128,54 @@ const VedicPaymentSuccessPage = () => {
           </div>
         )}
 
-        {status === 'error' && (
-          <div className="animate-fade-up">
-            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        {status === 'manual' && (
+          <div className="animate-fade-up max-w-md">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center">
+              <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h1 className="font-display text-3xl text-cream mb-2">Something Went Wrong</h1>
-            <p className="text-cream-muted mb-6">We couldn't generate your forecast. Please contact support.</p>
+            <h1 className="font-display text-3xl text-cream mb-4">Your Cosmic Brief is Being Prepared</h1>
+            <p className="text-cream-muted mb-4">
+              Our team is manually crafting your personalized forecast. You'll receive it via email within 24 hours.
+            </p>
+            <p className="text-cream-muted/80 text-sm mb-6">
+              Questions? Contact us at{' '}
+              <a href="mailto:support@cosmicbrief.com" className="text-gold hover:underline">
+                support@cosmicbrief.com
+              </a>
+            </p>
             <button
               onClick={() => navigate(`/vedic/results?id=${kundliId}`)}
               className="px-6 py-2 bg-gold text-midnight rounded-lg font-medium hover:bg-gold-light transition-colors"
             >
-              Return to Results
+              View Free Preview
+            </button>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="animate-fade-up max-w-md">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center">
+              <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h1 className="font-display text-3xl text-cream mb-4">Your Cosmic Brief is Being Prepared</h1>
+            <p className="text-cream-muted mb-4">
+              Our team is manually crafting your personalized forecast. You'll receive it via email within 24 hours.
+            </p>
+            <p className="text-cream-muted/80 text-sm mb-6">
+              Questions? Contact us at{' '}
+              <a href="mailto:support@cosmicbrief.com" className="text-gold hover:underline">
+                support@cosmicbrief.com
+              </a>
+            </p>
+            <button
+              onClick={() => navigate(`/vedic/results?id=${kundliId}`)}
+              className="px-6 py-2 bg-gold text-midnight rounded-lg font-medium hover:bg-gold-light transition-colors"
+            >
+              View Free Preview
             </button>
           </div>
         )}

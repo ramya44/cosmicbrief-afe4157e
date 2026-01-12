@@ -184,6 +184,10 @@ const VedicInputPage = () => {
       if (forecastError) {
         console.error('[VedicInputPage] Forecast generation error:', forecastError);
         toast.error('Forecast generation failed. Redirecting to results...');
+      } else if (forecastResult?.manual_generation) {
+        // Manual generation - show friendly message
+        toast.info('Your Cosmic Brief is being prepared. You\'ll receive it via email shortly.');
+        console.log('[VedicInputPage] Manual generation triggered');
       } else {
         console.log('[VedicInputPage] Forecast generated:', { 
           hasText: !!forecastResult?.forecast,
