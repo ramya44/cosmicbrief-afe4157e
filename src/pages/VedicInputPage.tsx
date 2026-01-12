@@ -7,7 +7,9 @@ import { StarField } from '@/components/StarField';
 import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplete';
 import { useForecastStore } from '@/store/forecastStore';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const VedicInputPage = () => {
   const navigate = useNavigate();
@@ -21,6 +23,7 @@ const VedicInputPage = () => {
   });
   const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
   const minDate = '1900-01-01';
@@ -61,15 +64,17 @@ const VedicInputPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
+    if (!validateForm() || !placeCoords) return;
 
-    // Reset paid state for new forecast entry
-    setIsPaid(false);
-    setStrategicForecast(null);
-    
-    // Convert birth time to UTC if we have coordinates
-    let birthDateTimeUtc: string | undefined;
-    if (placeCoords) {
+    setIsSubmitting(true);
+
+    try {
+      // Reset paid state for new forecast entry
+      setIsPaid(false);
+      setStrategicForecast(null);
+      
+      // Convert birth time to UTC
+      let birthDateTimeUtc: string | undefined;
       try {
         birthDateTimeUtc = await convertBirthTimeToUtc(
           formData.birthDate,
@@ -80,19 +85,74 @@ const VedicInputPage = () => {
       } catch (error) {
         console.error('Error converting to UTC:', error);
       }
+
+      // Use the UTC datetime or construct a local one
+      const datetimeForApi = birthDateTimeUtc || `${formData.birthDate}T${formData.birthTime}:00`;
+      
+      // Call get-advanced-kundli edge function
+      const { data: kundliData, error: kundliError } = await supabase.functions.invoke(
+        'get-advanced-kundli',
+        {
+          body: {
+            datetime: datetimeForApi,
+            latitude: placeCoords.lat,
+            longitude: placeCoords.lon,
+            ayanamsa: 1, // Lahiri
+          },
+        }
+      );
+
+      if (kundliError) {
+        throw new Error(kundliError.message || 'Failed to fetch Kundli data');
+      }
+
+      if (kundliData?.error) {
+        throw new Error(kundliData.error);
+      }
+
+      // Save to database via save-kundli-details edge function
+      const { data: saveResult, error: saveError } = await supabase.functions.invoke(
+        'save-kundli-details',
+        {
+          body: {
+            birth_date: formData.birthDate,
+            birth_time: formData.birthTime,
+            birth_place: formData.birthPlace,
+            birth_time_utc: birthDateTimeUtc,
+            latitude: placeCoords.lat,
+            longitude: placeCoords.lon,
+            email: formData.email,
+            kundli_data: kundliData,
+          },
+        }
+      );
+
+      if (saveError) {
+        throw new Error(saveError.message || 'Failed to save Kundli details');
+      }
+
+      if (saveResult?.error) {
+        throw new Error(saveResult.error);
+      }
+
+      // Store birth data in store
+      const fullBirthData = {
+        ...formData,
+        lat: placeCoords.lat,
+        lon: placeCoords.lon,
+        birthDateTimeUtc,
+      };
+      
+      setBirthData(fullBirthData);
+      
+      // Navigate to results page with the record ID
+      navigate(`/vedic/results?id=${saveResult.id}`);
+    } catch (error) {
+      console.error('Error submitting Vedic form:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to generate Kundli. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    const fullBirthData = {
-      ...formData,
-      lat: placeCoords?.lat,
-      lon: placeCoords?.lon,
-      birthDateTimeUtc,
-    };
-    
-    setBirthData(fullBirthData);
-    
-    // Navigate to empty results page (no forecast generation)
-    navigate('/vedic/results');
   };
 
   const handlePlaceSelect = (place: PlaceSelection) => {
@@ -158,6 +218,7 @@ const VedicInputPage = () => {
                 value={formData.birthDate}
                 onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                disabled={isSubmitting}
               />
               {errors.birthDate && (
                 <p className="text-sm text-destructive">{errors.birthDate}</p>
@@ -179,6 +240,7 @@ const VedicInputPage = () => {
                 value={formData.birthTime}
                 onChange={(e) => setFormData({ ...formData, birthTime: e.target.value })}
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                disabled={isSubmitting}
               />
               {errors.birthTime && (
                 <p className="text-sm text-destructive">{errors.birthTime}</p>
@@ -209,6 +271,7 @@ const VedicInputPage = () => {
                     onClick={clearSelectedPlace}
                     className="p-1 hover:bg-accent/50 rounded transition-colors"
                     aria-label="Clear location"
+                    disabled={isSubmitting}
                   >
                     <X className="w-4 h-4 text-muted-foreground hover:text-cream" />
                   </button>
@@ -243,6 +306,7 @@ const VedicInputPage = () => {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                disabled={isSubmitting}
               />
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email}</p>
@@ -259,9 +323,19 @@ const VedicInputPage = () => {
                 variant="hero" 
                 size="lg" 
                 className="w-full group"
+                disabled={isSubmitting}
               >
-                Generate My 2026 Forecast
-                <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Generating Kundli...
+                  </>
+                ) : (
+                  <>
+                    Generate My 2026 Forecast
+                    <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
+                  </>
+                )}
               </Button>
             </div>
           </form>

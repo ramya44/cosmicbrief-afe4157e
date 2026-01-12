@@ -388,6 +388,141 @@ export type Database = {
         }
         Relationships: []
       }
+      user_kundli_details: {
+        Row: {
+          animal_sign: string | null
+          best_direction: string | null
+          birth_date: string
+          birth_place: string
+          birth_stone: string | null
+          birth_symbol: string | null
+          birth_time: string
+          birth_time_utc: string | null
+          chandra_yogas: Json | null
+          created_at: string
+          dasha_periods: Json | null
+          deity: string | null
+          device_id: string | null
+          email: string | null
+          ganam: string | null
+          has_mangal_dosha: boolean | null
+          has_mangal_exception: boolean | null
+          id: string
+          inauspicious_yogas: Json | null
+          latitude: number | null
+          longitude: number | null
+          lucky_color: string | null
+          major_yogas: Json | null
+          mangal_dosha_description: string | null
+          mangal_dosha_exceptions: Json | null
+          mangal_dosha_remedies: Json | null
+          mangal_dosha_type: string | null
+          moon_sign: string | null
+          moon_sign_id: number | null
+          moon_sign_lord: string | null
+          nadi: string | null
+          nakshatra: string | null
+          nakshatra_gender: string | null
+          nakshatra_id: number | null
+          nakshatra_lord: string | null
+          nakshatra_pada: number | null
+          soorya_yogas: Json | null
+          sun_sign: string | null
+          sun_sign_id: number | null
+          sun_sign_lord: string | null
+          syllables: string | null
+          zodiac_sign: string | null
+        }
+        Insert: {
+          animal_sign?: string | null
+          best_direction?: string | null
+          birth_date: string
+          birth_place: string
+          birth_stone?: string | null
+          birth_symbol?: string | null
+          birth_time: string
+          birth_time_utc?: string | null
+          chandra_yogas?: Json | null
+          created_at?: string
+          dasha_periods?: Json | null
+          deity?: string | null
+          device_id?: string | null
+          email?: string | null
+          ganam?: string | null
+          has_mangal_dosha?: boolean | null
+          has_mangal_exception?: boolean | null
+          id?: string
+          inauspicious_yogas?: Json | null
+          latitude?: number | null
+          longitude?: number | null
+          lucky_color?: string | null
+          major_yogas?: Json | null
+          mangal_dosha_description?: string | null
+          mangal_dosha_exceptions?: Json | null
+          mangal_dosha_remedies?: Json | null
+          mangal_dosha_type?: string | null
+          moon_sign?: string | null
+          moon_sign_id?: number | null
+          moon_sign_lord?: string | null
+          nadi?: string | null
+          nakshatra?: string | null
+          nakshatra_gender?: string | null
+          nakshatra_id?: number | null
+          nakshatra_lord?: string | null
+          nakshatra_pada?: number | null
+          soorya_yogas?: Json | null
+          sun_sign?: string | null
+          sun_sign_id?: number | null
+          sun_sign_lord?: string | null
+          syllables?: string | null
+          zodiac_sign?: string | null
+        }
+        Update: {
+          animal_sign?: string | null
+          best_direction?: string | null
+          birth_date?: string
+          birth_place?: string
+          birth_stone?: string | null
+          birth_symbol?: string | null
+          birth_time?: string
+          birth_time_utc?: string | null
+          chandra_yogas?: Json | null
+          created_at?: string
+          dasha_periods?: Json | null
+          deity?: string | null
+          device_id?: string | null
+          email?: string | null
+          ganam?: string | null
+          has_mangal_dosha?: boolean | null
+          has_mangal_exception?: boolean | null
+          id?: string
+          inauspicious_yogas?: Json | null
+          latitude?: number | null
+          longitude?: number | null
+          lucky_color?: string | null
+          major_yogas?: Json | null
+          mangal_dosha_description?: string | null
+          mangal_dosha_exceptions?: Json | null
+          mangal_dosha_remedies?: Json | null
+          mangal_dosha_type?: string | null
+          moon_sign?: string | null
+          moon_sign_id?: number | null
+          moon_sign_lord?: string | null
+          nadi?: string | null
+          nakshatra?: string | null
+          nakshatra_gender?: string | null
+          nakshatra_id?: number | null
+          nakshatra_lord?: string | null
+          nakshatra_pada?: number | null
+          soorya_yogas?: Json | null
+          sun_sign?: string | null
+          sun_sign_id?: number | null
+          sun_sign_lord?: string | null
+          syllables?: string | null
+          zodiac_sign?: string | null
+        }
+        Relationships: []
+      }
       vedic_moon_pacing_lookup: {
         Row: {
           emotional_pacing: string

@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.get-timezone]
 verify_jwt = false
+
+[functions.get-advanced-kundli]
+verify_jwt = false
+
+[functions.save-kundli-details]
+verify_jwt = false
