@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StarField } from '@/components/StarField';
 import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplete';
+import { VedicLoadingScreen } from '@/components/VedicLoadingScreen';
 import { useForecastStore } from '@/store/forecastStore';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +25,7 @@ const VedicInputPage = () => {
   const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingForecast, setIsGeneratingForecast] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
   const minDate = '1900-01-01';
@@ -159,6 +161,10 @@ const VedicInputPage = () => {
       
       setBirthData(fullBirthData);
 
+      // Show the loading screen for forecast generation
+      setIsSubmitting(false);
+      setIsGeneratingForecast(true);
+
       console.log('[VedicInputPage] Generating free Vedic forecast...');
 
       // Generate the free Vedic forecast
@@ -173,7 +179,7 @@ const VedicInputPage = () => {
 
       if (forecastError) {
         console.error('[VedicInputPage] Forecast generation error:', forecastError);
-        // Continue to results page even if forecast fails - it can be generated there
+        toast.error('Forecast generation failed. Redirecting to results...');
       } else {
         console.log('[VedicInputPage] Forecast generated:', { 
           hasText: !!forecastResult?.forecast,
@@ -188,6 +194,7 @@ const VedicInputPage = () => {
     } catch (error) {
       console.error('[VedicInputPage] Error submitting Vedic form:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate Kundli. Please try again.');
+      setIsGeneratingForecast(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -207,6 +214,11 @@ const VedicInputPage = () => {
     setFormData({ ...formData, birthPlace: '' });
     setPlaceCoords(null);
   };
+
+  // Show full-screen loading during forecast generation
+  if (isGeneratingForecast) {
+    return <VedicLoadingScreen />;
+  }
 
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">
