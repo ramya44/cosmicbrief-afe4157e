@@ -495,18 +495,18 @@ const VedicResultsPage = () => {
 
             {/* Upgrade CTA - Only show on free forecast */}
             {!hasPaidForecast && (
-              <div className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-8 text-center">
+              <div className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-6 md:p-8 text-center overflow-hidden mx-0">
                 <div className="flex justify-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
                     <Sparkles className="w-6 h-6 text-gold" />
                   </div>
                 </div>
                 
-                <h3 className="text-2xl font-display text-cream mb-3">
+                <h3 className="text-xl md:text-2xl font-display text-cream mb-3">
                   Want the Complete 2026 Roadmap?
                 </h3>
                 
-                <p className="text-cream-muted mb-6 max-w-lg mx-auto">
+                <p className="text-cream-muted mb-6 max-w-lg mx-auto text-sm md:text-base">
                   Get month-by-month guidance, specific timing for key decisions, 
                   and detailed analysis of every transition point in your year ahead.
                 </p>
@@ -519,7 +519,7 @@ const VedicResultsPage = () => {
                     "Pivotal themes and action windows",
                     "Complete pratyantardasha timing"
                   ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 text-cream-muted">
+                    <li key={i} className="flex items-center gap-3 text-cream-muted text-sm md:text-base">
                       <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
                       <span>{item}</span>
                     </li>
@@ -529,7 +529,7 @@ const VedicResultsPage = () => {
                 <Button 
                   onClick={handleUpgrade}
                   disabled={isUpgrading}
-                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-8 py-6 text-lg rounded-xl"
+                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-4 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-xl w-full md:w-auto"
                 >
                   {isUpgrading ? (
                     <>
@@ -538,8 +538,8 @@ const VedicResultsPage = () => {
                     </>
                   ) : (
                     <>
-                      <Lock className="w-5 h-5 mr-2" />
-                      Unlock Complete Forecast — $59
+                      <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
+                      <span className="whitespace-nowrap">Unlock Complete Forecast — $59</span>
                     </>
                   )}
                 </Button>
