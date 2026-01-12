@@ -401,6 +401,7 @@ export type Database = {
           chandra_yogas: Json | null
           created_at: string
           dasha_periods: Json | null
+          dasha_periods_2026: Json | null
           deity: string | null
           device_id: string | null
           email: string | null
@@ -445,6 +446,7 @@ export type Database = {
           chandra_yogas?: Json | null
           created_at?: string
           dasha_periods?: Json | null
+          dasha_periods_2026?: Json | null
           deity?: string | null
           device_id?: string | null
           email?: string | null
@@ -489,6 +491,7 @@ export type Database = {
           chandra_yogas?: Json | null
           created_at?: string
           dasha_periods?: Json | null
+          dasha_periods_2026?: Json | null
           deity?: string | null
           device_id?: string | null
           email?: string | null

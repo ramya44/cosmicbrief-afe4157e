@@ -11,6 +11,66 @@ function logStep(step: string, details?: Record<string, unknown>) {
   console.log(`[save-kundli-details] ${step}${detailsStr}`);
 }
 
+interface AntarDasha {
+  name: string;
+  start: string;
+  end: string;
+}
+
+interface MahaDasha {
+  name: string;
+  start: string;
+  end: string;
+  antardasha: AntarDasha[];
+}
+
+interface DashaPeriod2026 {
+  maha_dasha: string;
+  maha_start: string;
+  maha_end: string;
+  antar_dashas_in_2026: { name: string; start: string; end: string }[];
+}
+
+function get2026Dashas(dashaPeriods: MahaDasha[]): DashaPeriod2026[] {
+  const year2026Start = new Date("2026-01-01T00:00:00Z");
+  const year2026End = new Date("2026-12-31T23:59:59Z");
+
+  const activePeriods: DashaPeriod2026[] = [];
+
+  for (const maha of dashaPeriods) {
+    // Parse dates, stripping timezone suffix for consistency
+    const mahaStart = new Date(maha.start.replace(/[+-]\d{2}:\d{2}$/, ""));
+    const mahaEnd = new Date(maha.end.replace(/[+-]\d{2}:\d{2}$/, ""));
+
+    // Check if Maha Dasha overlaps with 2026
+    if (mahaStart <= year2026End && mahaEnd >= year2026Start) {
+      const relevantAntars: { name: string; start: string; end: string }[] = [];
+
+      for (const antar of maha.antardasha || []) {
+        const antarStart = new Date(antar.start.replace(/[+-]\d{2}:\d{2}$/, ""));
+        const antarEnd = new Date(antar.end.replace(/[+-]\d{2}:\d{2}$/, ""));
+
+        if (antarStart <= year2026End && antarEnd >= year2026Start) {
+          relevantAntars.push({
+            name: antar.name,
+            start: antar.start,
+            end: antar.end,
+          });
+        }
+      }
+
+      activePeriods.push({
+        maha_dasha: maha.name,
+        maha_start: maha.start,
+        maha_end: maha.end,
+        antar_dashas_in_2026: relevantAntars,
+      });
+    }
+  }
+
+  return activePeriods;
+}
+
 interface KundliInput {
   // Birth details
   birth_date: string;
@@ -55,7 +115,7 @@ interface KundliInput {
     chandra_yogas: unknown[];
     soorya_yogas: unknown[];
     inauspicious_yogas: unknown[];
-    dasha_periods: unknown;
+    dasha_periods: MahaDasha[];
   };
 }
 
@@ -84,6 +144,10 @@ serve(async (req) => {
     });
 
     const { kundli_data, ...birthDetails } = body;
+
+    // Extract 2026-specific dasha periods
+    const dashaPeriods2026 = get2026Dashas(kundli_data.dasha_periods || []);
+    logStep("Extracted 2026 dasha periods", { count: dashaPeriods2026.length });
 
     const insertData = {
       // Birth details
@@ -133,8 +197,9 @@ serve(async (req) => {
       soorya_yogas: kundli_data.soorya_yogas,
       inauspicious_yogas: kundli_data.inauspicious_yogas,
       
-      // Dasha
+      // Dasha - full and 2026-specific
       dasha_periods: kundli_data.dasha_periods,
+      dasha_periods_2026: dashaPeriods2026,
     };
 
     logStep("Inserting kundli details into database");
