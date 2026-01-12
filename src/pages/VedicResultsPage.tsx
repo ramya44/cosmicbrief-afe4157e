@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -64,6 +64,24 @@ const VedicResultsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isInlineCTAVisible, setIsInlineCTAVisible] = useState(false);
+  const inlineCTARef = useRef<HTMLDivElement>(null);
+
+  // Track when inline CTA is visible to hide sticky CTA
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInlineCTAVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    if (inlineCTARef.current) {
+      observer.observe(inlineCTARef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchKundli = async () => {
@@ -495,7 +513,7 @@ const VedicResultsPage = () => {
 
             {/* Upgrade CTA - Only show on free forecast */}
             {!hasPaidForecast && (
-              <div className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-6 md:p-8 text-center overflow-hidden mx-0">
+              <div ref={inlineCTARef} className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-6 md:p-8 text-center overflow-hidden mx-0">
                 <div className="flex justify-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
                     <Sparkles className="w-6 h-6 text-gold" />
@@ -539,7 +557,9 @@ const VedicResultsPage = () => {
                   ) : (
                     <span className="flex items-center justify-center">
                       <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span>Unlock Complete Forecast — $59</span>
+                      <span>Unlock Complete Forecast —</span>
+                      <span className="line-through text-midnight/50 mx-1">$99</span>
+                      <span>$59</span>
                     </span>
                   )}
                 </Button>
@@ -558,8 +578,8 @@ const VedicResultsPage = () => {
         )}
       </main>
 
-      {/* Sticky Mobile CTA - Only show on free forecast */}
-      {!hasPaidForecast && forecastToShow && (
+      {/* Sticky Mobile CTA - Only show on free forecast when inline CTA is not visible */}
+      {!hasPaidForecast && forecastToShow && !isInlineCTAVisible && (
         <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-midnight/95 backdrop-blur-md border-t border-gold/30 p-4">
           <Button 
             onClick={handleUpgrade}
@@ -574,7 +594,9 @@ const VedicResultsPage = () => {
             ) : (
               <span className="flex items-center justify-center">
                 <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                <span>Unlock Complete Forecast — $59</span>
+                <span>Unlock Complete Forecast —</span>
+                <span className="line-through text-midnight/50 mx-1">$99</span>
+                <span>$59</span>
               </span>
             )}
           </Button>
