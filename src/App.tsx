@@ -15,6 +15,7 @@ import WhyTurningPointPage from "./pages/WhyTurningPointPage";
 import PoliticsGlobalEventsPage from "./pages/PoliticsGlobalEventsPage";
 import CareerAstrology2026Page from "./pages/CareerAstrology2026Page";
 import VedicInputPage from "./pages/VedicInputPage";
+import VedicResultsPage from "./pages/VedicResultsPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -72,6 +73,7 @@ const App = () => (
           <Route path="/2026-astrology-forecast/politics-and-global-events" element={<PoliticsGlobalEventsPage />} />
           <Route path="/2026-astrology-forecast/career" element={<CareerAstrology2026Page />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
+          <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
