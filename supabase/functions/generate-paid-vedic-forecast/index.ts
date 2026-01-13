@@ -155,19 +155,39 @@ function buildPaidUserPrompt(inputs: {
 }): string {
   return `Create a comprehensive paid astrology forecast for ${inputs.year} for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
+CRITICAL INSTRUCTION - LIFE AREA BALANCE:
+This forecast must provide guidance across ALL major life areas. Each monthly period should address relevant themes from:
+- Personal relationships (romantic partnerships, family dynamics, friendships)
+- Career and professional development
+- Financial matters and material resources
+- Health and physical well-being
+- Spiritual growth and inner development
+- Creative expression and hobbies
+- Home and living situation
+- Personal transformation and psychology
+
+Do NOT focus predominantly on career unless the specific dasha/transit clearly emphasizes 10th house themes. Most periods will touch multiple life areas - cover them comprehensively.
+
 The JSON should include:
 
 **1. OVERVIEW: ${inputs.year} Theme**
-- 2-3 paragraphs summarizing the year's main energy
+- 2-3 paragraphs summarizing the year's main energy across different life domains
 - One "astrology_note" explaining the dasha context
 
 **2. MONTH-BY-MONTH BREAKDOWN**
 For each pratyantardasha period in ${inputs.year}, create a "period" object with:
 - **date_range**: The exact dates
 - **title**: A descriptive name for the period (e.g., "The Action Window")
-- **what_happening**: 2-3 paragraphs on practical life themes (career, relationships, finances, etc.)
+- **what_happening**: 2-3 paragraphs on practical life themes across MULTIPLE areas:
+  * Relationships and connections
+  * Career and purpose
+  * Financial matters
+  * Health and well-being
+  * Spiritual/personal growth
+  * Other relevant life areas based on the planetary influences
+  Balance coverage - don't default to career unless chart clearly indicates it
 - **astrology**: 1 paragraph explaining active planets, house rulerships, and why this creates these effects
-- **key_actions**: 2-3 sentences with specific, actionable recommendations
+- **key_actions**: 2-3 sentences with specific, actionable recommendations (covering different life areas when relevant)
 
 Group periods intelligently - combine very short periods (under 3 weeks).
 
@@ -178,13 +198,28 @@ Group periods intelligently - combine very short periods (under 3 weeks).
 - Mark the most critical transition with emphasis in the text
 
 **4. PIVOTAL THEMES**
-- 4-5 "theme" objects
+- 4-5 "theme" objects covering different life dimensions
+- Vary the themes - don't make them all career-focused
+- Examples of balanced themes:
+  * "Your Network Is Your Net Worth" (relationships/connections)
+  * "The Healing Journey" (health/well-being)
+  * "Creative Renaissance" (self-expression/hobbies)
+  * "Financial Foundations" (money/resources)
+  * "Spiritual Awakening" (inner growth/purpose)
+  * "Home and Belonging" (family/living situation)
 - Each: bold title + 1 paragraph explanation
 - Connect to specific time periods when relevant
 
 **5. KEY DECISIONS**
 - 4 "decision" objects (Q1, Q2, Q3, Q4)
 - Each: quarter label, bold question, 1 paragraph guidance
+- Vary the focus across quarters - examples:
+  * "Who should I connect with?" (relationships/networking)
+  * "What creative projects deserve my energy?" (self-expression)
+  * "How can I improve my health and vitality?" (well-being)
+  * "What financial moves should I make?" (resources)
+  * "Where should I focus my spiritual practice?" (inner growth)
+- Choose questions based on what the chart emphasizes for each quarter
 
 **6. FINAL GUIDANCE**
 - 3-4 paragraphs of closing wisdom
