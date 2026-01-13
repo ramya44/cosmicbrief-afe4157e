@@ -103,8 +103,8 @@ const VedicInputPage = () => {
         newErrors.birthDate = 'Date cannot be before 1900';
       } else if (selectedDate > max) {
         newErrors.birthDate = 'Date cannot be in the future';
-      } else if (age < 12) {
-        newErrors.birthDate = 'You must be at least 12 years old to use this service';
+      } else if (age < 13) {
+        newErrors.birthDate = 'You must be at least 13 years old to use this service';
       }
     }
     if (!formData.birthTime) {
