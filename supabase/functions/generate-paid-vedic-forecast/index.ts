@@ -431,16 +431,35 @@ Deno.serve(async (req) => {
 
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
-      logStep("Claude API error", { status: claudeResponse.status, error: errorText });
+      const isRateLimited = claudeResponse.status === 429;
       
-      // Log to alerts table
-      await supabase.from("vedic_generation_alerts").insert({
-        kundli_id,
-        error_message: `Claude API error: ${claudeResponse.status} - ${errorText}`,
-        error_type: "paid_generation",
+      logStep("Claude API error", { 
+        status: claudeResponse.status, 
+        error: errorText,
+        is_rate_limit: isRateLimited 
       });
       
-      // Return friendly error with manual_generation flag
+      // Log to alerts table with rate limit context
+      await supabase.from("vedic_generation_alerts").insert({
+        kundli_id,
+        error_message: isRateLimited 
+          ? "Anthropic rate limit hit (429)" 
+          : `Claude API error: ${claudeResponse.status} - ${errorText}`,
+        error_type: isRateLimited ? "rate_limit" : "paid_generation",
+      });
+      
+      if (isRateLimited) {
+        return new Response(JSON.stringify({
+          high_demand: true,
+          retry_after: 60,
+          message: "We're experiencing high demand. Your forecast will be ready shortly - please refresh in 1-2 minutes.",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200, // Return 200 so frontend handles gracefully
+        });
+      }
+      
+      // Return friendly error with manual_generation flag for other errors
       return new Response(JSON.stringify({
         manual_generation: true,
         message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",

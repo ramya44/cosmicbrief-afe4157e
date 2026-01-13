@@ -441,7 +441,25 @@ Deno.serve(async (req) => {
 
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
-      logStep("Claude API error", { status: claudeResponse.status, error: errorText });
+      const isRateLimited = claudeResponse.status === 429;
+      
+      logStep("Claude API error", { 
+        status: claudeResponse.status, 
+        error: errorText,
+        is_rate_limit: isRateLimited 
+      });
+      
+      if (isRateLimited) {
+        return new Response(JSON.stringify({
+          high_demand: true,
+          message: "We're experiencing high demand right now. Please try again in a few minutes.",
+          retry_after: 60,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503,
+        });
+      }
+      
       return errorResponse(`Claude API error: ${claudeResponse.status}`, 500);
     }
 
