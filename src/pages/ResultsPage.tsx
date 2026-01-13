@@ -264,7 +264,7 @@ const ResultsPage = () => {
       <main className="relative z-10 container mx-auto px-4 py-12">
         {/* Title Section */}
         <div className="text-center mb-12 animate-fade-up">
-          <p className="text-gold text-sm uppercase tracking-widest mb-2">Your Personalized Reading</p>
+          <p className="text-gold text-sm uppercase tracking-widest mb-2">Your Personalized</p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
             2026 Cosmic Brief
           </h1>

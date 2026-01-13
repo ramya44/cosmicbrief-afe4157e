@@ -99,7 +99,7 @@ const VedicPaymentSuccessPage = () => {
           <>
             <LoadingSpinner />
             <h1 className="font-display text-3xl md:text-4xl text-cream mt-8 mb-4">
-              Generating Your Complete 2026 Forecast
+              Generating Your Detailed 2026 Cosmic Brief
             </h1>
             <p className="text-cream-muted text-lg mb-8 animate-fade-up">
               {phrases[phraseIndex]}
