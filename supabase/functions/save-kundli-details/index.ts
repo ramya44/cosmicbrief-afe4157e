@@ -95,6 +95,7 @@ interface KundliInput {
   latitude: number;
   longitude: number;
   email?: string;
+  name?: string;
   device_id?: string;
   
   // Kundli data from API
@@ -170,6 +171,7 @@ serve(async (req) => {
       latitude: birthDetails.latitude,
       longitude: birthDetails.longitude,
       email: birthDetails.email || null,
+      name: birthDetails.name || null,
       device_id: birthDetails.device_id || null,
       
       // Basic Vedic data
