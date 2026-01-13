@@ -20,6 +20,10 @@ interface AnimalData {
   image_url: string;
 }
 
+interface ZodiacLookup {
+  [key: string]: string;
+}
+
 const VedicProfilePage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -27,6 +31,7 @@ const VedicProfilePage = () => {
 
   const [kundli, setKundli] = useState<KundliData | null>(null);
   const [animalData, setAnimalData] = useState<AnimalData | null>(null);
+  const [zodiacLookup, setZodiacLookup] = useState<ZodiacLookup>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,6 +56,19 @@ const VedicProfilePage = () => {
         }
 
         setKundli(kundliData);
+
+        // Fetch zodiac lookup for Western names
+        const { data: zodiacData } = await supabase
+          .from('vedic_zodiac_signs')
+          .select('sanskrit_name, western_name');
+
+        if (zodiacData) {
+          const lookup: ZodiacLookup = {};
+          zodiacData.forEach((z) => {
+            lookup[z.sanskrit_name] = z.western_name;
+          });
+          setZodiacLookup(lookup);
+        }
 
         // Fetch animal data if animal_sign exists
         if (kundliData.animal_sign) {
@@ -146,19 +164,25 @@ const VedicProfilePage = () => {
                 {kundli.moon_sign && (
                   <div className="flex justify-between items-center py-3 border-b border-border/20">
                     <span className="text-cream-muted">Moon Sign</span>
-                    <span className="text-cream font-medium text-lg">{kundli.moon_sign}</span>
+                    <span className="text-cream font-medium text-lg">
+                      {zodiacLookup[kundli.moon_sign] || kundli.moon_sign}
+                    </span>
                   </div>
                 )}
                 {kundli.sun_sign && (
                   <div className="flex justify-between items-center py-3 border-b border-border/20">
                     <span className="text-cream-muted">Sun Sign</span>
-                    <span className="text-cream font-medium text-lg">{kundli.sun_sign}</span>
+                    <span className="text-cream font-medium text-lg">
+                      {zodiacLookup[kundli.sun_sign] || kundli.sun_sign}
+                    </span>
                   </div>
                 )}
                 {kundli.ascendant_sign && (
                   <div className="flex justify-between items-center py-3">
                     <span className="text-cream-muted">Ascendant</span>
-                    <span className="text-cream font-medium text-lg">{kundli.ascendant_sign}</span>
+                    <span className="text-cream font-medium text-lg">
+                      {zodiacLookup[kundli.ascendant_sign] || kundli.ascendant_sign}
+                    </span>
                   </div>
                 )}
               </div>
