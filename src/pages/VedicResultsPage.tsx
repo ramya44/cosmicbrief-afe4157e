@@ -71,6 +71,71 @@ const VedicResultsPage = () => {
   const [isOwner, setIsOwner] = useState(false);
   const inlineCTARef = useRef<HTMLDivElement>(null);
 
+  // Parse JSON forecast helper - defined early for use in useMemo
+  const parseJsonForecast = (text: string): ForecastJson | null => {
+    if (!text) return null;
+    
+    try {
+      let cleaned = text.trim();
+      
+      // Try to extract JSON from markdown code blocks first
+      const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        cleaned = jsonMatch[1].trim();
+      }
+      
+      // Try to parse as JSON
+      if (cleaned.startsWith('{')) {
+        const parsed = JSON.parse(cleaned);
+        
+        // Validate structure
+        if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
+          console.log('[VedicResultsPage] Successfully parsed JSON with', parsed.sections.length, 'sections');
+          return parsed as ForecastJson;
+        } else {
+          console.log('[VedicResultsPage] Parsed JSON but missing sections:', Object.keys(parsed || {}));
+          return null;
+        }
+      }
+      
+      console.log('[VedicResultsPage] Not JSON format, first 50 chars:', cleaned.substring(0, 50));
+      return null;
+    } catch (e) {
+      console.error('[VedicResultsPage] JSON parse error:', e);
+      return null;
+    }
+  };
+
+  // Generate section IDs for navigation
+  const generateSectionId = (heading: string, index: number) => {
+    return `section-${index}-${heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30)}`;
+  };
+
+  // Get sections with IDs for table of contents
+  const getSectionsWithIds = (forecast: ForecastJson | null) => {
+    if (!forecast?.sections) return [];
+    return forecast.sections
+      .filter(s => s?.heading)
+      .map((section, idx) => ({
+        heading: section.heading,
+        id: generateSectionId(section.heading, idx),
+      }));
+  };
+
+  // Calculate derived values unconditionally (before any returns)
+  const hasPaidForecast = !!kundli?.paid_vedic_forecast;
+  const forecastToShow = (isPaidView && hasPaidForecast) ? kundli?.paid_vedic_forecast : kundli?.free_vedic_forecast;
+  const parsedForecast = forecastToShow ? parseJsonForecast(forecastToShow) : null;
+  const sectionsWithIds = useMemo(() => getSectionsWithIds(parsedForecast), [parsedForecast]);
+
+  const handleViewChange = (isPaid: boolean) => {
+    if (isPaid) {
+      navigate(`/vedic/results?id=${kundliId}&paid=true`);
+    } else {
+      navigate(`/vedic/results?id=${kundliId}`);
+    }
+  };
+
   // Track when inline CTA is visible to hide sticky CTA
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -148,56 +213,6 @@ const VedicResultsPage = () => {
       toast.error('An error occurred');
       setIsUpgrading(false);
     }
-  };
-
-  const parseJsonForecast = (text: string): ForecastJson | null => {
-    if (!text) return null;
-    
-    try {
-      let cleaned = text.trim();
-      
-      // Try to extract JSON from markdown code blocks first
-      const jsonMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        cleaned = jsonMatch[1].trim();
-      }
-      
-      // Try to parse as JSON
-      if (cleaned.startsWith('{')) {
-        const parsed = JSON.parse(cleaned);
-        
-        // Validate structure
-        if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
-          console.log('[VedicResultsPage] Successfully parsed JSON with', parsed.sections.length, 'sections');
-          return parsed as ForecastJson;
-        } else {
-          console.log('[VedicResultsPage] Parsed JSON but missing sections:', Object.keys(parsed || {}));
-          return null;
-        }
-      }
-      
-      console.log('[VedicResultsPage] Not JSON format, first 50 chars:', cleaned.substring(0, 50));
-      return null;
-    } catch (e) {
-      console.error('[VedicResultsPage] JSON parse error:', e);
-      return null;
-    }
-  };
-
-  // Generate section IDs for navigation
-  const generateSectionId = (heading: string, index: number) => {
-    return `section-${index}-${heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30)}`;
-  };
-
-  // Get sections with IDs for table of contents
-  const getSectionsWithIds = (forecast: ForecastJson | null) => {
-    if (!forecast?.sections) return [];
-    return forecast.sections
-      .filter(s => s?.heading)
-      .map((section, idx) => ({
-        heading: section.heading,
-        id: generateSectionId(section.heading, idx),
-      }));
   };
 
   const renderJsonForecast = (forecast: ForecastJson, isPaid: boolean) => {
@@ -416,18 +431,6 @@ const VedicResultsPage = () => {
     );
   }
 
-  const hasPaidForecast = !!kundli.paid_vedic_forecast;
-  const forecastToShow = (isPaidView && hasPaidForecast) ? kundli.paid_vedic_forecast : kundli.free_vedic_forecast;
-  const parsedForecast = forecastToShow ? parseJsonForecast(forecastToShow) : null;
-  const sectionsWithIds = useMemo(() => getSectionsWithIds(parsedForecast), [parsedForecast]);
-
-  const handleViewChange = (isPaid: boolean) => {
-    if (isPaid) {
-      navigate(`/vedic/results?id=${kundliId}&paid=true`);
-    } else {
-      navigate(`/vedic/results?id=${kundliId}`);
-    }
-  };
 
   return (
     <div className="relative min-h-screen bg-celestial">
