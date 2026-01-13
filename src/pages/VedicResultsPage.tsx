@@ -248,7 +248,7 @@ const VedicResultsPage = () => {
         return (
           <div key={key} className="bg-midnight/40 border border-border/30 rounded-xl p-6 mb-6">
             <div className="flex items-center gap-3 mb-3">
-              <span className="text-gold text-sm font-medium">{item.date_range}</span>
+              <span className="text-gold text-base font-medium">{item.date_range}</span>
             </div>
             <h3 className="text-xl font-semibold text-cream mb-4">{item.title}</h3>
             <div className="space-y-4 text-cream-muted font-serif">
@@ -275,15 +275,15 @@ const VedicResultsPage = () => {
             <table className="w-full">
               <thead className="bg-midnight/60">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gold">Date</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gold">Significance</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-gold">Date</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-gold">Significance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/20">
                 {item.transitions?.map((t, i) => (
                   <tr key={i} className="bg-midnight/20">
-                    <td className="px-4 py-3 text-cream font-medium whitespace-nowrap">{t.date}</td>
-                    <td className="px-4 py-3 text-cream-muted text-sm">{renderMarkdownText(t.significance)}</td>
+                    <td className="px-4 py-3 text-cream font-medium whitespace-nowrap text-base">{t.date}</td>
+                    <td className="px-4 py-3 text-cream-muted text-base">{renderMarkdownText(t.significance)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -448,7 +448,7 @@ const VedicResultsPage = () => {
                 className="w-64 bg-midnight border-gold/30 p-4"
                 align="end"
               >
-                <h4 className="text-gold font-medium mb-3 text-sm">Your Vedic Profile</h4>
+                <h4 className="text-gold font-medium mb-3 text-sm">Vedic Profile</h4>
                 <div className="space-y-2.5 text-sm">
                   {kundli.ascendant_sign && (
                     <div className="flex justify-between">
