@@ -12,6 +12,7 @@ interface KundliData {
   moon_sign: string | null;
   sun_sign: string | null;
   ascendant_sign: string | null;
+  name: string | null;
 }
 
 interface AnimalData {
@@ -45,7 +46,7 @@ const VedicProfilePage = () => {
         // Fetch kundli data
         const { data: kundliData, error: kundliError } = await supabase
           .from('user_kundli_details')
-          .select('id, animal_sign, nakshatra, moon_sign, sun_sign, ascendant_sign')
+          .select('id, animal_sign, nakshatra, moon_sign, sun_sign, ascendant_sign, name')
           .eq('id', kundliId)
           .maybeSingle();
 
@@ -133,7 +134,7 @@ const VedicProfilePage = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="font-display text-xl text-gold">Vedic Profile</h1>
+          <h1 className="font-display text-xl text-gold">{kundli.name ? `${kundli.name}'s Profile` : 'Vedic Profile'}</h1>
           <div className="w-20" /> {/* Spacer for centering */}
         </div>
       </header>
