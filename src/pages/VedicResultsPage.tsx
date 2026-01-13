@@ -26,6 +26,7 @@ interface KundliDetails {
   forecast_generated_at: string | null;
   email: string | null;
   shareable_link?: string | null;
+  name?: string | null;
 }
 
 interface ForecastSection {
@@ -494,6 +495,9 @@ const VedicResultsPage = () => {
       <main className="relative z-10 container mx-auto px-4 py-12">
         {/* Title Section */}
         <div className="text-center mb-12 animate-fade-up">
+          {kundli.name && (
+            <p className="text-cream text-lg mb-1 font-sans">{kundli.name}</p>
+          )}
           <p className="text-gold text-sm uppercase tracking-widest mb-2 font-sans">
             Your Personalized
           </p>

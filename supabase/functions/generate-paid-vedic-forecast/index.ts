@@ -144,6 +144,7 @@ function getCurrentDashaFromList(dashas: any[], currentDate: Date = new Date()) 
 }
 
 function buildPaidUserPrompt(inputs: {
+  name?: string;
   year: number;
   birth_date: string;
   birth_time: string;
@@ -153,7 +154,8 @@ function buildPaidUserPrompt(inputs: {
   pratyantardashas: string;
   transits: string;
 }): string {
-  return `Create a comprehensive paid astrology forecast for ${inputs.year} for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
+  const personReference = inputs.name ? `for ${inputs.name}` : "for this person";
+  return `Create a comprehensive paid astrology forecast ${personReference} for ${inputs.year}. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
 CRITICAL INSTRUCTION - LIFE AREA BALANCE:
 This forecast must provide guidance across ALL major life areas. Each monthly period should address relevant themes from:
@@ -227,6 +229,7 @@ Group periods intelligently - combine very short periods (under 3 weeks).
 - End with inspiring statement
 
 **Birth Details:**
+${inputs.name ? `Name: ${inputs.name}` : ""}
 Date: ${inputs.birth_date}
 Time: ${inputs.birth_time}
 Location: ${inputs.birth_location}
@@ -436,6 +439,7 @@ Deno.serve(async (req) => {
     logStep("Building paid prompt");
 
     const userPrompt = buildPaidUserPrompt({
+      name: kundliData.name || undefined,
       year: targetYear,
       birth_date: kundliData.birth_date,
       birth_time: kundliData.birth_time,

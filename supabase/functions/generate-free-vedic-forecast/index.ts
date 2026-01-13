@@ -43,6 +43,7 @@ When writing forecasts:
 Return ONLY valid JSON. No markdown code blocks, no additional text before or after the JSON.`;
 
 interface ForecastPromptInputs {
+  name?: string;
   birth_date: string;
   birth_time: string;
   birth_location: string;
@@ -112,7 +113,10 @@ export function buildUserPrompt(inputs: ForecastPromptInputs): string {
   // Get birth year for prompt
   const birthYear = new Date(inputs.birth_date).getFullYear();
 
-  return `Create a free astrology forecast for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
+  // Get person identifier for prompt
+  const personReference = inputs.name ? `for ${inputs.name}` : "for this person";
+
+  return `Create a free astrology forecast ${personReference}. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
 CRITICAL INSTRUCTION - LIFE AREA BALANCE:
 This forecast must cover MULTIPLE areas of life, not just career. Include appropriate discussion of:
@@ -175,6 +179,7 @@ The JSON should include:
    - "cta" with main text and subtext
 
 **Birth Details:**
+${inputs.name ? `Name: ${inputs.name}` : ""}
 Date: ${inputs.birth_date}
 Time: ${inputs.birth_time}
 Location: ${inputs.birth_location}
@@ -534,6 +539,7 @@ Deno.serve(async (req) => {
 
     // Build prompt inputs
     const promptInputs: ForecastPromptInputs = {
+      name: kundliData.name || undefined,
       birth_date: kundliData.birth_date,
       birth_time: kundliData.birth_time,
       birth_location: kundliData.birth_place,
