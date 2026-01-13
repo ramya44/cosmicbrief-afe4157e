@@ -46,9 +46,8 @@ export const ForecastTableOfContents = ({
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const yOffset = -120; // offset for sticky header
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      // Use scrollIntoView with CSS scroll-margin-top for accurate positioning
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setIsExpanded(false);
     }
   };
