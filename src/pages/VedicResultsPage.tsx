@@ -511,7 +511,7 @@ const VedicResultsPage = () => {
               const hour12 = hours % 12 || 12;
               return ` · ${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
             })()}
-            {' · '}{kundli.birth_place}
+            {' · '}{kundli.birth_place.split(',')[0].trim()}
           </p>
           
         </div>
