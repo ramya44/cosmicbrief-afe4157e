@@ -281,7 +281,7 @@ const ResultsPage = () => {
                 const hour12 = hours % 12 || 12;
                 return ` · ${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
               })()}
-              {' · '}{birthData.birthPlace}
+              {' · '}{birthData.birthPlace.split(',')[0].trim()}
             </p>
           )}
         </div>
