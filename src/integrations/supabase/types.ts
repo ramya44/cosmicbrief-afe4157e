@@ -459,6 +459,7 @@ export type Database = {
           sun_sign_id: number | null
           sun_sign_lord: string | null
           syllables: string | null
+          user_id: string | null
           zodiac_sign: string | null
         }
         Insert: {
@@ -510,6 +511,7 @@ export type Database = {
           sun_sign_id?: number | null
           sun_sign_lord?: string | null
           syllables?: string | null
+          user_id?: string | null
           zodiac_sign?: string | null
         }
         Update: {
@@ -561,6 +563,7 @@ export type Database = {
           sun_sign_id?: number | null
           sun_sign_lord?: string | null
           syllables?: string | null
+          user_id?: string | null
           zodiac_sign?: string | null
         }
         Relationships: []

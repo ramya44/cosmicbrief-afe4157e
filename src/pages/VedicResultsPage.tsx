@@ -475,6 +475,16 @@ const VedicResultsPage = () => {
                     </div>
                   )}
                 </div>
+                {isOwner && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-4 text-gold border-gold/30 hover:bg-gold/10"
+                    onClick={() => navigate(`/vedic/profile?id=${kundliId}`)}
+                  >
+                    View Profile
+                  </Button>
+                )}
               </PopoverContent>
             </Popover>
           </div>
