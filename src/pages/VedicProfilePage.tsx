@@ -156,22 +156,22 @@ const VedicProfilePage = () => {
             >
               {/* Front of Card - Animal Image */}
               <div 
-                className="absolute inset-0 bg-midnight/80 border border-gold/30 rounded-2xl p-6 flex flex-col items-center justify-center"
+                className="absolute inset-0 rounded-2xl overflow-hidden border border-gold/40"
                 style={{ backfaceVisibility: 'hidden' }}
               >
                 {animalData && (
                   <img
                     src={animalData.image_url}
                     alt={kundli.animal_sign || 'Animal'}
-                    className="w-64 h-64 object-contain"
+                    className="w-full h-full object-cover"
                   />
                 )}
-                <p className="text-cream-muted text-sm mt-4 animate-pulse">Tap to reveal</p>
+                <p className="absolute bottom-4 left-0 right-0 text-cream-muted text-sm text-center animate-pulse">Tap to reveal</p>
               </div>
 
               {/* Back of Card - Astrological Details */}
               <div 
-                className="absolute inset-0 bg-midnight/80 border border-gold/30 rounded-2xl p-6 flex flex-col justify-center"
+                className="absolute inset-0 bg-midnight/90 border border-gold/40 rounded-2xl p-6 flex flex-col justify-center"
                 style={{ 
                   backfaceVisibility: 'hidden',
                   transform: 'rotateY(180deg)'
@@ -218,7 +218,7 @@ const VedicProfilePage = () => {
           {/* Phrase below the card */}
           {animalData && (
             <p className="text-gold font-display text-xl italic text-center mt-8 max-w-sm">
-              "{animalData.phrase}"
+              {animalData.phrase}
             </p>
           )}
         </div>
