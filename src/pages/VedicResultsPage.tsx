@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -7,6 +7,7 @@ import { ArrowLeft, Sparkles, Lock, ChevronRight, User, Share2, Check } from 'lu
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
+import { ForecastTableOfContents } from '@/components/ForecastTableOfContents';
 import {
   Popover,
   PopoverContent,
@@ -183,6 +184,22 @@ const VedicResultsPage = () => {
     }
   };
 
+  // Generate section IDs for navigation
+  const generateSectionId = (heading: string, index: number) => {
+    return `section-${index}-${heading.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30)}`;
+  };
+
+  // Get sections with IDs for table of contents
+  const getSectionsWithIds = (forecast: ForecastJson | null) => {
+    if (!forecast?.sections) return [];
+    return forecast.sections
+      .filter(s => s?.heading)
+      .map((section, idx) => ({
+        heading: section.heading,
+        id: generateSectionId(section.heading, idx),
+      }));
+  };
+
   const renderJsonForecast = (forecast: ForecastJson, isPaid: boolean) => {
     if (!forecast?.sections || !Array.isArray(forecast.sections)) {
       console.error('[VedicResultsPage] Invalid forecast structure:', forecast);
@@ -202,8 +219,15 @@ const VedicResultsPage = () => {
             return null; // We'll render our own CTA instead
           }
 
+          const sectionId = generateSectionId(section.heading, sIdx);
+
           return (
-            <section key={sIdx} className="animate-fade-up" style={{ animationDelay: `${sIdx * 100}ms` }}>
+            <section 
+              key={sIdx} 
+              id={sectionId}
+              className="animate-fade-up scroll-mt-32" 
+              style={{ animationDelay: `${sIdx * 100}ms` }}
+            >
               <h2 className="text-2xl font-bold text-gold mb-6 font-display">{section.heading}</h2>
               
               <div className="space-y-4">
@@ -395,6 +419,15 @@ const VedicResultsPage = () => {
   const hasPaidForecast = !!kundli.paid_vedic_forecast;
   const forecastToShow = (isPaidView && hasPaidForecast) ? kundli.paid_vedic_forecast : kundli.free_vedic_forecast;
   const parsedForecast = forecastToShow ? parseJsonForecast(forecastToShow) : null;
+  const sectionsWithIds = useMemo(() => getSectionsWithIds(parsedForecast), [parsedForecast]);
+
+  const handleViewChange = (isPaid: boolean) => {
+    if (isPaid) {
+      navigate(`/vedic/results?id=${kundliId}&paid=true`);
+    } else {
+      navigate(`/vedic/results?id=${kundliId}`);
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-celestial">
@@ -413,27 +446,6 @@ const VedicResultsPage = () => {
           </Button>
           
           <div className="flex items-center gap-2">
-            {hasPaidForecast && (
-              <div className="flex gap-2">
-                <Button
-                  variant={!isPaidView ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => navigate(`/vedic/results?id=${kundliId}`)}
-                  className={!isPaidView ? "bg-gold text-midnight font-sans" : "text-cream-muted font-sans"}
-                >
-                  Synopsis
-                </Button>
-                <Button
-                  variant={isPaidView ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => navigate(`/vedic/results?id=${kundliId}&paid=true`)}
-                  className={isPaidView ? "bg-gold text-midnight font-sans" : "text-cream-muted font-sans"}
-                >
-                  Full Cosmic Brief
-                </Button>
-              </div>
-            )}
-            
             {/* Profile Icon with Astrology Details Popover */}
             <Popover>
               <PopoverTrigger asChild>
@@ -522,6 +534,16 @@ const VedicResultsPage = () => {
 
         {forecastToShow ? (
           <div className="max-w-3xl mx-auto">
+            {/* Table of Contents */}
+            {parsedForecast && sectionsWithIds.length > 0 && (
+              <ForecastTableOfContents
+                sections={sectionsWithIds}
+                hasPaidForecast={hasPaidForecast}
+                isPaidView={isPaidView}
+                onViewChange={handleViewChange}
+              />
+            )}
+            
             <div className="bg-midnight/40 md:border md:border-border/30 rounded-none md:rounded-2xl p-4 md:p-10 backdrop-blur-sm -mx-4 md:mx-0">
               {parsedForecast ? (
                 renderJsonForecast(parsedForecast, isPaidView && hasPaidForecast)
