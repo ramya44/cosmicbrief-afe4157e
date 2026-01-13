@@ -47,7 +47,7 @@ const Index = () => {
           animationDelay: '300ms',
           animationFillMode: 'both'
         }}>
-            <Button variant="hero" size="xl" onClick={() => navigate('/vedic/input')} className="group">
+            <Button variant="hero" size="xl" onClick={() => navigate('/vedic/input')} className="group font-sans">
               Get My Brief
               <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
             </Button>
@@ -62,7 +62,7 @@ const Index = () => {
           </p>
           
           {/* Footer links */}
-          <div className="mt-6 flex flex-col items-center gap-2 text-sm text-muted-foreground font-sans animate-fade-up" style={{
+          <div className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground font-sans animate-fade-up" style={{
           animationDelay: '600ms',
           animationFillMode: 'both'
         }}>

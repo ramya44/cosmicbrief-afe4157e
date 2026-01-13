@@ -495,10 +495,10 @@ const VedicResultsPage = () => {
         {/* Title Section */}
         <div className="text-center mb-12 animate-fade-up">
           <p className="text-gold text-sm uppercase tracking-widest mb-2 font-sans">
-            {isPaidView && hasPaidForecast ? 'Your Complete Reading' : 'Your Personalized Reading'}
+            Your Personalized
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
-            {isPaidView && hasPaidForecast ? 'Complete 2026 Forecast' : '2026 Cosmic Brief'}
+            {isPaidView && hasPaidForecast ? 'Detailed 2026 Cosmic Brief' : '2026 Cosmic Brief'}
           </h1>
           <p className="text-cream-muted font-sans text-sm">
             {(() => {
