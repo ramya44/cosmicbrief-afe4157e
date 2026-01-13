@@ -234,6 +234,14 @@ const VedicInputPage = () => {
       if (forecastError) {
         console.error('[VedicInputPage] Forecast generation error:', forecastError);
         toast.error('Forecast generation failed. Redirecting to results...');
+      } else if (forecastResult?.high_demand) {
+        // High demand / rate limit - show retry message and stop
+        toast.warning("We're experiencing high demand. Please try again in a minute.", {
+          duration: 6000,
+        });
+        console.log('[VedicInputPage] High demand - rate limit hit');
+        setIsGeneratingForecast(false);
+        return; // Don't navigate - let user retry
       } else if (forecastResult?.manual_generation) {
         // Manual generation - show friendly message
         toast.info('Your Cosmic Brief is being prepared. You\'ll receive it via email shortly.');
