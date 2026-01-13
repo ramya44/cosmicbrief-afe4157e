@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,7 @@ import { useForecastStore } from '@/store/forecastStore';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 const FORM_STORAGE_KEY = 'vedic_input_form_data';
@@ -23,6 +23,8 @@ interface SavedFormData {
   placeCoords: { lat: number; lon: number } | null;
   deviceId: string;
 }
+
+type FlowState = 'input' | 'name-prompt' | 'generating';
 
 const VedicInputPage = () => {
   const navigate = useNavigate();
@@ -37,7 +39,13 @@ const VedicInputPage = () => {
   const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGeneratingForecast, setIsGeneratingForecast] = useState(false);
+  const [flowState, setFlowState] = useState<FlowState>('input');
+  
+  // Name prompt state
+  const [userName, setUserName] = useState('');
+  const [kundliId, setKundliId] = useState<string | null>(null);
+  const [forecastReady, setForecastReady] = useState(false);
+  const forecastPromiseRef = useRef<Promise<any> | null>(null);
 
   // Load saved form data on mount
   useEffect(() => {
@@ -225,59 +233,96 @@ const VedicInputPage = () => {
       };
       
       setBirthData(fullBirthData);
+      setKundliId(saveResult.id);
 
-      // Show the loading screen for forecast generation
+      // Show the name prompt screen
       setIsSubmitting(false);
-      setIsGeneratingForecast(true);
+      setFlowState('name-prompt');
 
-      console.log('[VedicInputPage] Generating free Vedic forecast...');
+      console.log('[VedicInputPage] Generating free Vedic forecast in background...');
 
-      // Generate the free Vedic forecast
-      const { data: forecastResult, error: forecastError } = await supabase.functions.invoke(
+      // Start generating forecast in background
+      forecastPromiseRef.current = supabase.functions.invoke(
         'generate-free-vedic-forecast',
         {
           body: {
             kundli_id: saveResult.id,
           },
         }
-      );
+      ).then((result) => {
+        console.log('[VedicInputPage] Forecast ready:', result);
+        setForecastReady(true);
+        
+        if (result.error) {
+          console.error('[VedicInputPage] Forecast generation error:', result.error);
+        } else if (result.data?.high_demand) {
+          toast.warning("We're experiencing high demand. Please try again in a minute.", {
+            duration: 6000,
+          });
+        } else if (result.data?.manual_generation) {
+          toast.info('Your Cosmic Brief is being prepared. You\'ll receive it via email shortly.');
+        }
+        
+        return result;
+      });
 
-      if (forecastError) {
-        console.error('[VedicInputPage] Forecast generation error:', forecastError);
-        toast.error('Forecast generation failed. Redirecting to results...');
-      } else if (forecastResult?.high_demand) {
-        // High demand / rate limit - show retry message and stop
-        toast.warning("We're experiencing high demand. Please try again in a minute.", {
-          duration: 6000,
-        });
-        console.log('[VedicInputPage] High demand - rate limit hit');
-        setIsGeneratingForecast(false);
-        return; // Don't navigate - let user retry
-      } else if (forecastResult?.manual_generation) {
-        // Manual generation - show friendly message
-        toast.info('Your Cosmic Brief is being prepared. You\'ll receive it via email shortly.');
-        console.log('[VedicInputPage] Manual generation triggered');
-      } else {
-        console.log('[VedicInputPage] Forecast generated:', { 
-          hasText: !!forecastResult?.forecast,
-          model: forecastResult?.model 
-        });
-      }
-      
-      console.log('[VedicInputPage] Navigating to /vedic/results with id:', saveResult.id);
-      
-      // Clear saved form data after successful submission
-      localStorage.removeItem(FORM_STORAGE_KEY);
-      
-      // Navigate to results page with the record ID
-      navigate(`/vedic/results?id=${saveResult.id}`);
     } catch (error) {
       console.error('[VedicInputPage] Error submitting Vedic form:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate Kundli. Please try again.');
-      setIsGeneratingForecast(false);
+      setFlowState('input');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleNameSubmit = async () => {
+    if (!kundliId) return;
+    
+    // Save name if provided
+    if (userName.trim()) {
+      try {
+        await supabase
+          .from('user_kundli_details')
+          .update({ name: userName.trim() })
+          .eq('id', kundliId);
+        console.log('[VedicInputPage] Name saved:', userName);
+      } catch (e) {
+        console.error('[VedicInputPage] Error saving name:', e);
+      }
+    }
+    
+    // Show loading screen
+    setFlowState('generating');
+    
+    // Wait for forecast to complete if not ready
+    if (forecastPromiseRef.current) {
+      await forecastPromiseRef.current;
+    }
+    
+    // Navigate to results
+    localStorage.removeItem(FORM_STORAGE_KEY);
+    navigate(`/vedic/results?id=${kundliId}`);
+  };
+
+  const handleSkipName = async () => {
+    if (!kundliId) return;
+    
+    // If forecast is ready, go directly to results
+    if (forecastReady) {
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      navigate(`/vedic/results?id=${kundliId}`);
+      return;
+    }
+    
+    // Otherwise show loading screen while waiting
+    setFlowState('generating');
+    
+    if (forecastPromiseRef.current) {
+      await forecastPromiseRef.current;
+    }
+    
+    localStorage.removeItem(FORM_STORAGE_KEY);
+    navigate(`/vedic/results?id=${kundliId}`);
   };
 
   const handlePlaceSelect = (place: PlaceSelection) => {
@@ -295,8 +340,66 @@ const VedicInputPage = () => {
     setPlaceCoords(null);
   };
 
+  // Show name prompt screen
+  if (flowState === 'name-prompt') {
+    return (
+      <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
+        <StarField />
+        
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
+          <div className="w-full max-w-md animate-fade-up">
+            <div className="text-center mb-10">
+              <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-6">
+                <User className="w-8 h-8 text-gold" />
+              </div>
+              <h1 className="font-display text-3xl md:text-4xl text-cream mb-3">
+                What can we call you?
+              </h1>
+              <p className="text-cream-muted">
+                This is optional, but helps personalize your experience
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              <Input
+                type="text"
+                placeholder="Your name (optional)"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20 text-center text-lg py-6"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleNameSubmit();
+                  }
+                }}
+              />
+              
+              <Button 
+                variant="hero" 
+                size="lg" 
+                className="w-full group"
+                onClick={handleNameSubmit}
+              >
+                Continue
+                <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
+              </Button>
+              
+              <button
+                onClick={handleSkipName}
+                className="w-full text-cream-muted hover:text-cream text-sm transition-colors py-2"
+              >
+                Skip for now
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Show full-screen loading during forecast generation
-  if (isGeneratingForecast) {
+  if (flowState === 'generating') {
     return <VedicLoadingScreen />;
   }
 

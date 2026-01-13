@@ -447,6 +447,7 @@ export type Database = {
           nakshatra_id: number | null
           nakshatra_lord: string | null
           nakshatra_pada: number | null
+          name: string | null
           paid_amount: number | null
           paid_at: string | null
           paid_completion_tokens: number | null
@@ -499,6 +500,7 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_lord?: string | null
           nakshatra_pada?: number | null
+          name?: string | null
           paid_amount?: number | null
           paid_at?: string | null
           paid_completion_tokens?: number | null
@@ -551,6 +553,7 @@ export type Database = {
           nakshatra_id?: number | null
           nakshatra_lord?: string | null
           nakshatra_pada?: number | null
+          name?: string | null
           paid_amount?: number | null
           paid_at?: string | null
           paid_completion_tokens?: number | null
