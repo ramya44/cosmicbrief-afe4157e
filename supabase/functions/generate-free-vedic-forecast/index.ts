@@ -67,6 +67,8 @@ interface ForecastPromptInputs {
   moon_nakshatra: string;
   ascendant_lord?: string;
   ascendant_lord_position?: string;
+  dasha_changes_2026?: string;
+  transits_2026?: string;
 }
 
 function calculateHouseFromAscendant(planetSignId: number, ascendantSignId: number): number {
@@ -107,6 +109,9 @@ export function buildUserPrompt(inputs: ForecastPromptInputs): string {
       ? `\n**Ascendant Lord:** ${inputs.ascendant_lord} in ${inputs.ascendant_lord_position}`
       : "";
 
+  // Get birth year for prompt
+  const birthYear = new Date(inputs.birth_date).getFullYear();
+
   return `Create a free astrology forecast for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
 The JSON should include:
@@ -118,27 +123,41 @@ The JSON should include:
 
 2. **YOUR JOURNEY SO FAR: Key Patterns**
    - 2-3 paragraphs summarizing their past as ONE flowing narrative
-   - Connect past mahadasha periods to life themes (childhood, education, transformation, current era)
-   - CRITICAL: Only discuss dasha periods that occurred AFTER their birth date. 
-   - Do NOT make assumptions about childhood or early life unless you have dasha data that clearly falls within their lifetime after birth.
-   - NO detailed breakdowns - just touch on key transitions
+   - CRITICAL: Only discuss the Maha Dasha periods explicitly provided in "Past Dasha Periods" section below
+   - DO NOT discuss childhood, early years, or formative experiences unless a dasha period clearly covers that time AFTER birth
+   - If a dasha started before birth, only discuss the years AFTER the birth year
+   - Focus on: late teens/young adulthood, education, career formation, major life transitions, transformation phases
+   - Connect the PROVIDED mahadasha periods to adult life themes only
+   - NO detailed breakdowns - just touch on key transitions during their adult life
    - One "astrology_note" explaining dasha progression
 
 3. **WHAT'S NEXT: Path Forward**
-   - 3-4 paragraphs teasing what the current year holds (general themes only)
+   - 2-3 paragraphs teasing what the current year holds (general themes only)
    - Emphasize that timing matters
    - Create intrigue without giving specifics
    - Mention this is a "pivotal year" or "setup phase"
 
-4. **UPGRADE SECTION**
-   - Brief intro paragraph
-   - "benefits_list" with 5 specific items
+4. **YOUR TURNING POINT (Hook Section - CRITICAL)**
+   - Identify ONE specific upcoming date or period in 2026 that will be highly significant for this person
+   - Use the Antardasha changes or major transits to find the most compelling moment
+   - Make it personal and specific (e.g., "June 2026 marks a critical window when..." or "Between March and May, a rare alignment creates...")
+   - Explain WHY this moment matters (career opportunity, relationship shift, financial breakthrough, etc.) but keep it intriguing
+   - Create urgency and FOMO about this specific window
+   - Build tension: "This is the kind of window that..." or "People who understand moments like this..."
+   - End with a cliffhanger: "But knowing when is only half the story. Knowing what to do—and what to avoid—that's everything."
+   - DO NOT give specific actions or guidance (that's reserved for paid version)
+   - DO NOT use generic language - make it feel like insider knowledge
+
+5. **UPGRADE SECTION**
+   - Brief intro paragraph that builds on the hook: "The difference between those who capitalize on pivotal moments and those who miss them? Preparation and precision."
+   - "benefits_list" with 5 specific items (first item should reference the turning point)
    - "cta" with main text and subtext
 
 **Birth Details:**
 Date: ${inputs.birth_date}
 Time: ${inputs.birth_time}
 Location: ${inputs.birth_location}
+Birth Year: ${birthYear} (CRITICAL: Do not discuss any life events before this year)
 
 **Ascendant:** ${inputs.ascendant_sign}${inputs.ascendant_degree ? ` at ${inputs.ascendant_degree.toFixed(1)}°` : ""}${ascendantLordInfo}
 
@@ -151,15 +170,43 @@ ${planetaryPositionsText}
 - Mahadasha: ${inputs.current_mahadasha.name} (${inputs.current_mahadasha.start} to ${inputs.current_mahadasha.end})
 - Antardasha: ${inputs.current_antardasha?.name || "Unknown"} (${inputs.current_antardasha?.start || "?"} to ${inputs.current_antardasha?.end || "?"})
 
-**Past Dasha Periods:**
+**Past Dasha Periods (ONLY discuss these periods, ONLY for years after birth):**
 ${inputs.past_dashas}
+
+CRITICAL RESTRICTIONS FOR "JOURNEY SO FAR" SECTION:
+- Birth year is ${birthYear}
+- Only discuss the Maha Dasha periods listed above under "Past Dasha Periods"
+- Do NOT extrapolate to childhood, early years, or pre-teen experiences
+- If a dasha started before birth, ONLY discuss the portion from ${birthYear} onward
+- Focus on: late teens (if dasha covers it), young adulthood, career development, major adult transitions
+- Example: If Mercury dasha is 1998-2015 and birth is 1989, discuss ages 9-26, focusing on education and early career
+- Do NOT say things like "your early years were..." or "childhood likely..." or "formative experiences..."
+
+CORRECT APPROACH EXAMPLE:
+"From the late 1990s through 2015, your world expanded intellectually. This was your era of education, skill development, and professional identity formation..."
+
+INCORRECT APPROACH (NEVER DO THIS):
+"Your childhood likely felt structured and serious. Early responsibilities shaped you..." [WRONG - we don't have childhood data]
+
+**2026 Context (use this to identify the turning point):**
+${inputs.dasha_changes_2026 ? `Antar Dasha Changes: ${inputs.dasha_changes_2026}` : "Use current dasha context"}
+${inputs.transits_2026 ? `Major Transits: ${inputs.transits_2026}` : ""}
+
+INSTRUCTIONS FOR TURNING POINT SECTION:
+- Analyze the 2026 dasha changes and transits above
+- Identify the MOST auspicious or transformative period/date
+- Focus on: Jupiter transits, Venus periods, benefic dasha changes, or major axis shifts
+- Make it specific: "May 15th" or "The window between June-August" or "Late March 2026"
+- Connect it to their life area: career for 10th house emphasis, relationships for 7th, wealth for 2nd/11th, etc.
+- Create genuine curiosity: What opportunity? What decision? What risk?
+- Leave them wanting more
 
 Return valid JSON only. Use markdown within text fields for emphasis (**bold**, *italic*).
 
 Output format:
 {
   "title": "Your Life Forecast",
-  "subtitle": "Born [date] • [location]",
+  "subtitle": "Born ${inputs.birth_date} • ${inputs.birth_location}",
   "sections": [
     {
       "heading": "Who You Are: Your Natural Orientation",
@@ -203,26 +250,43 @@ Output format:
       ]
     },
     {
+      "heading": "Your Turning Point",
+      "content": [
+        {
+          "type": "paragraph",
+          "text": "... [Identify the specific date/period and its significance]"
+        },
+        {
+          "type": "paragraph",
+          "text": "... [Build intrigue about what could happen and why it matters]"
+        },
+        {
+          "type": "paragraph",
+          "text": "... [End with cliffhanger about timing vs. action]"
+        }
+      ]
+    },
+    {
       "heading": "Want to Know the Specifics?",
       "content": [
         {
           "type": "paragraph",
-          "text": "The complete 2026 forecast includes:"
+          "text": "The difference between those who capitalize on pivotal moments and those who miss them? Preparation and precision. The complete 2026 forecast reveals:"
         },
         {
           "type": "benefits_list",
           "items": [
+            "Exactly what to do during your [specific month] turning point window",
             "Month-by-month breakdown of opportunities and challenges",
             "Specific dates for major decisions and pivotal moments",
             "Strategic guidance on career, relationships, and finances",
-            "Key transition points where energy shifts",
-            "Critical decisions to make in each quarter"
+            "Which risks to take and which to avoid"
           ]
         },
         {
           "type": "cta",
-          "text": "Upgrade to the Full 2026 Forecast",
-          "subtext": "Get the complete roadmap for navigating your most pivotal year yet."
+          "text": "Unlock Your Complete 2026 Forecast",
+          "subtext": "Get the strategic playbook for your most pivotal year yet."
         }
       ]
     }
@@ -383,6 +447,63 @@ Deno.serve(async (req) => {
         house: calculateHouseFromAscendant(p.sign_id, ascendantSignId),
       }));
 
+    // Calculate 2026 dasha changes for the turning point hook
+    const year2026Start = new Date(2026, 0, 1);
+    const year2026End = new Date(2026, 11, 31);
+    
+    const dashaChanges2026: string[] = [];
+    for (const maha of allMahaDashas) {
+      const antarDashas = calculateAntarDashas(maha);
+      for (const antar of antarDashas) {
+        // Check if this antardasha starts within 2026
+        if (antar.start_date >= year2026Start && antar.start_date <= year2026End) {
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const startMonth = monthNames[antar.start_date.getMonth()];
+          const startDay = antar.start_date.getDate();
+          dashaChanges2026.push(`${maha.planet}-${antar.planet} (${startMonth} ${startDay})`);
+        }
+      }
+    }
+    const dashaChanges2026Text = dashaChanges2026.length > 0 
+      ? dashaChanges2026.join(", ") 
+      : undefined;
+
+    // Fetch 2026 transits from the transits_lookup table
+    let transits2026Text: string | undefined;
+    try {
+      const { data: transitsData } = await supabase
+        .from("transits_lookup")
+        .select("id, transit_data")
+        .eq("year", 2026);
+      
+      if (transitsData && transitsData.length > 0) {
+        const transitParts: string[] = [];
+        for (const row of transitsData) {
+          const data = row.transit_data as any;
+          if (row.id === "jupiter" && data?.sign) {
+            transitParts.push(`Jupiter in ${data.sign}${data.notes ? ` (${data.notes})` : ""}`);
+          } else if (row.id === "saturn" && data?.sign) {
+            transitParts.push(`Saturn in ${data.sign}`);
+          } else if (row.id === "rahu_ketu" && data?.rahu_sign) {
+            transitParts.push(`Rahu in ${data.rahu_sign}, Ketu in ${data.ketu_sign}`);
+            if (data.shift_date && data.rahu_sign_after) {
+              transitParts.push(`Rahu-Ketu shift to ${data.rahu_sign_after}/${data.ketu_sign_after} on ${data.shift_date}`);
+            }
+          }
+        }
+        if (transitParts.length > 0) {
+          transits2026Text = transitParts.join("; ");
+        }
+      }
+    } catch (transitError) {
+      logStep("Transit lookup failed (non-critical)", { error: String(transitError) });
+    }
+
+    logStep("2026 context prepared", {
+      dasha_changes_count: dashaChanges2026.length,
+      has_transits: !!transits2026Text,
+    });
+
     // Build prompt inputs
     const promptInputs: ForecastPromptInputs = {
       birth_date: kundliData.birth_date,
@@ -409,6 +530,8 @@ Deno.serve(async (req) => {
       moon_nakshatra: nakshatraInfo.name,
       ascendant_lord: ascendantLord,
       ascendant_lord_position: ascendantLordPositionText,
+      dasha_changes_2026: dashaChanges2026Text,
+      transits_2026: transits2026Text,
     };
 
     // Build the prompt
@@ -472,9 +595,7 @@ Deno.serve(async (req) => {
       usage: claudeData.usage,
     });
 
-    // Filter 2026 periods for storage
-    const year2026Start = new Date(2026, 0, 1);
-    const year2026End = new Date(2026, 11, 31);
+    // Filter 2026 periods for storage (reusing year2026Start/End from earlier)
 
     const dashaPeriods2026 = allMahaDashas
       .filter((maha: DashaPeriod) => maha.start_date <= year2026End && maha.end_date >= year2026Start)
