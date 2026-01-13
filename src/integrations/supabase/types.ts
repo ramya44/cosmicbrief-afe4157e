@@ -649,6 +649,30 @@ export type Database = {
         }
         Relationships: []
       }
+      vedic_zodiac_signs: {
+        Row: {
+          id: number
+          image_url: string | null
+          literal_meaning: string | null
+          sanskrit_name: string
+          western_name: string
+        }
+        Insert: {
+          id: number
+          image_url?: string | null
+          literal_meaning?: string | null
+          sanskrit_name: string
+          western_name: string
+        }
+        Update: {
+          id?: number
+          image_url?: string | null
+          literal_meaning?: string | null
+          sanskrit_name?: string
+          western_name?: string
+        }
+        Relationships: []
+      }
       zodiac_signs: {
         Row: {
           end_day: number
