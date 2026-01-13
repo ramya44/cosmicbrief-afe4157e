@@ -490,7 +490,7 @@ const VedicResultsPage = () => {
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
             {isPaidView && hasPaidForecast ? 'Complete 2026 Forecast' : '2026 Cosmic Brief'}
           </h1>
-          <p className="text-cream-muted font-sans">
+          <p className="text-cream-muted font-sans text-sm">
             {(() => {
               const [year, month, day] = kundli.birth_date.split('-').map(Number);
               return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
