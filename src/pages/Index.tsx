@@ -54,7 +54,7 @@ const Index = () => {
           </div>
 
           {/* Subtle footer text */}
-          <p className="mt-16 text-base text-muted-foreground animate-fade-up" style={{
+          <p className="mt-16 text-base text-muted-foreground font-sans animate-fade-up" style={{
           animationDelay: '500ms',
           animationFillMode: 'both'
         }}>
@@ -62,7 +62,7 @@ const Index = () => {
           </p>
           
           {/* Footer links */}
-          <p className="mt-6 text-sm text-muted-foreground animate-fade-up" style={{
+          <p className="mt-6 text-sm text-muted-foreground font-sans animate-fade-up" style={{
           animationDelay: '600ms',
           animationFillMode: 'both'
         }}>
