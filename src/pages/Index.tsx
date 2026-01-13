@@ -62,16 +62,15 @@ const Index = () => {
           </p>
           
           {/* Footer links */}
-          <p className="mt-6 text-sm text-muted-foreground font-sans animate-fade-up" style={{
+          <div className="mt-6 flex flex-col items-center gap-2 text-sm text-muted-foreground font-sans animate-fade-up" style={{
           animationDelay: '600ms',
           animationFillMode: 'both'
         }}>
             <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology</a>
-            {' · '}
             <a href="/#/privacy" className="text-gold hover:underline">Privacy Policy</a>
-            {' · '}
             <a href="/#/terms" className="text-gold hover:underline">Terms of Service</a>
-          </p>
+            <a href="/#/contact" className="text-gold hover:underline">Contact</a>
+          </div>
         </div>
       </div>
 
