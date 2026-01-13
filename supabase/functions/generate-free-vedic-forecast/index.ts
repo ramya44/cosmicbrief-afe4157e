@@ -114,6 +114,18 @@ export function buildUserPrompt(inputs: ForecastPromptInputs): string {
 
   return `Create a free astrology forecast for this person. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
+CRITICAL INSTRUCTION - LIFE AREA BALANCE:
+This forecast must cover MULTIPLE areas of life, not just career. Include appropriate discussion of:
+- Personal relationships (romantic, family, friendships)
+- Career and life purpose
+- Financial matters and resources
+- Health and well-being
+- Spiritual growth and inner development
+- Creative expression
+- Personal transformation
+
+DO NOT focus predominantly on career unless the chart overwhelmingly indicates a 10th house emphasis. Most people want guidance across ALL life areas.
+
 The JSON should include:
 
 1. **WHO YOU ARE: Natural Orientation**
@@ -122,18 +134,21 @@ The JSON should include:
    - One "astrology_note" with chart explanation
 
 2. **YOUR JOURNEY SO FAR: Key Patterns**
-   - 4-5 paragraphs summarizing their past as ONE flowing narrative
+   - 2-3 paragraphs summarizing their past as ONE flowing narrative
    - CRITICAL: Only discuss the Maha Dasha periods explicitly provided in "Past Dasha Periods" section below
    - DO NOT discuss childhood, early years, or formative experiences unless a dasha period clearly covers that time AFTER birth
    - If a dasha started before birth, only discuss the years AFTER the birth year
-   - Focus on: late teens/young adulthood, education, career formation, major life transitions, transformation phases
-   - Connect the PROVIDED mahadasha periods to adult life themes only
+   - Cover MULTIPLE life areas: relationships, career, personal growth, spiritual development, creative pursuits, health, family dynamics
+   - Balance the narrative - don't focus exclusively on career unless the chart strongly indicates it
+   - Connect the PROVIDED mahadasha periods to diverse adult life themes
    - NO detailed breakdowns - just touch on key transitions during their adult life
    - One "astrology_note" explaining dasha progression
 
 3. **WHAT'S NEXT: Path Forward**
    - 3-4 paragraphs teasing what the current year holds (general themes only)
-   - Emphasize that timing matters
+   - Cover MULTIPLE life areas: personal relationships, career/purpose, financial matters, health, spiritual growth, creativity
+   - Balance the focus across different life domains based on the person's chart
+   - Emphasize that timing matters across ALL these areas
    - Create intrigue without giving specifics
    - Mention this is a "pivotal year" or "setup phase"
 
@@ -141,9 +156,15 @@ The JSON should include:
    - ONE specific upcoming date or period in 2026 that will be highly significant
    - Keep it to 1-2 sentences ONLY
    - Lead with the WHAT (the event/moment), not the WHY
-   - Example: "June 1st, 2026 marks a rare career alignment that happens once every 12 years." or "Between March and May, a critical window opens for relationship decisions."
+   - VARY THE FOCUS: Don't default to career - consider relationships, health, spiritual growth, creativity, family, finances
+   - Examples across different life areas:
+     * Career: "June 1st, 2026 marks a rare professional alignment that happens once every 12 years."
+     * Relationships: "Between March and May, a critical window opens for relationship decisions and deep connections."
+     * Spiritual: "August 2026 presents a powerful period for spiritual awakening and inner transformation."
+     * Creative: "The spring of 2026 activates your creative potential in ways not seen since 2014."
+     * Financial: "Late summer 2026 brings your most auspicious financial opportunity in years."
    - End with: "Get the full forecast for details on [what they need to know]"
-   - Make the [what they need to know] specific and compelling: "how to prepare and what actions to take" or "the exact timing and strategic moves required" or "what to do in the weeks leading up to this moment"
+   - Make the [what they need to know] specific to the life area
    - DO NOT explain why it matters or give astrological details (that's for paid)
    - DO NOT give any guidance or actions (that's for paid)
    - Just name the moment + tell them to upgrade for the details
@@ -178,15 +199,18 @@ CRITICAL RESTRICTIONS FOR "JOURNEY SO FAR" SECTION:
 - Only discuss the Maha Dasha periods listed above under "Past Dasha Periods"
 - Do NOT extrapolate to childhood, early years, or pre-teen experiences
 - If a dasha started before birth, ONLY discuss the portion from ${birthYear} onward
-- Focus on: late teens (if dasha covers it), young adulthood, career development, major adult transitions
-- Example: If Mercury dasha is 1998-2015 and birth is 1989, discuss ages 9-26, focusing on education and early career
+- Cover diverse life areas: education, relationships, personal growth, career, spiritual development, creative pursuits
+- Example: If Mercury dasha is 1998-2015 and birth is 1989, discuss ages 9-26 across multiple life dimensions
 - Do NOT say things like "your early years were..." or "childhood likely..." or "formative experiences..."
 
-CORRECT APPROACH EXAMPLE:
-"From the late 1990s through 2015, your world expanded intellectually. This was your era of education, skill development, and professional identity formation..."
+CORRECT APPROACH EXAMPLE (shows balanced life areas):
+"From the late 1990s through 2015, your world expanded intellectually and socially. This was your era of education and forming meaningful connections, while also discovering your creative voice and beginning to understand your place in the world..."
 
 INCORRECT APPROACH (NEVER DO THIS):
 "Your childhood likely felt structured and serious. Early responsibilities shaped you..." [WRONG - we don't have childhood data]
+
+ALSO INCORRECT (too career-focused):
+"This period was all about professional development and career formation..." [WRONG - too narrow, missing other life areas]
 
 **2026 Context (use this to identify the turning point):**
 ${inputs.dasha_changes_2026 ? `Antar Dasha Changes: ${inputs.dasha_changes_2026}` : "Use current dasha context"}
@@ -195,10 +219,22 @@ ${inputs.transits_2026 ? `Major Transits: ${inputs.transits_2026}` : ""}
 INSTRUCTIONS FOR TURNING POINT SECTION:
 - Analyze the 2026 dasha changes and transits above
 - Identify the MOST auspicious or transformative period/date
-- Focus on: Jupiter transits, Venus periods, benefic dasha changes, or major axis shifts
+- IMPORTANT: Determine which LIFE AREA this period most affects based on house placements:
+  * 1st house: Self-discovery, health, new beginnings
+  * 2nd/11th house: Finances, wealth, resources
+  * 3rd house: Communication, siblings, short travels
+  * 4th house: Home, family, emotional foundation
+  * 5th house: Creativity, romance, children
+  * 6th house: Health, service, daily routines
+  * 7th house: Partnerships, marriage, relationships
+  * 8th house: Transformation, shared resources, occult
+  * 9th house: Spirituality, higher learning, long journeys
+  * 10th house: Career, public life, reputation
+  * 12th house: Spirituality, foreign lands, solitude
+- DO NOT default to career unless the chart clearly emphasizes 10th house
 - Make it specific: "May 15th" or "The window between June-August" or "Late March 2026"
-- Connect it to their life area: career for 10th house emphasis, relationships for 7th, wealth for 2nd/11th, etc.
-- Create genuine curiosity: What opportunity? What decision? What risk?
+- Match the turning point to the actual life area the transits/dashas affect
+- Create genuine curiosity: What opportunity? What decision? What transformation?
 - Leave them wanting more
 
 Return valid JSON only. Use markdown within text fields for emphasis (**bold**, *italic*).
