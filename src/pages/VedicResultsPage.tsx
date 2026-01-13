@@ -123,9 +123,15 @@ const VedicResultsPage = () => {
   };
 
   // Calculate derived values unconditionally (before any returns)
-  const hasPaidForecast = !!kundli?.paid_vedic_forecast;
-  const forecastToShow = (isPaidView && hasPaidForecast) ? kundli?.paid_vedic_forecast : kundli?.free_vedic_forecast;
-  const parsedForecast = forecastToShow ? parseJsonForecast(forecastToShow) : null;
+  const hasPaidForecast = useMemo(() => !!kundli?.paid_vedic_forecast, [kundli]);
+  const forecastToShow = useMemo(() => 
+    (isPaidView && kundli?.paid_vedic_forecast) ? kundli?.paid_vedic_forecast : kundli?.free_vedic_forecast,
+    [isPaidView, kundli]
+  );
+  const parsedForecast = useMemo(() => 
+    forecastToShow ? parseJsonForecast(forecastToShow) : null,
+    [forecastToShow]
+  );
   const sectionsWithIds = useMemo(() => getSectionsWithIds(parsedForecast), [parsedForecast]);
 
   const handleViewChange = (isPaid: boolean) => {
