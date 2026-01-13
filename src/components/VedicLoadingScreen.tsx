@@ -3,7 +3,7 @@ import { StarField } from '@/components/StarField';
 import { Compass } from 'lucide-react';
 
 const MYSTICAL_PHRASES = [
-  "Reading your Moon's nakshatra...",
+  "Analyzing your nakshatra...",
   "Tracing your Dasha periods...",
   "Mapping Saturn's influence...",
   "Analyzing Rahu and Ketu...",
