@@ -48,10 +48,21 @@ const InputPage = () => {
       const selectedDate = new Date(formData.birthDate);
       const min = new Date(minDate);
       const max = new Date(today);
+      
+      // Calculate age
+      const todayDate = new Date();
+      let age = todayDate.getFullYear() - selectedDate.getFullYear();
+      const monthDiff = todayDate.getMonth() - selectedDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && todayDate.getDate() < selectedDate.getDate())) {
+        age--;
+      }
+      
       if (selectedDate < min) {
         newErrors.birthDate = 'Date cannot be before 1900';
       } else if (selectedDate > max) {
         newErrors.birthDate = 'Date cannot be in the future';
+      } else if (age < 12) {
+        newErrors.birthDate = 'You must be at least 12 years old to use this service';
       }
     }
     if (!formData.birthTime) {
