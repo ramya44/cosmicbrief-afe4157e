@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { getDeviceId } from '@/lib/deviceId';
 
 interface KundliData {
   id: string;
@@ -33,6 +32,7 @@ const VedicProfilePage = () => {
   const [animalData, setAnimalData] = useState<AnimalData | null>(null);
   const [zodiacLookup, setZodiacLookup] = useState<ZodiacLookup>({});
   const [loading, setLoading] = useState(true);
+  const [isFlipped, setIsFlipped] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,6 +92,12 @@ const VedicProfilePage = () => {
     fetchData();
   }, [kundliId]);
 
+  const formatWithTranslation = (sanskritName: string | null) => {
+    if (!sanskritName) return null;
+    const western = zodiacLookup[sanskritName];
+    return western ? `${sanskritName} (${western})` : sanskritName;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-midnight flex items-center justify-center">
@@ -134,60 +140,87 @@ const VedicProfilePage = () => {
 
       {/* Main Content */}
       <main className="relative z-10 container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          {/* Profile Card */}
-          <div className="bg-midnight/60 border border-gold/20 rounded-2xl p-8">
-            {/* Animal Image (Centered) */}
-            {animalData && (
-              <div className="flex flex-col items-center mb-8">
-                <img
-                  src={animalData.image_url}
-                  alt={kundli.animal_sign || 'Animal'}
-                  className="w-72 h-72 md:w-84 md:h-84 object-contain"
-                />
-                <p className="text-gold font-display text-lg italic text-center mt-3">
-                  {animalData.phrase}
-                </p>
+        <div className="max-w-md mx-auto flex flex-col items-center">
+          {/* Flip Card */}
+          <div 
+            className="w-80 h-96 cursor-pointer perspective-1000"
+            onClick={() => setIsFlipped(!isFlipped)}
+            style={{ perspective: '1000px' }}
+          >
+            <div 
+              className="relative w-full h-full transition-transform duration-700"
+              style={{ 
+                transformStyle: 'preserve-3d',
+                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+              }}
+            >
+              {/* Front of Card - Animal Image */}
+              <div 
+                className="absolute inset-0 bg-midnight/80 border border-gold/30 rounded-2xl p-6 flex flex-col items-center justify-center"
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                {animalData && (
+                  <img
+                    src={animalData.image_url}
+                    alt={kundli.animal_sign || 'Animal'}
+                    className="w-64 h-64 object-contain"
+                  />
+                )}
+                <p className="text-cream-muted text-sm mt-4 animate-pulse">Tap to reveal</p>
               </div>
-            )}
 
-            {/* Astrological Details */}
-            <div className="w-full">
-              <h2 className="text-cream font-display text-2xl mb-6 text-center">Your Cosmic Blueprint</h2>
-              <div className="space-y-4">
-                {kundli.nakshatra && (
-                  <div className="flex justify-between items-center py-3 border-b border-border/20">
-                    <span className="text-cream-muted">Nakshatra</span>
-                    <span className="text-cream font-medium text-lg">{kundli.nakshatra}</span>
-                  </div>
-                )}
-                {kundli.moon_sign && (
-                  <div className="flex justify-between items-center py-3 border-b border-border/20">
-                    <span className="text-cream-muted">Moon Sign</span>
-                    <span className="text-cream font-medium text-lg">
-                      {zodiacLookup[kundli.moon_sign] || kundli.moon_sign}
-                    </span>
-                  </div>
-                )}
-                {kundli.sun_sign && (
-                  <div className="flex justify-between items-center py-3 border-b border-border/20">
-                    <span className="text-cream-muted">Sun Sign</span>
-                    <span className="text-cream font-medium text-lg">
-                      {zodiacLookup[kundli.sun_sign] || kundli.sun_sign}
-                    </span>
-                  </div>
-                )}
-                {kundli.ascendant_sign && (
-                  <div className="flex justify-between items-center py-3">
-                    <span className="text-cream-muted">Ascendant</span>
-                    <span className="text-cream font-medium text-lg">
-                      {zodiacLookup[kundli.ascendant_sign] || kundli.ascendant_sign}
-                    </span>
-                  </div>
-                )}
+              {/* Back of Card - Astrological Details */}
+              <div 
+                className="absolute inset-0 bg-midnight/80 border border-gold/30 rounded-2xl p-6 flex flex-col justify-center"
+                style={{ 
+                  backfaceVisibility: 'hidden',
+                  transform: 'rotateY(180deg)'
+                }}
+              >
+                <h2 className="text-gold font-display text-xl mb-6 text-center">Your Cosmic Blueprint</h2>
+                <div className="space-y-4">
+                  {kundli.animal_sign && (
+                    <div className="flex justify-between items-center py-2 border-b border-border/20">
+                      <span className="text-cream-muted text-sm">Animal</span>
+                      <span className="text-cream font-medium">{kundli.animal_sign}</span>
+                    </div>
+                  )}
+                  {kundli.nakshatra && (
+                    <div className="flex justify-between items-center py-2 border-b border-border/20">
+                      <span className="text-cream-muted text-sm">Nakshatra</span>
+                      <span className="text-cream font-medium">{kundli.nakshatra}</span>
+                    </div>
+                  )}
+                  {kundli.moon_sign && (
+                    <div className="flex justify-between items-center py-2 border-b border-border/20">
+                      <span className="text-cream-muted text-sm">Moon</span>
+                      <span className="text-cream font-medium">{formatWithTranslation(kundli.moon_sign)}</span>
+                    </div>
+                  )}
+                  {kundli.sun_sign && (
+                    <div className="flex justify-between items-center py-2 border-b border-border/20">
+                      <span className="text-cream-muted text-sm">Sun</span>
+                      <span className="text-cream font-medium">{formatWithTranslation(kundli.sun_sign)}</span>
+                    </div>
+                  )}
+                  {kundli.ascendant_sign && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-cream-muted text-sm">Ascendant</span>
+                      <span className="text-cream font-medium">{formatWithTranslation(kundli.ascendant_sign)}</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-cream-muted text-sm mt-6 text-center animate-pulse">Tap to flip back</p>
               </div>
             </div>
           </div>
+
+          {/* Phrase below the card */}
+          {animalData && (
+            <p className="text-gold font-display text-xl italic text-center mt-8 max-w-sm">
+              "{animalData.phrase}"
+            </p>
+          )}
         </div>
       </main>
     </div>
