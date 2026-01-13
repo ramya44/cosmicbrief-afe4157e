@@ -122,7 +122,7 @@ The JSON should include:
    - One "astrology_note" with chart explanation
 
 2. **YOUR JOURNEY SO FAR: Key Patterns**
-   - 2-3 paragraphs summarizing their past as ONE flowing narrative
+   - 4-5 paragraphs summarizing their past as ONE flowing narrative
    - CRITICAL: Only discuss the Maha Dasha periods explicitly provided in "Past Dasha Periods" section below
    - DO NOT discuss childhood, early years, or formative experiences unless a dasha period clearly covers that time AFTER birth
    - If a dasha started before birth, only discuss the years AFTER the birth year
@@ -132,21 +132,21 @@ The JSON should include:
    - One "astrology_note" explaining dasha progression
 
 3. **WHAT'S NEXT: Path Forward**
-   - 2-3 paragraphs teasing what the current year holds (general themes only)
+   - 3-4 paragraphs teasing what the current year holds (general themes only)
    - Emphasize that timing matters
    - Create intrigue without giving specifics
    - Mention this is a "pivotal year" or "setup phase"
 
 4. **YOUR TURNING POINT (Hook Section - CRITICAL)**
-   - Identify ONE specific upcoming date or period in 2026 that will be highly significant for this person
-   - Use the Antardasha changes or major transits to find the most compelling moment
-   - Make it personal and specific (e.g., "June 2026 marks a critical window when..." or "Between March and May, a rare alignment creates...")
-   - Explain WHY this moment matters (career opportunity, relationship shift, financial breakthrough, etc.) but keep it intriguing
-   - Create urgency and FOMO about this specific window
-   - Build tension: "This is the kind of window that..." or "People who understand moments like this..."
-   - End with a cliffhanger: "But knowing when is only half the story. Knowing what to do—and what to avoid—that's everything."
-   - DO NOT give specific actions or guidance (that's reserved for paid version)
-   - DO NOT use generic language - make it feel like insider knowledge
+   - ONE specific upcoming date or period in 2026 that will be highly significant
+   - Keep it to 1-2 sentences ONLY
+   - Lead with the WHAT (the event/moment), not the WHY
+   - Example: "June 1st, 2026 marks a rare career alignment that happens once every 12 years." or "Between March and May, a critical window opens for relationship decisions."
+   - End with: "Get the full forecast for details on [what they need to know]"
+   - Make the [what they need to know] specific and compelling: "how to prepare and what actions to take" or "the exact timing and strategic moves required" or "what to do in the weeks leading up to this moment"
+   - DO NOT explain why it matters or give astrological details (that's for paid)
+   - DO NOT give any guidance or actions (that's for paid)
+   - Just name the moment + tell them to upgrade for the details
 
 5. **UPGRADE SECTION**
    - Brief intro paragraph that builds on the hook: "The difference between those who capitalize on pivotal moments and those who miss them? Preparation and precision."
@@ -254,15 +254,7 @@ Output format:
       "content": [
         {
           "type": "paragraph",
-          "text": "... [Identify the specific date/period and its significance]"
-        },
-        {
-          "type": "paragraph",
-          "text": "... [Build intrigue about what could happen and why it matters]"
-        },
-        {
-          "type": "paragraph",
-          "text": "... [End with cliffhanger about timing vs. action]"
+          "text": "... [1-2 sentences: Specific date/period + what it represents. Example: 'June 1st, 2026 marks a rare career alignment that happens once every 12 years. Get the full forecast for details on how to prepare and what actions to take during this critical window.']"
         }
       ]
     },
