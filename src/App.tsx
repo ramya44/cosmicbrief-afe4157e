@@ -18,6 +18,7 @@ import VedicInputPage from "./pages/VedicInputPage";
 import VedicResultsPage from "./pages/VedicResultsPage";
 import VedicPaymentSuccessPage from "./pages/VedicPaymentSuccessPage";
 import VedicAstrologyExplainedPage from "./pages/VedicAstrologyExplainedPage";
+import VedicProfilePage from "./pages/VedicProfilePage";
 import ContactPage from "./pages/ContactPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
@@ -91,6 +92,7 @@ const App = () => (
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="/vedic/payment-success" element={<VedicPaymentSuccessPage />} />
+          <Route path="/vedic/profile" element={<VedicProfilePage />} />
           <Route path="/vedic-astrology-explained" element={<VedicAstrologyExplainedPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<NotFound />} />
