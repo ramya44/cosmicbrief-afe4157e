@@ -6,14 +6,14 @@ import { ArrowLeft, Sparkles } from 'lucide-react';
 const VedicAstrologyExplainedPage = () => {
   return <>
       <Helmet>
-        <title>Vedic Astrology Basics for Western Astrologers | Cosmic Brief</title>
+        <title>Vedic Astrology Basics | Cosmic Brief</title>
         <meta name="description" content="Learn the fundamentals of Vedic astrology (Jyotish), including the sidereal zodiac, nakshatras, dasha periods, and how it differs from Western astrology." />
         <link rel="canonical" href="https://cosmicbrief.app/#/vedic-astrology-explained" />
         <script type="application/ld+json">
           {JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Article",
-          "headline": "Vedic Astrology Basics for Western Astrologers",
+          "headline": "Vedic Astrology Basics",
           "description": "A comprehensive guide to Vedic astrology fundamentals for those familiar with Western astrology.",
           "author": {
             "@type": "Organization",
@@ -39,7 +39,7 @@ const VedicAstrologyExplainedPage = () => {
         <main className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
           <article className="prose prose-invert prose-lg max-w-none text-lg">
             <h1 className="text-4xl md:text-5xl font-bold text-cream mb-6">
-              Vedic Astrology Basics for Western Astrologers
+              Vedic Astrology Basics
             </h1>
             
             <p className="text-xl text-cream-muted leading-relaxed mb-8">

@@ -26,7 +26,7 @@ const TermsPage = () => {
       <div className="relative z-10 flex flex-col items-center min-h-screen px-4 py-20">
         <div className="w-full max-w-2xl">
           <article className="prose prose-invert prose-gold max-w-none">
-            <h1 className="text-4xl md:text-5xl font-bold text-cream mb-2">
+            <h1 className="text-4xl md:text-5xl font-bold text-gold mb-2">
               Terms of Service
             </h1>
             <p className="text-cream-muted mb-10">
