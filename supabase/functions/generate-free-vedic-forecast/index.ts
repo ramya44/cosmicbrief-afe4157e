@@ -19,6 +19,14 @@ import {
   formatCurrentDashaForPrompt,
   type DashaJson,
 } from "./lib/dasha-prompt-helpers.ts";
+import {
+  formatPlanetaryPositionsForPrompt,
+  getSignLord,
+  calculateHouseFromAscendant,
+  getOrdinal,
+  getAscendantLordPosition,
+  toWesternSign,
+} from "../_shared/lib/planetary-positions.ts";
 
 function logStep(step: string, details?: Record<string, unknown>) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
@@ -49,11 +57,7 @@ interface ForecastPromptInputs {
   birth_location: string;
   ascendant_sign: string;
   ascendant_degree?: number;
-  planetary_positions: {
-    name: string;
-    sign: string;
-    house: number;
-  }[];
+  planetary_positions_text: string; // Pre-formatted planetary positions string
   current_mahadasha: {
     name: string;
     start: string;
@@ -72,37 +76,10 @@ interface ForecastPromptInputs {
   transits_2026?: string;
 }
 
-function calculateHouseFromAscendant(planetSignId: number, ascendantSignId: number): number {
-  // House is calculated as the distance from the ascendant sign
-  // If planet is in ascendant sign, it's in the 1st house
-  let house = planetSignId - ascendantSignId + 1;
-  if (house <= 0) house += 12;
-  return house;
-}
-
-function getSignLord(sign: string): string {
-  const signLords: Record<string, string> = {
-    Aries: "Mars",
-    Taurus: "Venus",
-    Gemini: "Mercury",
-    Cancer: "Moon",
-    Leo: "Sun",
-    Virgo: "Mercury",
-    Libra: "Venus",
-    Scorpio: "Mars",
-    Sagittarius: "Jupiter",
-    Capricorn: "Saturn",
-    Aquarius: "Saturn",
-    Pisces: "Jupiter",
-  };
-  return signLords[sign] || "Unknown";
-}
+// calculateHouseFromAscendant and getSignLord imported from _shared/lib/planetary-positions.ts
 
 export function buildUserPrompt(inputs: ForecastPromptInputs): string {
-  // Format planetary positions
-  const planetaryPositionsText = inputs.planetary_positions
-    .map((p) => `- ${p.name} in ${p.sign} (${getOrdinal(p.house)} house from ascendant)`)
-    .join("\n");
+  // Planetary positions already formatted
 
   // Format ascendant lord info
   const ascendantLordInfo =
@@ -188,7 +165,7 @@ Birth Year: ${birthYear} (CRITICAL: Do not discuss any life events before this y
 **Ascendant:** ${inputs.ascendant_sign}${inputs.ascendant_degree ? ` at ${inputs.ascendant_degree.toFixed(1)}°` : ""}${ascendantLordInfo}
 
 **Key Planets:**
-${planetaryPositionsText}
+${inputs.planetary_positions_text}
 
 **Moon Nakshatra:** ${inputs.moon_nakshatra}
 
@@ -327,11 +304,7 @@ Output format:
 }`;
 }
 
-function getOrdinal(n: number): string {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
+// getOrdinal imported from _shared/lib/planetary-positions.ts
 
 interface RequestBody {
   kundli_id: string;
@@ -470,15 +443,18 @@ Deno.serve(async (req) => {
       current_dasha: currentDashaInfo?.mahadasha?.name,
     });
 
-    // Prepare planetary positions for prompt (key planets only)
-    const keyPlanets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Rahu", "Ketu"];
-    const keyPlanetaryPositions = planetaryPositions
-      .filter((p) => keyPlanets.includes(p.name))
-      .map((p) => ({
-        name: p.name,
-        sign: p.sign,
-        house: calculateHouseFromAscendant(p.sign_id, ascendantSignId),
-      }));
+    // Format planetary positions for prompt using shared helper
+    const planetaryPositionsText = formatPlanetaryPositionsForPrompt(
+      planetaryPositions,
+      ascendantSign,
+      ascendantSignId,
+      {
+        includeRulership: true,
+        includeDegree: false,
+        includeRetrograde: false,
+        useWesternSigns: true,
+      }
+    );
 
     // Calculate 2026 dasha changes for the turning point hook
     const year2026Start = new Date(2026, 0, 1);
@@ -545,7 +521,7 @@ Deno.serve(async (req) => {
       birth_location: kundliData.birth_place,
       ascendant_sign: ascendantSign,
       ascendant_degree: ascendantDegree,
-      planetary_positions: keyPlanetaryPositions,
+      planetary_positions_text: planetaryPositionsText,
       current_mahadasha: currentDashaInfo?.mahadasha || {
         name: currentMahaDasha.planet,
         start: formatDate(currentMahaDasha.start_date),

@@ -1,5 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import {
+  formatPlanetaryPositionsForPrompt,
+  getSignLord,
+  calculateHouseFromAscendant,
+  getOrdinal,
+  toWesternSign,
+  type PlanetaryPosition,
+} from "../_shared/lib/planetary-positions.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,15 +37,6 @@ When writing forecasts:
 
 Return ONLY valid JSON. No markdown code blocks, no additional text before or after the JSON.`;
 
-interface PlanetaryPosition {
-  name: string;
-  sign: string;
-  sign_id: number;
-  degree: number;
-  full_degree: number;
-  is_retrograde: boolean;
-}
-
 interface PratyantardashaInfo {
   mahadasha: string;
   antardasha: string;
@@ -45,28 +44,6 @@ interface PratyantardashaInfo {
   start: string;
   end: string;
   dateRange: string;
-}
-
-function calculateHouseFromAscendant(planetSignId: number, ascendantSignId: number): number {
-  let house = planetSignId - ascendantSignId + 1;
-  if (house <= 0) house += 12;
-  return house;
-}
-
-function getOrdinal(n: number): string {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-function getSignLord(sign: string): string {
-  const signLords: Record<string, string> = {
-    "Aries": "Mars", "Taurus": "Venus", "Gemini": "Mercury",
-    "Cancer": "Moon", "Leo": "Sun", "Virgo": "Mercury",
-    "Libra": "Venus", "Scorpio": "Mars", "Sagittarius": "Jupiter",
-    "Capricorn": "Saturn", "Aquarius": "Saturn", "Pisces": "Jupiter",
-  };
-  return signLords[sign] || "Unknown";
 }
 
 function formatDateRangeDetailed(start: Date, end: Date): string {
@@ -384,17 +361,21 @@ Deno.serve(async (req) => {
 
     // Find ascendant
     const ascendantPosition = planetaryPositions.find(p => p.name === "Ascendant");
+    const ascendantSign = ascendantPosition?.sign || "Aries";
     const ascendantSignId = ascendantPosition?.sign_id || 1;
 
-    // Format planetary positions for prompt
-    const keyPlanets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Rahu", "Ketu"];
-    const planetaryPositionsText = planetaryPositions
-      .filter(p => keyPlanets.includes(p.name))
-      .map(p => {
-        const house = calculateHouseFromAscendant(p.sign_id, ascendantSignId);
-        return `- ${p.name} in ${p.sign} (${getOrdinal(house)} house)${p.is_retrograde ? " [R]" : ""} at ${p.degree.toFixed(1)}°`;
-      })
-      .join("\n");
+    // Format planetary positions for prompt using shared helper
+    const planetaryPositionsText = formatPlanetaryPositionsForPrompt(
+      planetaryPositions,
+      ascendantSign,
+      ascendantSignId,
+      {
+        includeRulership: true,
+        includeDegree: true,
+        includeRetrograde: true,
+        useWesternSigns: true,
+      }
+    );
 
     // Get current dasha hierarchy
     const currentDasha = getCurrentDashaFromList(dashaPeriods);
