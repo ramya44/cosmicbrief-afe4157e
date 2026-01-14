@@ -1,15 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import {
-  formatPlanetaryPositionsForPrompt,
-  type PlanetaryPosition,
-} from "../_shared/lib/planetary-positions.ts";
-import {
-  getPratyantardashasForYear,
-  getCurrentDashaWithPratyantardasha,
-  formatPratyantardashasForPrompt,
-  type DashaJson,
-} from "../_shared/lib/dasha-helpers.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,7 +29,131 @@ When writing forecasts:
 
 Return ONLY valid JSON. No markdown code blocks, no additional text before or after the JSON.`;
 
+interface PlanetaryPosition {
+  name: string;
+  sign: string;
+  sign_id: number;
+  degree: number;
+  full_degree: number;
+  is_retrograde: boolean;
+}
+
+interface PratyantardashaInfo {
+  mahadasha: string;
+  antardasha: string;
+  pratyantardasha: string;
+  start: string;
+  end: string;
+  dateRange: string;
+}
+
+function calculateHouseFromAscendant(planetSignId: number, ascendantSignId: number): number {
+  let house = planetSignId - ascendantSignId + 1;
+  if (house <= 0) house += 12;
+  return house;
+}
+
+function getOrdinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function getSignLord(sign: string): string {
+  const signLords: Record<string, string> = {
+    "Aries": "Mars", "Taurus": "Venus", "Gemini": "Mercury",
+    "Cancer": "Moon", "Leo": "Sun", "Virgo": "Mercury",
+    "Libra": "Venus", "Scorpio": "Mars", "Sagittarius": "Jupiter",
+    "Capricorn": "Saturn", "Aquarius": "Saturn", "Pisces": "Jupiter",
+  };
+  return signLords[sign] || "Unknown";
+}
+
+function formatDateRangeDetailed(start: Date, end: Date): string {
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const startMonth = monthNames[start.getMonth()];
+  const startDay = start.getDate();
+  const endMonth = monthNames[end.getMonth()];
+  const endDay = end.getDate();
+  const year = end.getFullYear();
+  
+  if (start.getFullYear() === end.getFullYear()) {
+    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
+  } else {
+    return `${startMonth} ${startDay}, ${start.getFullYear()} - ${endMonth} ${endDay}, ${year}`;
+  }
+}
+
+function getPratyantardashasForYear(dashas: any[], year: number): PratyantardashaInfo[] {
+  const yearStart = new Date(year, 0, 1);
+  const yearEnd = new Date(year, 11, 31, 23, 59, 59);
+  const pratyantardashas: PratyantardashaInfo[] = [];
+  
+  for (const mahadasha of dashas) {
+    if (!mahadasha.antardasha) continue;
+    for (const antardasha of mahadasha.antardasha) {
+      if (!antardasha.pratyantardasha) continue;
+      for (const pratyantar of antardasha.pratyantardasha) {
+        const start = new Date(pratyantar.start);
+        const end = new Date(pratyantar.end);
+        if (end >= yearStart && start <= yearEnd) {
+          pratyantardashas.push({
+            mahadasha: mahadasha.name,
+            antardasha: antardasha.name,
+            pratyantardasha: pratyantar.name,
+            start: pratyantar.start,
+            end: pratyantar.end,
+            dateRange: formatDateRangeDetailed(start, end)
+          });
+        }
+      }
+    }
+  }
+  pratyantardashas.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+  return pratyantardashas;
+}
+
+function getCurrentDashaFromList(dashas: any[], currentDate: Date = new Date()) {
+  const currentMahadasha = dashas.find(d => {
+    const start = new Date(d.start);
+    const end = new Date(d.end);
+    return currentDate >= start && currentDate <= end;
+  });
+  if (!currentMahadasha) return null;
+  
+  const currentAntardasha = currentMahadasha.antardasha?.find((ad: any) => {
+    const start = new Date(ad.start);
+    const end = new Date(ad.end);
+    return currentDate >= start && currentDate <= end;
+  });
+  
+  let currentPratyantardasha = null;
+  if (currentAntardasha?.pratyantardasha) {
+    currentPratyantardasha = currentAntardasha.pratyantardasha.find((pd: any) => {
+      const start = new Date(pd.start);
+      const end = new Date(pd.end);
+      return currentDate >= start && currentDate <= end;
+    });
+  }
+  
+  return {
+    mahadasha: currentMahadasha,
+    antardasha: currentAntardasha,
+    pratyantardasha: currentPratyantardasha
+  };
+}
+
 function buildPaidUserPrompt(inputs: {
+  name?: string;
+  year: number;
+  birth_date: string;
+  birth_time: string;
+  birth_location: string;
+  planetary_positions: string;
+  current_dasha: string;
+  pratyantardashas: string;
+  transits: string;
+}): string function buildPaidUserPrompt(inputs: {
   name?: string;
   year: number;
   birth_date: string;
@@ -54,38 +168,87 @@ function buildPaidUserPrompt(inputs: {
   return `Create a comprehensive paid astrology forecast ${personReference} for ${inputs.year}. Return ONLY valid JSON (no markdown code blocks, no additional text).
 
 CRITICAL INSTRUCTION - LIFE AREA BALANCE:
-This forecast must provide guidance across ALL major life areas. Each monthly period should address relevant themes from:
-- Personal relationships (romantic partnerships, family dynamics, friendships)
-- Career and professional development
-- Financial matters and material resources
-- Health and physical well-being
-- Spiritual growth and inner development
-- Creative expression and hobbies
-- Home and living situation
-- Personal transformation and psychology
+This forecast should focus on the life areas that are ACTUALLY activated by this person's chart, not force coverage of everything.
 
-Do NOT focus predominantly on career unless the specific dasha/transit clearly emphasizes 10th house themes. Most periods will touch multiple life areas - cover them comprehensively.
+Analyze which houses are emphasized by:
+- Current dasha lords and their house RULERSHIPS (shown in planetary positions)
+- Planets involved in current periods and which houses they RULE
+- House placements of active planets
+- Major transits affecting specific houses
+
+Then focus your narrative on the 2-4 most relevant life areas for each period from:
+- Personal relationships (7th house, Venus)
+- Career and professional development (10th house, Sun, Saturn)
+- Financial matters and resources (2nd, 11th houses)
+- Health and physical well-being (1st, 6th houses)
+- Spiritual growth and inner development (9th, 12th houses, Jupiter, Ketu)
+- Creative expression and hobbies (5th house)
+- Home and living situation (4th house, Moon)
+- Personal transformation and psychology (8th house, Rahu)
+
+IMPORTANT: Different months will emphasize different areas. Don't force all 8 areas into every month.
+DO NOT default to career unless there's clear 10th house or Sun/Saturn rulership emphasis.
+Quality > Quantity: Better to give deep, actionable guidance on 2-3 relevant areas than surface coverage of everything.
+
+CRITICAL - AVOID ASSUMPTIONS ABOUT PROFESSION/LIFESTYLE:
+- DO NOT assume the person is a healer, teacher, spiritual practitioner, or wants to be
+- DO NOT assume they work in healthcare, wellness, or spiritual counseling
+- Offer BOTH spiritual AND secular interpretations of house activations
+- Use conditional language: "This could manifest as..." not "You will become..."
+- Examples:
+  * 6th house: "improving daily routines, health focus, service at work, OR healing/wellness practices"
+  * 9th house: "higher education, travel, philosophy, OR spiritual studies"
+  * 12th house: "rest/retreat, foreign connections, behind-the-scenes work, OR meditation/spirituality"
+
+BALANCE POSITIVE AND CHALLENGING PERIODS:
+- Not every month is amazing - life has natural ups and downs
+- Include 1-2 periods that are more challenging or require caution/patience
+- Note difficult transits, retrogrades, or malefic dasha combinations
+- Be honest: "This month requires patience" or "Expect some friction in..."
+- Challenging periods make the positive ones more credible
+
+ASSESS YEAR CHARACTER HONESTLY:
+Look at the dasha structure for ${inputs.year}:
+- Same Mahadasha + Same Antardasha all year = "Continuation/Consolidation Year" (building on established themes)
+- Antardasha changes but Mahadasha stays = "Subtle Shift Year" (evolution within familiar territory)
+- Mahadasha changes during year = "Major Transformation Year" (significant life chapter change)
+- Multiple Antardasha changes = "Dynamic/Transitional Year" (varied experiences)
+
+DO NOT call every year "transformative" or "pivotal" - be truthful about the year's actual energy.
+
+DIVERSIFY MONTHLY THEMES:
+Each monthly period should emphasize DIFFERENT aspects, even if same houses are active.
+
+Example: If 6th house is active in 3 consecutive months:
+- Month 1: Focus on health/wellness routines and body awareness
+- Month 2: Focus on service/helping others at work or in community
+- Month 3: Focus on problem-solving skills and overcoming obstacles
+
+Avoid repetition like "healing abilities" or "spiritual growth" in every single month.
 
 The JSON should include:
 
 **1. OVERVIEW: ${inputs.year} Theme**
-- 2-3 paragraphs summarizing the year's main energy across different life domains
-- One "astrology_note" explaining the dasha context
+- 2-3 paragraphs honestly characterizing the year's energy (use assessment above)
+- Focus on the most emphasized life domains based on dasha/transit analysis
+- One "astrology_note" explaining the dasha context and major patterns
 
 **2. MONTH-BY-MONTH BREAKDOWN**
 For each pratyantardasha period in ${inputs.year}, create a "period" object with:
 - **date_range**: The exact dates
-- **title**: A descriptive name for the period (e.g., "The Action Window")
-- **what_happening**: 2-3 paragraphs on practical life themes across MULTIPLE areas:
-  * Relationships and connections
-  * Career and purpose
-  * Financial matters
-  * Health and well-being
-  * Spiritual/personal growth
-  * Other relevant life areas based on the planetary influences
-  Balance coverage - don't default to career unless chart clearly indicates it
-- **astrology**: 1 paragraph explaining active planets, house rulerships, and why this creates these effects
-- **key_actions**: 2-3 sentences with specific, actionable recommendations (covering different life areas when relevant)
+- **title**: A descriptive name for the period that reflects its unique energy
+- **what_happening**: 2-3 paragraphs focusing on the 2-4 life areas most activated by this specific period:
+  * Identify which houses are being activated by the dasha lords
+  * Focus deeply on those specific life themes
+  * Provide both spiritual AND practical/secular interpretations
+  * Include realistic challenges or cautions where appropriate
+  * Example: Venus-Mars period in 7th/2nd houses = relationships + finances (skip career/spirituality)
+- **astrology**: 1 paragraph explaining which planets are active, which houses they rule, and why this creates these specific effects
+- **key_actions**: 2-3 SPECIFIC, actionable recommendations with numbers/timeframes:
+  * Good: "Research 3 courses in [area] and enroll in one by month-end"
+  * Good: "Schedule 2 networking events and follow up with 5 new connections"
+  * Bad: "Consider education opportunities" (too vague)
+  * Bad: "Be open to growth" (not actionable)
 
 Group periods intelligently - combine very short periods (under 3 weeks).
 
@@ -93,36 +256,28 @@ Group periods intelligently - combine very short periods (under 3 weeks).
 - Create "transitions_table" type
 - Include 8-12 most important dates (pratyantardasha changes + major transits)
 - Each entry: date (short format) + significance (1-2 sentences)
-- Mark the most critical transition with emphasis in the text
+- Include both positive transitions AND challenging ones (retrogrades, difficult aspects)
+- Mark the most critical 2-3 transitions with bold emphasis
 
 **4. PIVOTAL THEMES**
-- 4-5 "theme" objects covering different life dimensions
-- Vary the themes - don't make them all career-focused
-- Examples of balanced themes:
-  * "Your Network Is Your Net Worth" (relationships/connections)
-  * "The Healing Journey" (health/well-being)
-  * "Creative Renaissance" (self-expression/hobbies)
-  * "Financial Foundations" (money/resources)
-  * "Spiritual Awakening" (inner growth/purpose)
-  * "Home and Belonging" (family/living situation)
+- 4-5 "theme" objects covering the MOST EMPHASIZED life dimensions from the chart
+- Vary the themes - don't make them all spiritual/healing unless chart overwhelmingly indicates it
+- Use conditional framing: "If you're drawn to X..." or "This could manifest as..."
 - Each: bold title + 1 paragraph explanation
 - Connect to specific time periods when relevant
 
 **5. KEY DECISIONS**
 - 4 "decision" objects (Q1, Q2, Q3, Q4)
 - Each: quarter label, bold question, 1 paragraph guidance
-- Vary the focus across quarters - examples:
-  * "Who should I connect with?" (relationships/networking)
-  * "What creative projects deserve my energy?" (self-expression)
-  * "How can I improve my health and vitality?" (well-being)
-  * "What financial moves should I make?" (resources)
-  * "Where should I focus my spiritual practice?" (inner growth)
-- Choose questions based on what the chart emphasizes for each quarter
+- Questions should reflect the ACTUAL house activations for that quarter
+- Offer 2-3 options or paths, not just one assumption
+- Example: "How should I use my 6th house activation?" with options for health focus, service work, or problem-solving
 
 **6. FINAL GUIDANCE**
 - 3-4 paragraphs of closing wisdom
-- Reinforce significance of the year
-- End with inspiring statement
+- Acknowledge both opportunities AND challenges of the year
+- Encourage flexibility and personal interpretation of astrological influences
+- End with grounded, inspiring statement that respects their autonomy
 
 **Birth Details:**
 ${inputs.name ? `Name: ${inputs.name}` : ""}
@@ -150,7 +305,7 @@ Output format:
   "subtitle": "Born [date] • [location]",
   "sections": [
     {
-      "heading": "${inputs.year}: Your Year of [Theme]",
+      "heading": "${inputs.year}: Your Year of [Honest Theme Based on Dasha Analysis]",
       "content": [
         { "type": "paragraph", "text": "..." },
         { "type": "astrology_note", "label": "The Astrology Behind ${inputs.year}:", "text": "..." }
@@ -162,7 +317,7 @@ Output format:
         {
           "type": "period",
           "date_range": "January 12 - February 25",
-          "title": "The Emotional Intelligence Period",
+          "title": "The [Unique Theme] Period",
           "what_happening": "...",
           "astrology": "...",
           "key_actions": "..."
@@ -183,13 +338,13 @@ Output format:
     {
       "heading": "Pivotal Themes: What Matters Most",
       "content": [
-        { "type": "theme", "title": "Your Network Is Your Net Worth", "text": "..." }
+        { "type": "theme", "title": "[Theme Based on Actual Chart Emphasis]", "text": "..." }
       ]
     },
     {
       "heading": "Key Decisions: Where to Focus Your Energy",
       "content": [
-        { "type": "decision", "quarter": "Q1 (January-March)", "question": "Who should I connect with?", "guidance": "..." }
+        { "type": "decision", "quarter": "Q1 (January-March)", "question": "[Question Based on Q1 House Activations]", "guidance": "..." }
       ]
     },
     {
@@ -280,24 +435,20 @@ Deno.serve(async (req) => {
 
     // Find ascendant
     const ascendantPosition = planetaryPositions.find(p => p.name === "Ascendant");
-    const ascendantSign = ascendantPosition?.sign || "Aries";
     const ascendantSignId = ascendantPosition?.sign_id || 1;
 
-    // Format planetary positions for prompt using shared helper
-    const planetaryPositionsText = formatPlanetaryPositionsForPrompt(
-      planetaryPositions,
-      ascendantSign,
-      ascendantSignId,
-      {
-        includeRulership: true,
-        includeDegree: true,
-        includeRetrograde: true,
-        useWesternSigns: true,
-      }
-    );
+    // Format planetary positions for prompt
+    const keyPlanets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Rahu", "Ketu"];
+    const planetaryPositionsText = planetaryPositions
+      .filter(p => keyPlanets.includes(p.name))
+      .map(p => {
+        const house = calculateHouseFromAscendant(p.sign_id, ascendantSignId);
+        return `- ${p.name} in ${p.sign} (${getOrdinal(house)} house)${p.is_retrograde ? " [R]" : ""} at ${p.degree.toFixed(1)}°`;
+      })
+      .join("\n");
 
-    // Get current dasha hierarchy using shared helper
-    const currentDasha = getCurrentDashaWithPratyantardasha(dashaPeriods as DashaJson[]);
+    // Get current dasha hierarchy
+    const currentDasha = getCurrentDashaFromList(dashaPeriods);
     const currentDashaText = currentDasha ? `- Mahadasha: ${currentDasha.mahadasha.name} (${currentDasha.mahadasha.start.split("T")[0]} to ${currentDasha.mahadasha.end.split("T")[0]})
 - Antardasha: ${currentDasha.antardasha?.name || "Unknown"} (${currentDasha.antardasha?.start.split("T")[0] || "?"} to ${currentDasha.antardasha?.end.split("T")[0] || "?"})
 - Pratyantardasha: ${currentDasha.pratyantardasha?.name || "Unknown"} (${currentDasha.pratyantardasha?.start.split("T")[0] || "?"} to ${currentDasha.pratyantardasha?.end.split("T")[0] || "?"})` : "Unknown";
