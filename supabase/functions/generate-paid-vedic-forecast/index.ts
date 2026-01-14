@@ -221,7 +221,13 @@ The JSON should include:
 **1. OVERVIEW: ${inputs.year} Theme**
 - 2-3 paragraphs honestly characterizing the year's energy (use assessment above)
 - Focus on the most emphasized life domains based on dasha/transit analysis
-- One "astrology_note" explaining the dasha context and major patterns
+- CRITICAL: Write in PLAIN LANGUAGE without astrological jargon
+  * Bad: "Your 6th house (daily routines) and 8th house (transformation) take center stage"
+  * Good: "This year emphasizes daily routines, practical problem-solving, and deep investigation"
+  * Bad: "With Saturn transiting your 5th house..."
+  * Good: "Expect a more structured approach to creative projects and learning"
+- Save all technical astrology for the "astrology_note" section
+- One "astrology_note" explaining the dasha context and major patterns (HERE you can use house numbers, transits, etc.)
 
 **2. MONTH-BY-MONTH BREAKDOWN**
 For each pratyantardasha period in ${inputs.year}, create a "period" object with:
@@ -232,13 +238,24 @@ For each pratyantardasha period in ${inputs.year}, create a "period" object with
   * Focus deeply on those specific life themes
   * Provide both spiritual AND practical/secular interpretations
   * Include realistic challenges or cautions where appropriate
+  * CRITICAL: Write in PLAIN LANGUAGE - NO house numbers, NO transit jargon in this section
+  * Bad: "Your 7th house is activated, bringing relationship focus"
+  * Good: "Relationships and partnerships become a central focus"
+  * Bad: "Jupiter transits your 10th house, so career opportunities expand"
+  * Good: "Career opportunities expand significantly this period"
   * Example: Venus-Mars period in 7th/2nd houses = relationships + finances (skip career/spirituality)
 - **astrology**: 1 paragraph explaining which planets are active, which houses they rule, and why this creates these specific effects
-- **key_actions**: 2-3 SPECIFIC, actionable recommendations with numbers/timeframes:
-  * Good: "Research 3 courses in [area] and enroll in one by month-end"
-  * Good: "Schedule 2 networking events and follow up with 5 new connections"
-  * Bad: "Consider education opportunities" (too vague)
+  * THIS is where you use house numbers, technical terms, and astrological reasoning
+  * Keep it concise but informative for those who want to understand the mechanics
+- **key_actions**: 2-3 SPECIFIC, actionable recommendations that feel like natural next steps (no arbitrary numbers)
+  * Good: "Identify one area of expertise to develop this quarter and commit focused time to it"
+  * Good: "Set up systems that support your most productive work—whether that's time-blocking, workspace organization, or energy management"
+  * Good: "Reach out to professionals in your field for informational conversations or mentorship"
+  * Bad: "Research 3 courses and enroll in one by month-end" (too prescriptive with numbers)
+  * Bad: "Talk to 5 people about X" (feels like homework)
   * Bad: "Be open to growth" (not actionable)
+  
+  Aim for: Specific enough to act on, flexible enough to personalize, natural enough to not feel like a checklist.
 
 Group periods intelligently - combine very short periods (under 3 weeks).
 
