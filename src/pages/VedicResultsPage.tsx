@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { ArrowLeft, Sparkles, Lock, ChevronRight, User, Share2, Check } from 'lucide-react';
+import { ArrowLeft, Sparkles, Lock, ChevronRight, User, Share2, Check, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
@@ -219,6 +219,194 @@ const VedicResultsPage = () => {
       toast.error('An error occurred');
       setIsUpgrading(false);
     }
+  };
+
+  const handleDownloadPdf = () => {
+    // Use browser's print functionality to generate PDF
+    const printContent = document.querySelector('.max-w-3xl');
+    if (!printContent) {
+      toast.error('Unable to generate PDF');
+      return;
+    }
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('Please allow popups to download PDF');
+      return;
+    }
+
+    const forecastContent = printContent.querySelector('.bg-midnight\\/40');
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${kundli?.name ? `${kundli.name}'s` : 'Your'} 2026 Cosmic Brief</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+            
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            
+            body {
+              font-family: 'Cormorant Garamond', serif;
+              line-height: 1.6;
+              color: #1a1a2e;
+              padding: 40px;
+              max-width: 800px;
+              margin: 0 auto;
+            }
+            
+            .header {
+              text-align: center;
+              margin-bottom: 40px;
+              padding-bottom: 20px;
+              border-bottom: 2px solid #d4af37;
+            }
+            
+            .header h1 {
+              font-size: 28px;
+              color: #1a1a2e;
+              margin-bottom: 8px;
+            }
+            
+            .header p {
+              font-family: 'Inter', sans-serif;
+              font-size: 12px;
+              color: #666;
+            }
+            
+            h2 {
+              font-size: 20px;
+              color: #d4af37;
+              margin: 30px 0 15px;
+              font-weight: 600;
+            }
+            
+            h3 {
+              font-size: 18px;
+              margin: 20px 0 10px;
+            }
+            
+            h4 {
+              font-size: 16px;
+              margin: 15px 0 10px;
+            }
+            
+            p {
+              margin-bottom: 12px;
+              font-size: 14px;
+            }
+            
+            .astrology-note {
+              background: #f5f5f5;
+              border-left: 3px solid #d4af37;
+              padding: 12px 16px;
+              margin: 16px 0;
+              font-size: 13px;
+            }
+            
+            .astrology-note strong {
+              color: #d4af37;
+              display: block;
+              margin-bottom: 6px;
+            }
+            
+            .period-card {
+              border: 1px solid #e0e0e0;
+              border-radius: 8px;
+              padding: 16px;
+              margin: 16px 0;
+            }
+            
+            .period-card .date {
+              color: #d4af37;
+              font-weight: 500;
+              font-size: 13px;
+            }
+            
+            .period-card h3 {
+              margin: 8px 0 12px;
+            }
+            
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 16px 0;
+            }
+            
+            th, td {
+              border: 1px solid #e0e0e0;
+              padding: 10px;
+              text-align: left;
+              font-size: 13px;
+            }
+            
+            th {
+              background: #f5f5f5;
+              color: #d4af37;
+              font-weight: 600;
+            }
+            
+            ul {
+              margin: 12px 0;
+              padding-left: 20px;
+            }
+            
+            li {
+              margin-bottom: 6px;
+              font-size: 14px;
+            }
+            
+            .footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              text-align: center;
+              font-family: 'Inter', sans-serif;
+              font-size: 11px;
+              color: #888;
+            }
+            
+            @media print {
+              body { padding: 20px; }
+              .period-card { break-inside: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${kundli?.name ? `${kundli.name}'s` : 'Your'} 2026 Cosmic Brief</h1>
+            <p>
+              ${(() => {
+                const [year, month, day] = (kundli?.birth_date || '').split('-').map(Number);
+                return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+              })()}
+              ${kundli?.birth_time ? ` • ${(() => {
+                const [hours, minutes] = kundli.birth_time.split(':').map(Number);
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const hour12 = hours % 12 || 12;
+                return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+              })()}` : ''}
+              • ${kundli?.birth_place.split(',')[0].trim()}
+            </p>
+          </div>
+          ${forecastContent?.innerHTML || ''}
+          <div class="footer">
+            Generated by Cosmic Brief • cosmicbrief.com
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
+    };
   };
 
   const renderJsonForecast = (forecast: ForecastJson, isPaid: boolean) => {
@@ -619,21 +807,31 @@ const VedicResultsPage = () => {
               </div>
             )}
 
-            {/* Share CTA - Show for paid forecasts */}
-            {hasPaidForecast && isOwner && kundli.shareable_link && (
-              <div className="mt-12 text-center">
+            {/* Share and Download CTAs - Show for paid forecasts */}
+            {hasPaidForecast && isOwner && (
+              <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+                {kundli.shareable_link && (
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(kundli.shareable_link!);
+                      toast.success('Link copied to clipboard!', {
+                        description: 'Share your Cosmic Brief with friends and family.',
+                      });
+                    }}
+                    variant="outline"
+                    className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share my Cosmic Brief
+                  </Button>
+                )}
                 <Button
-                  onClick={() => {
-                    navigator.clipboard.writeText(kundli.shareable_link!);
-                    toast.success('Link copied to clipboard!', {
-                      description: 'Share your Cosmic Brief with friends and family.',
-                    });
-                  }}
+                  onClick={() => handleDownloadPdf()}
                   variant="outline"
                   className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
                 >
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share my Cosmic Brief
+                  <Download className="w-4 h-4 mr-2" />
+                  Download as PDF
                 </Button>
               </div>
             )}

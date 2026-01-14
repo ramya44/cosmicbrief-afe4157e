@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronUp, List } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface ForecastSection {
@@ -46,7 +45,6 @@ export const ForecastTableOfContents = ({
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      // Use scrollIntoView with CSS scroll-margin-top for accurate positioning
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setIsExpanded(false);
     }
@@ -58,42 +56,75 @@ export const ForecastTableOfContents = ({
          !s.heading.toLowerCase().includes('specifics')
   );
 
+  // Build navigation items with Synopsis/Full Brief as clickable sections
+  const buildNavItems = () => {
+    const items: { label: string; id: string | null; type: 'section' | 'view-toggle'; isPaid?: boolean }[] = [];
+    
+    // Add Synopsis as first item (links to free view)
+    items.push({
+      label: 'Synopsis',
+      id: null,
+      type: 'view-toggle',
+      isPaid: false,
+    });
+
+    // If in Synopsis view, show Synopsis sections
+    if (!isPaidView) {
+      displaySections.forEach((section, idx) => {
+        items.push({
+          label: section.heading,
+          id: section.id,
+          type: 'section',
+        });
+      });
+    }
+
+    // Add Full Brief if user has paid
+    if (hasPaidForecast) {
+      items.push({
+        label: 'Full Cosmic Brief',
+        id: null,
+        type: 'view-toggle',
+        isPaid: true,
+      });
+
+      // If in Full Brief view, show Full Brief sections
+      if (isPaidView) {
+        displaySections.forEach((section, idx) => {
+          items.push({
+            label: section.heading,
+            id: section.id,
+            type: 'section',
+          });
+        });
+      }
+    }
+
+    return items;
+  };
+
+  const navItems = buildNavItems();
+
+  const handleItemClick = (item: typeof navItems[0]) => {
+    if (item.type === 'view-toggle') {
+      onViewChange(item.isPaid || false);
+    } else if (item.id) {
+      scrollToSection(item.id);
+    }
+  };
+
+  const getActiveItem = () => {
+    if (activeSection) return activeSection;
+    return isPaidView ? 'full-brief' : 'synopsis';
+  };
+
   return (
     <div className="bg-midnight/60 border border-border/30 rounded-xl mb-8 overflow-hidden">
-      {/* Header with view toggle */}
+      {/* Header */}
       <div className="p-4 border-b border-border/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <List className="w-4 h-4 text-gold" />
-            <span className="text-cream font-medium text-sm">Contents</span>
-          </div>
-          
-          {hasPaidForecast && (
-            <div className="flex gap-1 bg-midnight/60 rounded-lg p-1">
-              <button
-                onClick={() => onViewChange(false)}
-                className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                  !isPaidView 
-                    ? "bg-gold text-midnight" 
-                    : "text-cream-muted hover:text-cream"
-                )}
-              >
-                Synopsis
-              </button>
-              <button
-                onClick={() => onViewChange(true)}
-                className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                  isPaidView 
-                    ? "bg-gold text-midnight" 
-                    : "text-cream-muted hover:text-cream"
-                )}
-              >
-                Full Brief
-              </button>
-            </div>
-          )}
+        <div className="flex items-center gap-2">
+          <List className="w-4 h-4 text-gold" />
+          <span className="text-cream font-medium text-sm">Contents</span>
         </div>
       </div>
 
@@ -106,26 +137,32 @@ export const ForecastTableOfContents = ({
           <span className="text-sm">
             {activeSection 
               ? displaySections.find(s => s.id === activeSection)?.heading || 'Jump to section...'
-              : 'Jump to section...'}
+              : isPaidView ? 'Full Cosmic Brief' : 'Synopsis'}
           </span>
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
         
         {isExpanded && (
           <div className="px-4 pb-4 space-y-1">
-            {displaySections.map((section, idx) => (
+            {navItems.map((item, idx) => (
               <button
-                key={section.id}
-                onClick={() => scrollToSection(section.id)}
+                key={idx}
+                onClick={() => handleItemClick(item)}
                 className={cn(
                   "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                  activeSection === section.id
+                  item.type === 'view-toggle' && "font-medium",
+                  item.type === 'view-toggle' && item.isPaid === isPaidView
                     ? "bg-gold/20 text-gold"
-                    : "text-cream-muted hover:text-cream hover:bg-white/5"
+                    : item.type === 'section' && activeSection === item.id
+                    ? "bg-gold/20 text-gold"
+                    : "text-cream-muted hover:text-cream hover:bg-white/5",
+                  item.type === 'section' && "pl-6"
                 )}
               >
-                <span className="text-gold/60 mr-2">{idx + 1}.</span>
-                {section.heading}
+                {item.type === 'section' && (
+                  <span className="text-gold/60 mr-2">•</span>
+                )}
+                {item.label}
               </button>
             ))}
           </div>
@@ -134,19 +171,25 @@ export const ForecastTableOfContents = ({
 
       {/* Desktop - always visible */}
       <div className="hidden md:block p-4 space-y-1">
-        {displaySections.map((section, idx) => (
+        {navItems.map((item, idx) => (
           <button
-            key={section.id}
-            onClick={() => scrollToSection(section.id)}
+            key={idx}
+            onClick={() => handleItemClick(item)}
             className={cn(
               "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-              activeSection === section.id
+              item.type === 'view-toggle' && "font-medium",
+              item.type === 'view-toggle' && item.isPaid === isPaidView
                 ? "bg-gold/20 text-gold"
-                : "text-cream-muted hover:text-cream hover:bg-white/5"
+                : item.type === 'section' && activeSection === item.id
+                ? "bg-gold/20 text-gold"
+                : "text-cream-muted hover:text-cream hover:bg-white/5",
+              item.type === 'section' && "pl-6"
             )}
           >
-            <span className="text-gold/60 mr-2">{idx + 1}.</span>
-            {section.heading}
+            {item.type === 'section' && (
+              <span className="text-gold/60 mr-2">•</span>
+            )}
+            {item.label}
           </button>
         ))}
       </div>
