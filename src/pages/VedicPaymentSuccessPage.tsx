@@ -113,6 +113,9 @@ const VedicPaymentSuccessPage = () => {
             <p className="text-cream-muted/60 text-sm mt-4">
               This may take up to 2 minutes
             </p>
+            <p className="text-cream-muted/60 text-sm mt-2">
+              A copy will also be emailed to you
+            </p>
           </>
         )}
 
