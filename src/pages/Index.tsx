@@ -1,17 +1,33 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, LogIn } from 'lucide-react';
+
 const Index = () => {
   const navigate = useNavigate();
-  return <div className="relative min-h-screen bg-celestial overflow-hidden">
+  
+  return (
+    <div className="relative min-h-screen bg-celestial overflow-hidden">
       <StarField />
+      
+      {/* Login button in top right */}
+      <div className="absolute top-4 right-4 z-20">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/vedic/input')}
+          className="text-cream-muted hover:text-cream hover:bg-gold/10"
+        >
+          <LogIn className="w-4 h-4 mr-2" />
+          Log In
+        </Button>
+      </div>
       
       {/* Subtle gradient orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold/5 rounded-full blur-3xl animate-pulse-slow" />
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gold/3 rounded-full blur-3xl animate-pulse-slow" style={{
-      animationDelay: '2s'
-    }} />
+        animationDelay: '2s'
+      }} />
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16">
         <div className="text-center max-w-3xl mx-auto">
@@ -76,6 +92,8 @@ const Index = () => {
 
       {/* Bottom gradient fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-midnight to-transparent pointer-events-none" />
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
