@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { SaveProfileDialog } from '@/components/SaveProfileDialog';
+import { ArrowLeft, Loader2, Save } from 'lucide-react';
 
 interface KundliData {
   id: string;
@@ -13,6 +14,7 @@ interface KundliData {
   sun_sign: string | null;
   ascendant_sign: string | null;
   name: string | null;
+  user_id: string | null;
 }
 
 interface AnimalData {
@@ -34,6 +36,21 @@ const VedicProfilePage = () => {
   const [zodiacLookup, setZodiacLookup] = useState<ZodiacLookup>({});
   const [loading, setLoading] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check current user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session?.user?.id || null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user?.id || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,7 +63,7 @@ const VedicProfilePage = () => {
         // Fetch kundli data
         const { data: kundliData, error: kundliError } = await supabase
           .from('user_kundli_details')
-          .select('id, animal_sign, nakshatra, moon_sign, sun_sign, ascendant_sign, name')
+          .select('id, animal_sign, nakshatra, moon_sign, sun_sign, ascendant_sign, name, user_id')
           .eq('id', kundliId)
           .maybeSingle();
 
@@ -135,7 +152,20 @@ const VedicProfilePage = () => {
             Back
           </Button>
           <h1 className="font-display text-xl text-gold">{kundli.name ? `${kundli.name}'s Profile` : 'Vedic Profile'}</h1>
-          <div className="w-20" /> {/* Spacer for centering */}
+          {/* Show Save button only if profile is not already saved */}
+          {!kundli.user_id ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSaveDialog(true)}
+              className="border-gold/40 text-gold hover:bg-gold/10"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Save
+            </Button>
+          ) : (
+            <div className="w-20" /> 
+          )}
         </div>
       </header>
 
@@ -224,6 +254,15 @@ const VedicProfilePage = () => {
           )}
         </div>
       </main>
+
+      {/* Save Profile Dialog */}
+      <SaveProfileDialog
+        open={showSaveDialog}
+        onOpenChange={setShowSaveDialog}
+        kundliId={kundliId || ''}
+        defaultName={kundli.name || undefined}
+        onSuccess={() => navigate(`/vedic/results?id=${kundliId}`)}
+      />
     </div>
   );
 };
