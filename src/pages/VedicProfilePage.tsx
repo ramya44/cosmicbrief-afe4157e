@@ -252,6 +252,17 @@ const VedicProfilePage = () => {
               {animalData.phrase}
             </p>
           )}
+
+          {/* Vedic vs Western note */}
+          <p className="text-cream-muted text-sm text-center mt-8 max-w-sm">
+            Vedic signs are different from Western signs.{' '}
+            <a 
+              href="/#/vedic-astrology-explained" 
+              className="text-gold hover:underline"
+            >
+              Read more here
+            </a>
+          </p>
         </div>
       </main>
 

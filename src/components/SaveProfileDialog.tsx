@@ -180,12 +180,12 @@ export const SaveProfileDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-midnight border-gold/30 text-cream sm:max-w-md">
+      <DialogContent className="bg-midnight border-gold/30 sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-gold font-display text-xl">
             {showLogin ? 'Welcome Back' : 'Save Your Profile'}
           </DialogTitle>
-          <DialogDescription className="text-cream-muted">
+          <DialogDescription className="text-cream/80">
             {showLogin 
               ? 'Log in to save this profile to your account.'
               : 'Create an account to save your cosmic profile and access it anytime.'}
@@ -200,13 +200,15 @@ export const SaveProfileDialog = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream-muted">Email</FormLabel>
+                    <FormLabel className="text-cream">Email</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
                         <Input
                           {...field}
                           type="email"
+                          autoComplete="email"
+                          name="email"
                           placeholder="you@example.com"
                           className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
                         />
@@ -222,13 +224,15 @@ export const SaveProfileDialog = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream-muted">Password</FormLabel>
+                    <FormLabel className="text-cream">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
                         <Input
                           {...field}
                           type="password"
+                          autoComplete="current-password"
+                          name="password"
                           placeholder="••••••••"
                           className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
                         />
@@ -273,12 +277,14 @@ export const SaveProfileDialog = ({
                 name="displayName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream-muted">Your Name</FormLabel>
+                    <FormLabel className="text-cream">Your Name</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
                         <Input
                           {...field}
+                          autoComplete="name"
+                          name="displayName"
                           placeholder="Enter your name"
                           className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
                         />
@@ -294,13 +300,15 @@ export const SaveProfileDialog = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream-muted">Email</FormLabel>
+                    <FormLabel className="text-cream">Email</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
                         <Input
                           {...field}
                           type="email"
+                          autoComplete="email"
+                          name="email"
                           placeholder="you@example.com"
                           className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
                         />
@@ -316,13 +324,15 @@ export const SaveProfileDialog = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream-muted">Password</FormLabel>
+                    <FormLabel className="text-cream">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
                         <Input
                           {...field}
                           type="password"
+                          autoComplete="new-password"
+                          name="password"
                           placeholder="At least 6 characters"
                           className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
                         />
