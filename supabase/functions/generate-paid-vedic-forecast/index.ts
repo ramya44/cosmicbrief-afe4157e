@@ -153,16 +153,6 @@ function buildPaidUserPrompt(inputs: {
   current_dasha: string;
   pratyantardashas: string;
   transits: string;
-}): string function buildPaidUserPrompt(inputs: {
-  name?: string;
-  year: number;
-  birth_date: string;
-  birth_time: string;
-  birth_location: string;
-  planetary_positions: string;
-  current_dasha: string;
-  pratyantardashas: string;
-  transits: string;
 }): string {
   const personReference = inputs.name ? `for ${inputs.name}` : "for this person";
   return `Create a comprehensive paid astrology forecast ${personReference} for ${inputs.year}. Return ONLY valid JSON (no markdown code blocks, no additional text).
