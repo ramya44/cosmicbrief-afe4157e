@@ -18,7 +18,7 @@ import {
   formatPastDashasForPrompt,
   formatCurrentDashaForPrompt,
   type DashaJson,
-} from "./lib/dasha-prompt-helpers.ts";
+} from "../_shared/lib/dasha-helpers.ts";
 import {
   formatPlanetaryPositionsForPrompt,
   getSignLord,
