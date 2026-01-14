@@ -2,12 +2,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import {
   formatPlanetaryPositionsForPrompt,
-  getSignLord,
-  calculateHouseFromAscendant,
-  getOrdinal,
-  toWesternSign,
   type PlanetaryPosition,
 } from "../_shared/lib/planetary-positions.ts";
+import {
+  getPratyantardashasForYear,
+  getCurrentDashaWithPratyantardasha,
+  formatPratyantardashasForPrompt,
+  type DashaJson,
+} from "../_shared/lib/dasha-helpers.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,89 +38,6 @@ When writing forecasts:
 6. Describe personality traits directly without using phrases like "the Pisces in you"
 
 Return ONLY valid JSON. No markdown code blocks, no additional text before or after the JSON.`;
-
-interface PratyantardashaInfo {
-  mahadasha: string;
-  antardasha: string;
-  pratyantardasha: string;
-  start: string;
-  end: string;
-  dateRange: string;
-}
-
-function formatDateRangeDetailed(start: Date, end: Date): string {
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const startMonth = monthNames[start.getMonth()];
-  const startDay = start.getDate();
-  const endMonth = monthNames[end.getMonth()];
-  const endDay = end.getDate();
-  const year = end.getFullYear();
-  
-  if (start.getFullYear() === end.getFullYear()) {
-    return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
-  } else {
-    return `${startMonth} ${startDay}, ${start.getFullYear()} - ${endMonth} ${endDay}, ${year}`;
-  }
-}
-
-function getPratyantardashasForYear(dashas: any[], year: number): PratyantardashaInfo[] {
-  const yearStart = new Date(year, 0, 1);
-  const yearEnd = new Date(year, 11, 31, 23, 59, 59);
-  const pratyantardashas: PratyantardashaInfo[] = [];
-  
-  for (const mahadasha of dashas) {
-    if (!mahadasha.antardasha) continue;
-    for (const antardasha of mahadasha.antardasha) {
-      if (!antardasha.pratyantardasha) continue;
-      for (const pratyantar of antardasha.pratyantardasha) {
-        const start = new Date(pratyantar.start);
-        const end = new Date(pratyantar.end);
-        if (end >= yearStart && start <= yearEnd) {
-          pratyantardashas.push({
-            mahadasha: mahadasha.name,
-            antardasha: antardasha.name,
-            pratyantardasha: pratyantar.name,
-            start: pratyantar.start,
-            end: pratyantar.end,
-            dateRange: formatDateRangeDetailed(start, end)
-          });
-        }
-      }
-    }
-  }
-  pratyantardashas.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-  return pratyantardashas;
-}
-
-function getCurrentDashaFromList(dashas: any[], currentDate: Date = new Date()) {
-  const currentMahadasha = dashas.find(d => {
-    const start = new Date(d.start);
-    const end = new Date(d.end);
-    return currentDate >= start && currentDate <= end;
-  });
-  if (!currentMahadasha) return null;
-  
-  const currentAntardasha = currentMahadasha.antardasha?.find((ad: any) => {
-    const start = new Date(ad.start);
-    const end = new Date(ad.end);
-    return currentDate >= start && currentDate <= end;
-  });
-  
-  let currentPratyantardasha = null;
-  if (currentAntardasha?.pratyantardasha) {
-    currentPratyantardasha = currentAntardasha.pratyantardasha.find((pd: any) => {
-      const start = new Date(pd.start);
-      const end = new Date(pd.end);
-      return currentDate >= start && currentDate <= end;
-    });
-  }
-  
-  return {
-    mahadasha: currentMahadasha,
-    antardasha: currentAntardasha,
-    pratyantardasha: currentPratyantardasha
-  };
-}
 
 function buildPaidUserPrompt(inputs: {
   name?: string;
@@ -377,8 +296,8 @@ Deno.serve(async (req) => {
       }
     );
 
-    // Get current dasha hierarchy
-    const currentDasha = getCurrentDashaFromList(dashaPeriods);
+    // Get current dasha hierarchy using shared helper
+    const currentDasha = getCurrentDashaWithPratyantardasha(dashaPeriods as DashaJson[]);
     const currentDashaText = currentDasha ? `- Mahadasha: ${currentDasha.mahadasha.name} (${currentDasha.mahadasha.start.split("T")[0]} to ${currentDasha.mahadasha.end.split("T")[0]})
 - Antardasha: ${currentDasha.antardasha?.name || "Unknown"} (${currentDasha.antardasha?.start.split("T")[0] || "?"} to ${currentDasha.antardasha?.end.split("T")[0] || "?"})
 - Pratyantardasha: ${currentDasha.pratyantardasha?.name || "Unknown"} (${currentDasha.pratyantardasha?.start.split("T")[0] || "?"} to ${currentDasha.pratyantardasha?.end.split("T")[0] || "?"})` : "Unknown";
