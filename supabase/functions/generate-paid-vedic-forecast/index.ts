@@ -1,6 +1,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-
+import { Resend } from "https://esm.sh/resend@2.0.0";
+import { buildVedicPaidEmailHtml } from "../_shared/lib/email-templates.ts";
+import { generateForecastPdf } from "../_shared/lib/pdf-generator.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -596,6 +598,60 @@ Deno.serve(async (req) => {
       logStep("Failed to save forecast", { error: updateError.message });
     } else {
       logStep("Paid forecast saved to database");
+    }
+
+    // Send email with link and PDF attachment
+    const customerEmail = kundliData.email;
+    if (customerEmail) {
+      try {
+        const resendApiKey = Deno.env.get("RESEND_API_KEY");
+        if (resendApiKey) {
+          const resend = new Resend(resendApiKey);
+          const emailHtml = buildVedicPaidEmailHtml(kundliData.name, shareableLink);
+          
+          // Generate PDF
+          let pdfAttachment: { filename: string; content: string } | null = null;
+          try {
+            const pdfBytes = await generateForecastPdf(forecastText, {
+              name: kundliData.name,
+              birth_date: kundliData.birth_date,
+              birth_time: kundliData.birth_time,
+              birth_location: kundliData.birth_location,
+            });
+            // Convert to base64
+            const pdfBase64 = btoa(String.fromCharCode(...pdfBytes));
+            pdfAttachment = {
+              filename: "Your-2026-Cosmic-Brief.pdf",
+              content: pdfBase64,
+            };
+            logStep("PDF generated successfully", { size: pdfBytes.length });
+          } catch (pdfError) {
+            const pdfErrMsg = pdfError instanceof Error ? pdfError.message : "Unknown PDF error";
+            logStep("PDF generation failed, sending email without attachment", { error: pdfErrMsg });
+          }
+          
+          const emailOptions: any = {
+            from: "Cosmic Brief <noreply@cosmicbrief.com>",
+            to: [customerEmail],
+            subject: "Your Complete Vedic Cosmic Brief is Ready! ✨",
+            html: emailHtml,
+          };
+          
+          if (pdfAttachment) {
+            emailOptions.attachments = [pdfAttachment];
+          }
+          
+          const emailResponse = await resend.emails.send(emailOptions);
+          logStep("Email sent successfully", { emailId: emailResponse?.data?.id, hasPdf: !!pdfAttachment });
+        } else {
+          logStep("RESEND_API_KEY not configured, skipping email");
+        }
+      } catch (emailError) {
+        const emailErrMsg = emailError instanceof Error ? emailError.message : "Unknown email error";
+        logStep("Failed to send email", { error: emailErrMsg });
+      }
+    } else {
+      logStep("No email address provided, skipping email");
     }
 
     return new Response(JSON.stringify({

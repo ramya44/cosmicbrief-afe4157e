@@ -1,7 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 import { corsHeaders, jsonResponse, errorResponse } from "../_shared/lib/http.ts";
 import type { UserData, TransitLookupRow, PlanetaryPosition } from "./lib/types.ts";
 import { generateForecastInputs } from "./lib/generate-forecast-inputs.ts";
+import { buildVedicFreeEmailHtml } from "../_shared/lib/email-templates.ts";
 import {
   getCurrentMahaDasha,
   getCurrentAntarDasha,
@@ -648,6 +650,36 @@ Deno.serve(async (req) => {
       // Still return the forecast even if saving failed
     } else {
       logStep("Forecast saved to database");
+    }
+
+    // Send email with link to the forecast
+    const customerEmail = kundliData.email;
+    if (customerEmail) {
+      try {
+        const resendApiKey = Deno.env.get("RESEND_API_KEY");
+        if (resendApiKey) {
+          const resend = new Resend(resendApiKey);
+          const resultsUrl = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}`;
+          const emailHtml = buildVedicFreeEmailHtml(kundliData.name, resultsUrl);
+          
+          const emailResponse = await resend.emails.send({
+            from: "Cosmic Brief <noreply@cosmicbrief.com>",
+            to: [customerEmail],
+            subject: "Your Free Vedic Forecast is Ready! ✨",
+            html: emailHtml,
+          });
+          
+          logStep("Email sent successfully", { emailId: emailResponse?.data?.id });
+        } else {
+          logStep("RESEND_API_KEY not configured, skipping email");
+        }
+      } catch (emailError) {
+        // Don't fail the request if email fails
+        const emailErrMsg = emailError instanceof Error ? emailError.message : "Unknown email error";
+        logStep("Failed to send email", { error: emailErrMsg });
+      }
+    } else {
+      logStep("No email address provided, skipping email");
     }
 
     return jsonResponse({
