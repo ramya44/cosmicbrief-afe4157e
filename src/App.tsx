@@ -23,6 +23,8 @@ import ContactPage from "./pages/ContactPage";
 import BackgroundPage from "./pages/BackgroundPage";
 import WeeklyHoroscopePage from "./pages/WeeklyHoroscopePage";
 import CompatibilityPage from "./pages/CompatibilityPage";
+import HowToReadChartPage from "./pages/HowToReadChartPage";
+import VedicVsWesternPage from "./pages/VedicVsWesternPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -101,6 +103,8 @@ const App = () => (
           <Route path="/background" element={<BackgroundPage />} />
           <Route path="/weekly-horoscope" element={<WeeklyHoroscopePage />} />
           <Route path="/compatibility" element={<CompatibilityPage />} />
+          <Route path="/how-to-read-vedic-chart" element={<HowToReadChartPage />} />
+          <Route path="/vedic-vs-western-astrology" element={<VedicVsWesternPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
