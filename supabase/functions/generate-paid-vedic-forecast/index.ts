@@ -13,21 +13,34 @@ function logStep(step: string, details?: Record<string, unknown>) {
   console.log(`[generate-paid-vedic-forecast] ${step}${detailsStr}`);
 }
 
-const SYSTEM_PROMPT = `You are an expert Vedic astrologer who writes comprehensive, detailed forecasts in accessible, engaging language. Your writing style is:
+const PAID_SYSTEM_PROMPT = `You are an expert astrologer who writes comprehensive, personalized forecasts in accessible, modern language. Your writing style is:
 
-- Conversational and warm, never academic or preachy
-- Focused on practical implications before technical details
-- Empowering and growth-oriented, never fatalistic
-- Clear and concise—every sentence adds value
-- Extremely thorough in the paid forecast - this is a premium product
+- Conversational and warm, like a trusted advisor who knows the person well
+- Focused on practical life guidance and strategic timing
+- Empowering and growth-oriented, never mystical or fatalistic
+- Clear and relatable—every sentence adds actionable value
+- Honest about both opportunities AND challenges
 
-When writing forecasts:
-1. Lead with WHAT the person will experience (the practical reality)
-2. Follow with WHY (the astrological explanation) in separate "astrology" or "astrology_note" sections
-3. Use plain language for the main content
-4. Save technical terms for the astrology sections
-5. Make predictions specific and actionable with exact dates
-6. Describe personality traits directly without using phrases like "the Pisces in you"
+**Language Guidelines - CRITICAL:**
+- Use "rising sign" instead of "ascendant"
+- Use "life chapter" or "planetary period" instead of "dasha/antardasha/pratyantardasha"
+- Use "lunar mansion" sparingly; usually just describe the moon's quality
+- Use "growth edge" or "karmic path" instead of "Rahu-Ketu axis"
+- Say "Saturn brings lessons" not "Saturn's malefic influence"
+- Say "Jupiter expands" not "Jupiter bestows"
+- In main narrative sections: describe WHAT happens, not astrological mechanics
+- In "astrology" sections: you CAN use technical terms (house numbers, aspects, etc.)
+
+**Two-Tier Writing Approach:**
+1. **Main narrative** ("what_happening", "overview", "guidance"): Modern, accessible language - zero jargon
+2. **Astrology sections**: Technical explanations for those who want depth - use proper terminology here
+
+**Tone Guidelines:**
+- Be honest about challenging periods - not every month is transformative
+- Avoid repetitive themes - each period should feel distinct
+- Don't assume everyone is a healer/spiritual practitioner
+- Offer both spiritual AND practical interpretations
+- Use conditional language: "This could manifest as..." not "You will become..."
 
 Return ONLY valid JSON. No markdown code blocks, no additional text before or after the JSON.`;
 
@@ -63,22 +76,30 @@ function getOrdinal(n: number): string {
 
 function getSignLord(sign: string): string {
   const signLords: Record<string, string> = {
-    "Aries": "Mars", "Taurus": "Venus", "Gemini": "Mercury",
-    "Cancer": "Moon", "Leo": "Sun", "Virgo": "Mercury",
-    "Libra": "Venus", "Scorpio": "Mars", "Sagittarius": "Jupiter",
-    "Capricorn": "Saturn", "Aquarius": "Saturn", "Pisces": "Jupiter",
+    Aries: "Mars",
+    Taurus: "Venus",
+    Gemini: "Mercury",
+    Cancer: "Moon",
+    Leo: "Sun",
+    Virgo: "Mercury",
+    Libra: "Venus",
+    Scorpio: "Mars",
+    Sagittarius: "Jupiter",
+    Capricorn: "Saturn",
+    Aquarius: "Saturn",
+    Pisces: "Jupiter",
   };
   return signLords[sign] || "Unknown";
 }
 
 function formatDateRangeDetailed(start: Date, end: Date): string {
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const startMonth = monthNames[start.getMonth()];
   const startDay = start.getDate();
   const endMonth = monthNames[end.getMonth()];
   const endDay = end.getDate();
   const year = end.getFullYear();
-  
+
   if (start.getFullYear() === end.getFullYear()) {
     return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${year}`;
   } else {
@@ -90,7 +111,7 @@ function getPratyantardashasForYear(dashas: any[], year: number): Pratyantardash
   const yearStart = new Date(year, 0, 1);
   const yearEnd = new Date(year, 11, 31, 23, 59, 59);
   const pratyantardashas: PratyantardashaInfo[] = [];
-  
+
   for (const mahadasha of dashas) {
     if (!mahadasha.antardasha) continue;
     for (const antardasha of mahadasha.antardasha) {
@@ -105,7 +126,7 @@ function getPratyantardashasForYear(dashas: any[], year: number): Pratyantardash
             pratyantardasha: pratyantar.name,
             start: pratyantar.start,
             end: pratyantar.end,
-            dateRange: formatDateRangeDetailed(start, end)
+            dateRange: formatDateRangeDetailed(start, end),
           });
         }
       }
@@ -116,19 +137,19 @@ function getPratyantardashasForYear(dashas: any[], year: number): Pratyantardash
 }
 
 function getCurrentDashaFromList(dashas: any[], currentDate: Date = new Date()) {
-  const currentMahadasha = dashas.find(d => {
+  const currentMahadasha = dashas.find((d) => {
     const start = new Date(d.start);
     const end = new Date(d.end);
     return currentDate >= start && currentDate <= end;
   });
   if (!currentMahadasha) return null;
-  
+
   const currentAntardasha = currentMahadasha.antardasha?.find((ad: any) => {
     const start = new Date(ad.start);
     const end = new Date(ad.end);
     return currentDate >= start && currentDate <= end;
   });
-  
+
   let currentPratyantardasha = null;
   if (currentAntardasha?.pratyantardasha) {
     currentPratyantardasha = currentAntardasha.pratyantardasha.find((pd: any) => {
@@ -137,11 +158,11 @@ function getCurrentDashaFromList(dashas: any[], currentDate: Date = new Date()) 
       return currentDate >= start && currentDate <= end;
     });
   }
-  
+
   return {
     mahadasha: currentMahadasha,
     antardasha: currentAntardasha,
-    pratyantardasha: currentPratyantardasha
+    pratyantardasha: currentPratyantardasha,
   };
 }
 
@@ -157,13 +178,24 @@ function buildPaidUserPrompt(inputs: {
   transits: string;
 }): string {
   const personReference = inputs.name ? `for ${inputs.name}` : "for this person";
-  return `Create a comprehensive paid astrology forecast ${personReference} for ${inputs.year}. Return ONLY valid JSON (no markdown code blocks, no additional text).
+  return `Create a comprehensive modern astrology forecast ${personReference} for ${inputs.year}. Return ONLY valid JSON (no markdown code blocks).
 
-CRITICAL INSTRUCTION - LIFE AREA BALANCE:
+**LANGUAGE RULES - CRITICAL:**
+For main narrative sections ("what_happening", overview paragraphs, guidance):
+- Use PLAIN LANGUAGE only - no house numbers, no transit jargon
+- Bad: "Your 6th house is activated" → Good: "Daily routines and health become priorities"
+- Bad: "Jupiter transits your 10th house" → Good: "Career opportunities expand significantly"
+- Bad: "Saturn aspects your Moon" → Good: "Emotional maturity deepens through real-world experiences"
+
+For "astrology" sections:
+- HERE you can use technical terms: house numbers, aspects, rulerships, transits
+- Explain the mechanics for people who want to understand the why
+
+**CRITICAL INSTRUCTION - LIFE AREA BALANCE:**
 This forecast should focus on the life areas that are ACTUALLY activated by this person's chart, not force coverage of everything.
 
 Analyze which houses are emphasized by:
-- Current dasha lords and their house RULERSHIPS (shown in planetary positions)
+- Current planetary period lords and their house RULERSHIPS (shown in planetary positions)
 - Planets involved in current periods and which houses they RULE
 - House placements of active planets
 - Major transits affecting specific houses
@@ -182,7 +214,7 @@ IMPORTANT: Different months will emphasize different areas. Don't force all 8 ar
 DO NOT default to career unless there's clear 10th house or Sun/Saturn rulership emphasis.
 Quality > Quantity: Better to give deep, actionable guidance on 2-3 relevant areas than surface coverage of everything.
 
-CRITICAL - AVOID ASSUMPTIONS ABOUT PROFESSION/LIFESTYLE:
+**CRITICAL - AVOID ASSUMPTIONS ABOUT PROFESSION/LIFESTYLE:**
 - DO NOT assume the person is a healer, teacher, spiritual practitioner, or wants to be
 - DO NOT assume they work in healthcare, wellness, or spiritual counseling
 - Offer BOTH spiritual AND secular interpretations of house activations
@@ -192,23 +224,23 @@ CRITICAL - AVOID ASSUMPTIONS ABOUT PROFESSION/LIFESTYLE:
   * 9th house: "higher education, travel, philosophy, OR spiritual studies"
   * 12th house: "rest/retreat, foreign connections, behind-the-scenes work, OR meditation/spirituality"
 
-BALANCE POSITIVE AND CHALLENGING PERIODS:
+**BALANCE POSITIVE AND CHALLENGING PERIODS:**
 - Not every month is amazing - life has natural ups and downs
 - Include 1-2 periods that are more challenging or require caution/patience
-- Note difficult transits, retrogrades, or malefic dasha combinations
+- Note difficult transits, retrogrades, or malefic period combinations
 - Be honest: "This month requires patience" or "Expect some friction in..."
 - Challenging periods make the positive ones more credible
 
-ASSESS YEAR CHARACTER HONESTLY:
-Look at the dasha structure for ${inputs.year}:
-- Same Mahadasha + Same Antardasha all year = "Continuation/Consolidation Year" (building on established themes)
-- Antardasha changes but Mahadasha stays = "Subtle Shift Year" (evolution within familiar territory)
-- Mahadasha changes during year = "Major Transformation Year" (significant life chapter change)
-- Multiple Antardasha changes = "Dynamic/Transitional Year" (varied experiences)
+**ASSESS YEAR CHARACTER HONESTLY:**
+Look at the period structure for ${inputs.year}:
+- Same main period + same sub-period all year = "Continuation/Consolidation Year" (building on established themes)
+- Sub-periods change but main period stays = "Subtle Shift Year" (evolution within familiar territory)
+- Main period changes during year = "Major Transformation Year" (significant life chapter change)
+- Multiple sub-period changes = "Dynamic/Transitional Year" (varied experiences)
 
 DO NOT call every year "transformative" or "pivotal" - be truthful about the year's actual energy.
 
-DIVERSIFY MONTHLY THEMES:
+**DIVERSIFY MONTHLY THEMES:**
 Each monthly period should emphasize DIFFERENT aspects, even if same houses are active.
 
 Example: If 6th house is active in 3 consecutive months:
@@ -218,25 +250,32 @@ Example: If 6th house is active in 3 consecutive months:
 
 Avoid repetition like "healing abilities" or "spiritual growth" in every single month.
 
+---
+
 The JSON should include:
 
 **1. OVERVIEW: ${inputs.year} Theme**
 - 2-3 paragraphs honestly characterizing the year's energy (use assessment above)
-- Focus on the most emphasized life domains based on dasha/transit analysis
+- Focus on the most emphasized life domains based on period/transit analysis
 - CRITICAL: Write in PLAIN LANGUAGE without astrological jargon
-  * Bad: "Your 6th house (daily routines) and 8th house (transformation) take center stage"
+  * Bad: "Your 6th house and 8th house take center stage"
   * Good: "This year emphasizes daily routines, practical problem-solving, and deep investigation"
   * Bad: "With Saturn transiting your 5th house..."
   * Good: "Expect a more structured approach to creative projects and learning"
 - Save all technical astrology for the "astrology_note" section
-- One "astrology_note" explaining the dasha context and major patterns (HERE you can use house numbers, transits, etc.)
+- One "astrology_note" explaining the period context and major patterns (HERE you can use house numbers, transits, etc.)
 
 **2. MONTH-BY-MONTH BREAKDOWN**
 For each pratyantardasha period in ${inputs.year}, create a "period" object with:
+
 - **date_range**: The exact dates
+
 - **title**: A descriptive name for the period that reflects its unique energy
+  * Use modern language: "The Foundation-Building Phase" not "The Saturn-Mercury Period"
+  * Make each title distinct and evocative
+
 - **what_happening**: 2-3 paragraphs focusing on the 2-4 life areas most activated by this specific period:
-  * Identify which houses are being activated by the dasha lords
+  * Identify which houses are being activated by the period lords
   * Focus deeply on those specific life themes
   * Provide both spiritual AND practical/secular interpretations
   * Include realistic challenges or cautions where appropriate
@@ -245,10 +284,13 @@ For each pratyantardasha period in ${inputs.year}, create a "period" object with
   * Good: "Relationships and partnerships become a central focus"
   * Bad: "Jupiter transits your 10th house, so career opportunities expand"
   * Good: "Career opportunities expand significantly this period"
-  * Example: Venus-Mars period in 7th/2nd houses = relationships + finances (skip career/spirituality)
+  * Example: Venus-Mars period with 7th/2nd house rulership = relationships + finances (skip career/spirituality if not relevant)
+
 - **astrology**: 1 paragraph explaining which planets are active, which houses they rule, and why this creates these specific effects
   * THIS is where you use house numbers, technical terms, and astrological reasoning
   * Keep it concise but informative for those who want to understand the mechanics
+  * Example: "This period is governed by Venus (ruling your 7th and 2nd houses) and Mars (ruling your 3rd and 8th houses). The focus naturally turns to partnerships and shared resources, with added intensity from Mars."
+
 - **key_actions**: 2-3 SPECIFIC, actionable recommendations that feel like natural next steps (no arbitrary numbers)
   * Good: "Identify one area of expertise to develop this quarter and commit focused time to it"
   * Good: "Set up systems that support your most productive work—whether that's time-blocking, workspace organization, or energy management"
@@ -256,17 +298,17 @@ For each pratyantardasha period in ${inputs.year}, create a "period" object with
   * Bad: "Research 3 courses and enroll in one by month-end" (too prescriptive with numbers)
   * Bad: "Talk to 5 people about X" (feels like homework)
   * Bad: "Be open to growth" (not actionable)
-  
-  Aim for: Specific enough to act on, flexible enough to personalize, natural enough to not feel like a checklist.
+  * Aim for: Specific enough to act on, flexible enough to personalize, natural enough to not feel like a checklist
 
 Group periods intelligently - combine very short periods (under 3 weeks).
 
 **3. KEY TRANSITIONS**
 - Create "transitions_table" type
 - Include 8-12 most important dates (pratyantardasha changes + major transits)
-- Each entry: date (short format) + significance (1-2 sentences)
+- Each entry: date (short format) + significance (1-2 sentences in plain language)
 - Include both positive transitions AND challenging ones (retrogrades, difficult aspects)
 - Mark the most critical 2-3 transitions with bold emphasis
+- Use accessible language: "Major planetary shift in relationships" not "Venus enters your 7th house"
 
 **4. PIVOTAL THEMES**
 - 4-5 "theme" objects covering the MOST EMPHASIZED life dimensions from the chart
@@ -274,19 +316,24 @@ Group periods intelligently - combine very short periods (under 3 weeks).
 - Use conditional framing: "If you're drawn to X..." or "This could manifest as..."
 - Each: bold title + 1 paragraph explanation
 - Connect to specific time periods when relevant
+- Titles should be modern and evocative, not astrological
 
 **5. KEY DECISIONS**
 - 4 "decision" objects (Q1, Q2, Q3, Q4)
 - Each: quarter label, bold question, 1 paragraph guidance
 - Questions should reflect the ACTUAL house activations for that quarter
 - Offer 2-3 options or paths, not just one assumption
-- Example: "How should I use my 6th house activation?" with options for health focus, service work, or problem-solving
+- Example: "How should I approach my health and daily routines?" with options for wellness focus, service work, or productivity optimization
+- Use plain language in the questions - no astro-jargon
 
 **6. FINAL GUIDANCE**
 - 3-4 paragraphs of closing wisdom
 - Acknowledge both opportunities AND challenges of the year
 - Encourage flexibility and personal interpretation of astrological influences
 - End with grounded, inspiring statement that respects their autonomy
+- Write in accessible, warm language
+
+---
 
 **Birth Details:**
 ${inputs.name ? `Name: ${inputs.name}` : ""}
@@ -294,30 +341,32 @@ Date: ${inputs.birth_date}
 Time: ${inputs.birth_time}
 Location: ${inputs.birth_location}
 
-**Full Planetary Positions:**
+**Full Planetary Placements:**
 ${inputs.planetary_positions}
 
-**Current Dasha Hierarchy:**
+**Current Planetary Period Hierarchy:**
 ${inputs.current_dasha}
 
-**${inputs.year} Pratyantardasha Schedule:**
+**${inputs.year} Period Schedule:**
 ${inputs.pratyantardashas}
 
-**Major Transits in ${inputs.year}:**
+**Major Planetary Movements in ${inputs.year}:**
 ${inputs.transits}
+
+---
 
 Return valid JSON only. Use markdown within text fields for emphasis (**bold**, *italic*).
 
 Output format:
 {
   "title": "Your Complete ${inputs.year} Forecast",
-  "subtitle": "Born [date] • [location]",
+  "subtitle": "Born ${inputs.birth_date} • ${inputs.birth_location}",
   "sections": [
     {
-      "heading": "${inputs.year}: Your Year of [Honest Theme Based on Dasha Analysis]",
+      "heading": "${inputs.year}: Your Year of [Honest Theme Based on Period Analysis]",
       "content": [
-        { "type": "paragraph", "text": "..." },
-        { "type": "astrology_note", "label": "The Astrology Behind ${inputs.year}:", "text": "..." }
+        { "type": "paragraph", "text": "Plain language overview of the year's main themes..." },
+        { "type": "astrology_note", "label": "The Astrology Behind ${inputs.year}:", "text": "Technical explanation with house numbers, transits, etc..." }
       ]
     },
     {
@@ -326,10 +375,10 @@ Output format:
         {
           "type": "period",
           "date_range": "January 12 - February 25",
-          "title": "The [Unique Theme] Period",
-          "what_happening": "...",
-          "astrology": "...",
-          "key_actions": "..."
+          "title": "The [Modern, Evocative Name] Period",
+          "what_happening": "Plain language narrative focusing on 2-4 activated life areas...",
+          "astrology": "Technical explanation of planets, houses, and rulerships...",
+          "key_actions": "Natural, actionable recommendations..."
         }
       ]
     },
@@ -339,7 +388,7 @@ Output format:
         {
           "type": "transitions_table",
           "transitions": [
-            { "date": "Feb 25", "significance": "..." }
+            { "date": "Feb 25", "significance": "Plain language description of the shift..." }
           ]
         }
       ]
@@ -347,24 +396,32 @@ Output format:
     {
       "heading": "Pivotal Themes: What Matters Most",
       "content": [
-        { "type": "theme", "title": "[Theme Based on Actual Chart Emphasis]", "text": "..." }
+        { "type": "theme", "title": "**[Modern Theme Title Based on Chart]**", "text": "Explanation in accessible language..." }
       ]
     },
     {
       "heading": "Key Decisions: Where to Focus Your Energy",
       "content": [
-        { "type": "decision", "quarter": "Q1 (January-March)", "question": "[Question Based on Q1 House Activations]", "guidance": "..." }
+        { 
+          "type": "decision", 
+          "quarter": "Q1 (January-March)", 
+          "question": "**[Plain Language Question Based on Q1 Activations]**", 
+          "guidance": "Thoughtful guidance with multiple paths/options..." 
+        }
       ]
     },
     {
       "heading": "Final Guidance: Trust the Timing",
       "content": [
-        { "type": "paragraph", "text": "..." }
+        { "type": "paragraph", "text": "Closing wisdom in warm, accessible language..." }
       ]
     }
   ]
 }`;
 }
+
+// Export both
+export { PAID_SYSTEM_PROMPT, buildPaidUserPrompt };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -416,13 +473,16 @@ Deno.serve(async (req) => {
 
     if (existingForecast?.stripe_session_id === session_id && existingForecast?.paid_vedic_forecast) {
       logStep("Returning existing forecast");
-      return new Response(JSON.stringify({ 
-        forecast: existingForecast.paid_vedic_forecast,
-        cached: true
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({
+          forecast: existingForecast.paid_vedic_forecast,
+          cached: true,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        },
+      );
     }
 
     // Fetch kundli details
@@ -443,14 +503,14 @@ Deno.serve(async (req) => {
     const targetYear = 2026;
 
     // Find ascendant
-    const ascendantPosition = planetaryPositions.find(p => p.name === "Ascendant");
+    const ascendantPosition = planetaryPositions.find((p) => p.name === "Ascendant");
     const ascendantSignId = ascendantPosition?.sign_id || 1;
 
     // Format planetary positions for prompt
     const keyPlanets = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter", "Saturn", "Rahu", "Ketu"];
     const planetaryPositionsText = planetaryPositions
-      .filter(p => keyPlanets.includes(p.name))
-      .map(p => {
+      .filter((p) => keyPlanets.includes(p.name))
+      .map((p) => {
         const house = calculateHouseFromAscendant(p.sign_id, ascendantSignId);
         return `- ${p.name} in ${p.sign} (${getOrdinal(house)} house)${p.is_retrograde ? " [R]" : ""} at ${p.degree.toFixed(1)}°`;
       })
@@ -458,23 +518,22 @@ Deno.serve(async (req) => {
 
     // Get current dasha hierarchy
     const currentDasha = getCurrentDashaFromList(dashaPeriods);
-    const currentDashaText = currentDasha ? `- Mahadasha: ${currentDasha.mahadasha.name} (${currentDasha.mahadasha.start.split("T")[0]} to ${currentDasha.mahadasha.end.split("T")[0]})
+    const currentDashaText = currentDasha
+      ? `- Mahadasha: ${currentDasha.mahadasha.name} (${currentDasha.mahadasha.start.split("T")[0]} to ${currentDasha.mahadasha.end.split("T")[0]})
 - Antardasha: ${currentDasha.antardasha?.name || "Unknown"} (${currentDasha.antardasha?.start.split("T")[0] || "?"} to ${currentDasha.antardasha?.end.split("T")[0] || "?"})
-- Pratyantardasha: ${currentDasha.pratyantardasha?.name || "Unknown"} (${currentDasha.pratyantardasha?.start.split("T")[0] || "?"} to ${currentDasha.pratyantardasha?.end.split("T")[0] || "?"})` : "Unknown";
+- Pratyantardasha: ${currentDasha.pratyantardasha?.name || "Unknown"} (${currentDasha.pratyantardasha?.start.split("T")[0] || "?"} to ${currentDasha.pratyantardasha?.end.split("T")[0] || "?"})`
+      : "Unknown";
 
     // Get pratyantardashas for target year
     const pratyantardashas = getPratyantardashasForYear(dashaPeriods, targetYear);
     const pratyantardashText = pratyantardashas
-      .map(p => `- ${p.mahadasha}-${p.antardasha}-${p.pratyantardasha}: ${p.dateRange}`)
+      .map((p) => `- ${p.mahadasha}-${p.antardasha}-${p.pratyantardasha}: ${p.dateRange}`)
       .join("\n");
 
     logStep("Pratyantardashas calculated", { count: pratyantardashas.length });
 
     // Fetch transit data
-    const { data: transitsData } = await supabase
-      .from("transits_lookup")
-      .select("*")
-      .eq("year", targetYear);
+    const { data: transitsData } = await supabase.from("transits_lookup").select("*").eq("year", targetYear);
 
     let transitsText = "No major transit data available";
     if (transitsData && transitsData.length > 0) {
@@ -488,7 +547,9 @@ Deno.serve(async (req) => {
           transitParts.push(`Saturn: ${data.sign} (${data.start} to ${data.end})`);
         }
         if (row.id === "rahu_ketu" && data) {
-          transitParts.push(`Rahu/Ketu shift: ${data.shift_date} (Rahu moves to ${data.rahu_sign_after || data.rahu_sign})`);
+          transitParts.push(
+            `Rahu/Ketu shift: ${data.shift_date} (Rahu moves to ${data.rahu_sign_after || data.rahu_sign})`,
+          );
         }
       }
       if (transitParts.length > 0) {
@@ -531,41 +592,48 @@ Deno.serve(async (req) => {
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
       const isRateLimited = claudeResponse.status === 429;
-      
-      logStep("Claude API error", { 
-        status: claudeResponse.status, 
+
+      logStep("Claude API error", {
+        status: claudeResponse.status,
         error: errorText,
-        is_rate_limit: isRateLimited 
+        is_rate_limit: isRateLimited,
       });
-      
+
       // Log to alerts table with rate limit context
       await supabase.from("vedic_generation_alerts").insert({
         kundli_id,
-        error_message: isRateLimited 
-          ? "Anthropic rate limit hit (429)" 
+        error_message: isRateLimited
+          ? "Anthropic rate limit hit (429)"
           : `Claude API error: ${claudeResponse.status} - ${errorText}`,
         error_type: isRateLimited ? "rate_limit" : "paid_generation",
       });
-      
+
       if (isRateLimited) {
-        return new Response(JSON.stringify({
-          high_demand: true,
-          retry_after: 60,
-          message: "We're experiencing high demand. Your forecast will be ready shortly - please refresh in 1-2 minutes.",
-        }), {
+        return new Response(
+          JSON.stringify({
+            high_demand: true,
+            retry_after: 60,
+            message:
+              "We're experiencing high demand. Your forecast will be ready shortly - please refresh in 1-2 minutes.",
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200, // Return 200 so frontend handles gracefully
+          },
+        );
+      }
+
+      // Return friendly error with manual_generation flag for other errors
+      return new Response(
+        JSON.stringify({
+          manual_generation: true,
+          message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
+        }),
+        {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200, // Return 200 so frontend handles gracefully
-        });
-      }
-      
-      // Return friendly error with manual_generation flag for other errors
-      return new Response(JSON.stringify({
-        manual_generation: true,
-        message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200, // Return 200 so frontend handles gracefully
-      });
+        },
+      );
     }
 
     const claudeData = await claudeResponse.json();
@@ -608,7 +676,7 @@ Deno.serve(async (req) => {
         if (resendApiKey) {
           const resend = new Resend(resendApiKey);
           const emailHtml = buildVedicPaidEmailHtml(kundliData.name, shareableLink);
-          
+
           // Generate PDF
           let pdfAttachment: { filename: string; content: string } | null = null;
           try {
@@ -629,18 +697,18 @@ Deno.serve(async (req) => {
             const pdfErrMsg = pdfError instanceof Error ? pdfError.message : "Unknown PDF error";
             logStep("PDF generation failed, sending email without attachment", { error: pdfErrMsg });
           }
-          
+
           const emailOptions: any = {
             from: "Cosmic Brief <noreply@cosmicbrief.com>",
             to: [customerEmail],
             subject: "Your Complete Vedic Cosmic Brief is Ready! ✨",
             html: emailHtml,
           };
-          
+
           if (pdfAttachment) {
             emailOptions.attachments = [pdfAttachment];
           }
-          
+
           const emailResponse = await resend.emails.send(emailOptions);
           logStep("Email sent successfully", { emailId: emailResponse?.data?.id, hasPdf: !!pdfAttachment });
         } else {
@@ -654,21 +722,27 @@ Deno.serve(async (req) => {
       logStep("No email address provided, skipping email");
     }
 
-    return new Response(JSON.stringify({
-      forecast: forecastText,
-      model: claudeData.model,
-      usage: claudeData.usage,
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({
+        forecast: forecastText,
+        model: claudeData.model,
+        usage: claudeData.usage,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
+    );
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logStep("Error", { message: errMessage });
-    
+
     // Try to log to alerts table
     try {
-      const body = await req.clone().json().catch(() => ({}));
+      const body = await req
+        .clone()
+        .json()
+        .catch(() => ({}));
       if (body.kundli_id) {
         const supabaseUrl = Deno.env.get("SUPABASE_URL");
         const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -684,14 +758,17 @@ Deno.serve(async (req) => {
     } catch (alertError) {
       logStep("Failed to log alert", { error: alertError });
     }
-    
+
     // Return friendly error
-    return new Response(JSON.stringify({
-      manual_generation: true,
-      message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({
+        manual_generation: true,
+        message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      },
+    );
   }
 });
