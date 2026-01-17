@@ -423,13 +423,18 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y={pos.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill="#a08060"
-              fontSize="20"
+              fill="#b8a070"
+              fontSize="16"
               fontWeight="500"
+              fontFamily="serif"
               className="select-none"
-              style={{ opacity: 0.5 }}
+              style={{ 
+                opacity: 0.6,
+                // Force text rendering to prevent emoji colorization
+                fontVariantEmoji: 'text',
+              }}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.6 }}
               transition={{ duration: 0.5, delay: 0.6 + i * 0.02 }}
             >
               {pos.symbol}
@@ -752,24 +757,24 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
         )}
       </AnimatePresence>
 
-      {/* Glassmorphism Cards - refined styling */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
+      {/* Glassmorphism Cards - mobile optimized */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full max-w-4xl">
         {/* Ascendant Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.4 }}
-          className="bg-gradient-to-br from-[#FCD34D]/10 to-[#FCD34D]/5 backdrop-blur-lg border border-[#FCD34D]/20 rounded-2xl p-5 text-center"
+          className="bg-gradient-to-br from-[#FCD34D]/10 to-[#FCD34D]/5 backdrop-blur-lg border border-[#FCD34D]/20 rounded-xl sm:rounded-2xl p-3 sm:p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#FCD34D]/15 flex items-center justify-center">
-            <span className="text-2xl text-[#FCD34D]">લ</span>
+          <div className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 rounded-full bg-[#FCD34D]/15 flex items-center justify-center">
+            <span className="text-lg sm:text-2xl text-[#FCD34D]">લ</span>
           </div>
-          <p className="text-[#9CA3AF] text-sm mb-1">Ascendant (Lagna)</p>
-          <p className="text-white font-semibold text-xl">{chartData.ascendant_sign}</p>
+          <p className="text-[#9CA3AF] text-xs sm:text-sm mb-0.5 sm:mb-1">Ascendant (Lagna)</p>
+          <p className="text-white font-semibold text-base sm:text-xl">{chartData.ascendant_sign}</p>
           {ascendantPosition && (
-            <p className="text-[#FCD34D]/70 text-sm mt-1">{ascendantPosition.degree.toFixed(1)}°</p>
+            <p className="text-[#FCD34D]/70 text-xs sm:text-sm mt-0.5 sm:mt-1">{ascendantPosition.degree.toFixed(1)}°</p>
           )}
-          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.ascendant_sign_lord}</p>
+          <p className="text-[#9CA3AF] text-[10px] sm:text-xs mt-0.5 sm:mt-1">Lord: {chartData.ascendant_sign_lord}</p>
         </motion.div>
 
         {/* Birth Nakshatra Card */}
@@ -777,15 +782,15 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
-          className="bg-gradient-to-br from-[#A855F7]/10 to-[#A855F7]/5 backdrop-blur-lg border border-[#A855F7]/20 rounded-2xl p-5 text-center"
+          className="bg-gradient-to-br from-[#10B981]/10 to-[#10B981]/5 backdrop-blur-lg border border-[#10B981]/20 rounded-xl sm:rounded-2xl p-3 sm:p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#A855F7]/15 flex items-center justify-center">
-            <span className="text-2xl text-[#A855F7]">✧</span>
+          <div className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 rounded-full bg-[#10B981]/15 flex items-center justify-center">
+            <span className="text-lg sm:text-2xl text-[#10B981]">✧</span>
           </div>
-          <p className="text-[#9CA3AF] text-sm mb-1">Birth Nakshatra</p>
-          <p className="text-white font-semibold text-xl">{chartData.nakshatra}</p>
-          <p className="text-[#A855F7]/70 text-sm mt-1">Pada {chartData.nakshatra_pada}</p>
-          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.nakshatra_lord}</p>
+          <p className="text-[#9CA3AF] text-xs sm:text-sm mb-0.5 sm:mb-1">Birth Nakshatra</p>
+          <p className="text-white font-semibold text-base sm:text-xl">{chartData.nakshatra}</p>
+          <p className="text-[#10B981]/70 text-xs sm:text-sm mt-0.5 sm:mt-1">Pada {chartData.nakshatra_pada}</p>
+          <p className="text-[#9CA3AF] text-[10px] sm:text-xs mt-0.5 sm:mt-1">Lord: {chartData.nakshatra_lord}</p>
         </motion.div>
 
         {/* Moon Card */}
@@ -793,17 +798,17 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.6 }}
-          className="bg-gradient-to-br from-[#E5E7EB]/10 to-[#E5E7EB]/5 backdrop-blur-lg border border-[#E5E7EB]/15 rounded-2xl p-5 text-center"
+          className="bg-gradient-to-br from-[#E5E7EB]/10 to-[#E5E7EB]/5 backdrop-blur-lg border border-[#E5E7EB]/15 rounded-xl sm:rounded-2xl p-3 sm:p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#E5E7EB]/15 flex items-center justify-center">
-            <span className="text-2xl text-[#E5E7EB]">☽</span>
+          <div className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 rounded-full bg-[#E5E7EB]/15 flex items-center justify-center">
+            <span className="text-lg sm:text-2xl text-[#E5E7EB]" style={{ fontFamily: 'serif' }}>☽</span>
           </div>
-          <p className="text-[#9CA3AF] text-sm mb-1">Moon (Chandra)</p>
-          <p className="text-white font-semibold text-xl">{chartData.moon_sign}</p>
+          <p className="text-[#9CA3AF] text-xs sm:text-sm mb-0.5 sm:mb-1">Moon (Chandra)</p>
+          <p className="text-white font-semibold text-base sm:text-xl">{chartData.moon_sign}</p>
           {moonPosition && (
-            <p className="text-[#E5E7EB]/70 text-sm mt-1">{moonPosition.degree.toFixed(1)}°</p>
+            <p className="text-[#E5E7EB]/70 text-xs sm:text-sm mt-0.5 sm:mt-1">{moonPosition.degree.toFixed(1)}°</p>
           )}
-          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.moon_sign_lord}</p>
+          <p className="text-[#9CA3AF] text-[10px] sm:text-xs mt-0.5 sm:mt-1">Lord: {chartData.moon_sign_lord}</p>
         </motion.div>
 
         {/* Sun Card */}
@@ -811,17 +816,17 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.7 }}
-          className="bg-gradient-to-br from-[#FCD34D]/10 to-[#FCD34D]/5 backdrop-blur-lg border border-[#FCD34D]/20 rounded-2xl p-5 text-center"
+          className="bg-gradient-to-br from-[#FCD34D]/10 to-[#FCD34D]/5 backdrop-blur-lg border border-[#FCD34D]/20 rounded-xl sm:rounded-2xl p-3 sm:p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#FCD34D]/15 flex items-center justify-center">
-            <span className="text-2xl text-[#FCD34D]">☉</span>
+          <div className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-2 sm:mb-3 rounded-full bg-[#FCD34D]/15 flex items-center justify-center">
+            <span className="text-lg sm:text-2xl text-[#FCD34D]" style={{ fontFamily: 'serif' }}>☉</span>
           </div>
-          <p className="text-[#9CA3AF] text-sm mb-1">Sun (Surya)</p>
-          <p className="text-white font-semibold text-xl">{chartData.sun_sign}</p>
+          <p className="text-[#9CA3AF] text-xs sm:text-sm mb-0.5 sm:mb-1">Sun (Surya)</p>
+          <p className="text-white font-semibold text-base sm:text-xl">{chartData.sun_sign}</p>
           {sunPosition && (
-            <p className="text-[#FCD34D]/70 text-sm mt-1">{sunPosition.degree.toFixed(1)}°</p>
+            <p className="text-[#FCD34D]/70 text-xs sm:text-sm mt-0.5 sm:mt-1">{sunPosition.degree.toFixed(1)}°</p>
           )}
-          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.sun_sign_lord}</p>
+          <p className="text-[#9CA3AF] text-[10px] sm:text-xs mt-0.5 sm:mt-1">Lord: {chartData.sun_sign_lord}</p>
         </motion.div>
       </div>
     </div>

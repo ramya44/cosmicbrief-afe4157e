@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { BirthChartWheel } from '@/components/BirthChartWheel';
 import { SaveProfileDialog } from '@/components/SaveProfileDialog';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Save, Download } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Save, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Matches the KundliResult from get-kundli-data edge function
@@ -228,8 +228,32 @@ const BirthChartPage = () => {
     setSaveDialogOpen(false);
   };
 
-  const handleDownloadImage = () => {
-    toast.info('Download feature coming soon!');
+  const handleShare = async () => {
+    const shareData = {
+      title: 'My Vedic Birth Chart | Cosmic Brief',
+      text: `Check out my Vedic birth chart - ${kundliData?.ascendant_sign} Ascendant, ${kundliData?.moon_sign} Moon`,
+      url: window.location.href,
+    };
+
+    // Check if native share is available (iOS/mobile)
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User cancelled or error
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Share failed:', err);
+        }
+      }
+    } else {
+      // Fallback: copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success('Link copied to clipboard!');
+      } catch (err) {
+        toast.error('Failed to copy link');
+      }
+    }
   };
 
   if (!chartData) {
@@ -334,13 +358,13 @@ const BirthChartPage = () => {
               </Button>
             )}
             <Button
-              onClick={handleDownloadImage}
+              onClick={handleShare}
               variant="outline"
               size="lg"
               className="border-gold/40 text-gold hover:bg-gold/10"
             >
-              <Download className="w-5 h-5 mr-2" />
-              Download as Image
+              <Share2 className="w-5 h-5 mr-2" />
+              Share
             </Button>
           </div>
 
@@ -384,6 +408,7 @@ const BirthChartPage = () => {
             onOpenChange={setSaveDialogOpen}
             kundliId={chartData.kundliId}
             defaultName={chartData.name}
+            defaultEmail={chartData.email}
             onSuccess={handleSaveSuccess}
           />
         )}

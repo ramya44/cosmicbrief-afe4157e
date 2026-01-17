@@ -43,6 +43,7 @@ interface SaveProfileDialogProps {
   onOpenChange: (open: boolean) => void;
   kundliId: string;
   defaultName?: string;
+  defaultEmail?: string;
   onSuccess: () => void;
 }
 
@@ -51,6 +52,7 @@ export const SaveProfileDialog = ({
   onOpenChange,
   kundliId,
   defaultName,
+  defaultEmail,
   onSuccess,
 }: SaveProfileDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +62,7 @@ export const SaveProfileDialog = ({
   const signupForm = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      email: '',
+      email: defaultEmail || '',
       password: '',
       displayName: defaultName || '',
     },
@@ -211,17 +213,17 @@ export const SaveProfileDialog = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream">Email</FormLabel>
+                    <FormLabel className="text-cream font-medium">Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
                           type="email"
                           autoComplete="email"
                           name="email"
                           placeholder="you@example.com"
-                          className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
+                          className="pl-10 bg-white border-gold/30 text-gray-900 placeholder:text-gray-400"
                         />
                       </div>
                     </FormControl>
@@ -235,17 +237,17 @@ export const SaveProfileDialog = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream">Password</FormLabel>
+                    <FormLabel className="text-cream font-medium">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
                           type="password"
                           autoComplete="current-password"
                           name="password"
                           placeholder="••••••••"
-                          className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
+                          className="pl-10 bg-white border-gold/30 text-gray-900 placeholder:text-gray-400"
                         />
                       </div>
                     </FormControl>
@@ -288,16 +290,16 @@ export const SaveProfileDialog = ({
                 name="displayName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream">Your Name</FormLabel>
+                    <FormLabel className="text-cream font-medium">Your Name</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
                           autoComplete="name"
                           name="displayName"
                           placeholder="Enter your name"
-                          className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
+                          className="pl-10 bg-white border-gold/30 text-gray-900 placeholder:text-gray-400"
                         />
                       </div>
                     </FormControl>
@@ -311,17 +313,17 @@ export const SaveProfileDialog = ({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream">Email</FormLabel>
+                    <FormLabel className="text-cream font-medium">Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
                           type="email"
                           autoComplete="email"
                           name="email"
                           placeholder="you@example.com"
-                          className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
+                          className="pl-10 bg-white border-gold/30 text-gray-900 placeholder:text-gray-400"
                         />
                       </div>
                     </FormControl>
@@ -335,17 +337,17 @@ export const SaveProfileDialog = ({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-cream">Password</FormLabel>
+                    <FormLabel className="text-cream font-medium">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-cream-muted" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
                           type="password"
                           autoComplete="new-password"
                           name="password"
                           placeholder="At least 6 characters"
-                          className="pl-10 bg-midnight-900 border-gold/20 text-cream placeholder:text-cream-muted/50"
+                          className="pl-10 bg-white border-gold/30 text-gray-900 placeholder:text-gray-400"
                         />
                       </div>
                     </FormControl>
