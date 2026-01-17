@@ -3,23 +3,65 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { ArrowLeft, Sparkles } from 'lucide-react';
+
 const VedicAstrologyExplainedPage = () => {
-  return <>
+  return (
+    <>
       <Helmet>
-        <title>Vedic Astrology Basics | Cosmic Brief</title>
-        <meta name="description" content="Learn the fundamentals of Vedic astrology (Jyotish), including the sidereal zodiac, nakshatras, dasha periods, and how it differs from Western astrology." />
+        <title>Vedic vs Western Astrology: Key Differences Explained (2026 Guide) | Cosmic Brief</title>
+        <meta name="description" content="Discover the key differences between Vedic and Western astrology, why your zodiac sign might be different, and which system is right for you." />
         <link rel="canonical" href="https://cosmicbrief.app/#/vedic-astrology-explained" />
         <script type="application/ld+json">
           {JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Article",
-          "headline": "Vedic Astrology Basics",
-          "description": "A comprehensive guide to Vedic astrology fundamentals for those familiar with Western astrology.",
-          "author": {
-            "@type": "Organization",
-            "name": "Cosmic Brief"
-          }
-        })}
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Vedic vs Western Astrology: What's the Difference?",
+            "description": "Discover the key differences between Vedic and Western astrology, why your zodiac sign might be different, and which system is right for you.",
+            "author": {
+              "@type": "Organization",
+              "name": "Cosmic Brief"
+            }
+          })}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Will my personality change if I use Vedic astrology?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No! You're the same person. Vedic just uses a different measurement system that might describe you differently—or might resonate more. Think of it as getting a second opinion that might reveal something your first opinion missed."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I ignore Western astrology if I use Vedic?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You can, but you don't have to! Many people find value in both. Western for psychological insight, Vedic for timing."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is Vedic astrology tied to Hinduism?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Vedic astrology originated in ancient India and shares cultural roots with Hindu philosophy, but you don't need to be Hindu to use it — just like you don't need to be Greek to use Western astrology (which has roots in Hellenistic Greece)."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do I find out my Vedic chart?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You need your exact birth time, date, and location. Enter that information to get your free Vedic forecast."
+                }
+              }
+            ]
+          })}
         </script>
       </Helmet>
 
@@ -39,373 +81,417 @@ const VedicAstrologyExplainedPage = () => {
         <main className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
           <article className="prose prose-invert prose-lg max-w-none text-lg">
             <h1 className="text-4xl md:text-5xl font-bold text-cream mb-6">
-              Vedic Astrology Basics
+              Vedic vs Western Astrology: What's the Difference?
             </h1>
-            
-            <p className="text-xl text-cream-muted leading-relaxed mb-8">
-              Vedic astrology, also known as <strong className="text-cream">Jyotish</strong> (meaning "science of light"), is the ancient astrological system that originated in India over 5,000 years ago. While it shares some similarities with Western astrology, Vedic astrology has distinct philosophical foundations, calculation methods, and interpretive techniques that make it a unique and powerful predictive tool.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              If you're already familiar with Western astrology, learning Vedic astrology will expand your astrological toolkit and provide you with complementary insights into personality, life events, and karmic patterns.
-            </p>
 
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              The Fundamental Difference: Sidereal vs. Tropical Zodiac
-            </h2>
-            
-            <p className="text-cream-muted leading-relaxed">
-              The most important distinction between Vedic and Western astrology is the zodiac system used:
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-
-Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.<strong className="text-cream">Western Astrology</strong> uses the <strong className="text-cream">tropical zodiac</strong>, which is based on the seasons and the relationship between Earth and the Sun. Aries always begins at the spring equinox (around March 21).
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              <strong className="text-cream">Vedic Astrology</strong> uses the <strong className="text-cream">sidereal zodiac</strong>, which is based on the actual positions of constellations in the sky. This system accounts for the precession of the equinoxes.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Due to this difference, your Sun sign (and all other planetary positions) will typically be different in Vedic astrology compared to Western astrology. Most people's planets shift backward by one sign, though this depends on the exact degree placement.
-            </p>
-            
+            {/* Quick Answer Section */}
             <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
-              <h3 className="text-xl font-semibold text-gold mb-3">The Ayanamsa</h3>
+              <h2 className="text-2xl font-semibold text-gold mt-0 mb-4">Quick Answer</h2>
               <p className="text-cream-muted m-0">
-                The difference between the tropical and sidereal zodiacs is called the <strong className="text-cream">ayanamsa</strong>. Currently, this difference is approximately 24 degrees, meaning most planets in a Vedic chart will be about 24 degrees earlier than in a Western chart.
+                The main difference between Vedic and Western astrology is the <strong className="text-cream">zodiac system</strong>: Vedic uses the <strong className="text-cream">sidereal zodiac</strong> (based on actual star positions), while Western uses the <strong className="text-cream">tropical zodiac</strong> (based on seasons). This means your sun sign might be different in each system—and Vedic astrology places more emphasis on timing and life cycles.
               </p>
             </div>
 
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Why Does This Matter?</h3>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Vedic astrologers believe that the sidereal zodiac reflects the actual astronomical positions and thus provides more accurate predictions, while Western astrologers argue that the tropical zodiac better represents the archetypal energies tied to Earth's seasons. Both systems work effectively within their own frameworks.
-            </p>
-
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Key Differences Between Vedic and Western Astrology
-            </h2>
-            
+            {/* Quick Comparison Table */}
+            <h3 className="text-xl font-semibold text-cream mt-8 mb-4">Quick Comparison</h3>
             <div className="overflow-x-auto my-8">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-border/50">
-                    <th className="text-left py-4 px-4 text-cream font-semibold">Aspect</th>
-                    <th className="text-left py-4 px-4 text-cream font-semibold">Western Astrology</th>
-                    <th className="text-left py-4 px-4 text-cream font-semibold">Vedic Astrology</th>
+                    <th className="text-left py-4 px-4 text-cream font-semibold">Feature</th>
+                    <th className="text-left py-4 px-4 text-cream font-semibold">Vedic (Sidereal)</th>
+                    <th className="text-left py-4 px-4 text-cream font-semibold">Western (Tropical)</th>
                   </tr>
                 </thead>
                 <tbody className="text-cream-muted">
                   <tr className="border-b border-border/30">
-                    <td className="py-3 px-4 font-medium text-cream">Zodiac System</td>
-                    <td className="py-3 px-4">Tropical (season-based)</td>
-                    <td className="py-3 px-4">Sidereal (constellation-based)</td>
+                    <td className="py-3 px-4 font-medium text-cream">Zodiac Type</td>
+                    <td className="py-3 px-4">Based on actual star positions</td>
+                    <td className="py-3 px-4">Based on seasons (equinoxes)</td>
+                  </tr>
+                  <tr className="border-b border-border/30">
+                    <td className="py-3 px-4 font-medium text-cream">Your Sun Sign</td>
+                    <td className="py-3 px-4">Often 1 sign earlier</td>
+                    <td className="py-3 px-4">What you know from magazines</td>
                   </tr>
                   <tr className="border-b border-border/30">
                     <td className="py-3 px-4 font-medium text-cream">Primary Focus</td>
-                    <td className="py-3 px-4">Psychological understanding and self-development</td>
-                    <td className="py-3 px-4">Karma, dharma, and predictive timing</td>
+                    <td className="py-3 px-4">Timing & life cycles (planetary periods)</td>
+                    <td className="py-3 px-4">Psychological traits & transits</td>
                   </tr>
                   <tr className="border-b border-border/30">
-                    <td className="py-3 px-4 font-medium text-cream">Chart Format</td>
-                    <td className="py-3 px-4">Circular wheel</td>
-                    <td className="py-3 px-4">Square (North Indian) or Diamond (South Indian)</td>
+                    <td className="py-3 px-4 font-medium text-cream">Chart Calculation</td>
+                    <td className="py-3 px-4">Accounts for precession (~23° difference)</td>
+                    <td className="py-3 px-4">Fixed to March equinox</td>
                   </tr>
                   <tr className="border-b border-border/30">
-                    <td className="py-3 px-4 font-medium text-cream">Planets Used</td>
-                    <td className="py-3 px-4">All modern planets (including Uranus, Neptune, Pluto)</td>
-                    <td className="py-3 px-4">Traditional seven planets plus lunar nodes (Rahu & Ketu)</td>
+                    <td className="py-3 px-4 font-medium text-cream">Best For</td>
+                    <td className="py-3 px-4">Strategic timing, major decisions</td>
+                    <td className="py-3 px-4">Self-understanding, daily guidance</td>
                   </tr>
                   <tr className="border-b border-border/30">
-                    <td className="py-3 px-4 font-medium text-cream">House Systems</td>
-                    <td className="py-3 px-4">Multiple systems (Placidus, Koch, Equal, etc.)</td>
-                    <td className="py-3 px-4">Whole sign houses (entire signs = houses)</td>
+                    <td className="py-3 px-4 font-medium text-cream">Moon Emphasis</td>
+                    <td className="py-3 px-4">27 lunar mansions (nakshatras)</td>
+                    <td className="py-3 px-4">12 zodiac signs</td>
                   </tr>
                   <tr className="border-b border-border/30">
-                    <td className="py-3 px-4 font-medium text-cream">Aspects</td>
-                    <td className="py-3 px-4">Precise degree-based aspects (orbs used)</td>
-                    <td className="py-3 px-4">Sign-based aspects (primarily oppositions and trines)</td>
-                  </tr>
-                  <tr className="border-b border-border/30">
-                    <td className="py-3 px-4 font-medium text-cream">Moon's Importance</td>
-                    <td className="py-3 px-4">Important for emotions</td>
-                    <td className="py-3 px-4">Equal to or more important than the Sun; Moon sign often used as primary identity</td>
+                    <td className="py-3 px-4 font-medium text-cream">Predictive Method</td>
+                    <td className="py-3 px-4">Dasha system (planetary periods)</td>
+                    <td className="py-3 px-4">Transits & progressions</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
+            {/* Why Your Sun Sign Is Different */}
             <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Understanding the Vedic Birth Chart
+              Why Your Sun Sign Is Different
             </h2>
             
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">The Rasi Chart (Birth Chart)</h3>
-            
             <p className="text-cream-muted leading-relaxed">
-              The main Vedic birth chart is called the <strong className="text-cream">rasi chart</strong> or D-1 chart. Unlike the circular charts you're used to in Western astrology, Vedic charts are typically displayed as squares or diamonds, with the twelve houses arranged in a specific pattern.
+              If you've ever looked up your Vedic birth chart and thought "Wait, I'm not a Pisces anymore?"— you're not alone.
             </p>
             
             <p className="text-cream-muted leading-relaxed">
-              <strong className="text-cream">Important:</strong> In Vedic astrology, the Ascendant (Lagna) is placed in a fixed position in the chart, and the houses are numbered from there. The houses are whole sign houses, meaning each entire sign equals one house.
+              Here's what's happening: Earth wobbles on its axis (called <strong className="text-cream">precession</strong>). Over the past 2,000+ years, this wobble has created a ~23-degree shift between the constellations and the seasons.
             </p>
-
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">The Navamsa Chart (D-9)</h3>
             
             <p className="text-cream-muted leading-relaxed">
-              Vedic astrology uses multiple divisional charts (Vargas) to analyze different life areas. The most important is the <strong className="text-cream">Navamsa</strong> (D-9), which divides each sign into nine parts and is crucial for understanding marriage, dharma, and the soul's evolution. Think of it as a harmonic chart that reveals deeper karmic patterns.
+              <strong className="text-cream">Western astrology</strong> decided to stay fixed to the seasons. So if you're born around March 21st, you're an Aries in Western astrology—always. It's tied to the spring equinox.
             </p>
-
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Rahu and Ketu: The Lunar Nodes</h3>
             
             <p className="text-cream-muted leading-relaxed">
-              While Western astrology often mentions the North and South Nodes, Vedic astrology gives them planetary status:
+              <strong className="text-cream">Vedic astrology</strong> tracks the actual stars. So that same March 21st birthday might make you a Pisces in Vedic, because the constellation behind the sun has shifted.
             </p>
             
+            <p className="text-cream-muted leading-relaxed">
+              <strong className="text-cream">Which one is "right"?</strong> Both. They're measuring different things:
+            </p>
             <ul className="text-cream-muted space-y-2 my-4">
-              <li><strong className="text-cream">Rahu</strong> (North Node): Represents desires, obsessions, worldly ambitions, and where you're heading in this lifetime. It's considered a shadow planet with malefic tendencies.</li>
-              <li><strong className="text-cream">Ketu</strong> (South Node): Represents past life karma, spiritual detachment, liberation, and what you're moving away from. Also a shadow planet, it brings sudden events and spiritual insights.</li>
+              <li>Western = psychological archetype tied to seasonal energy</li>
+              <li>Vedic = astronomical position tied to predictive timing</li>
             </ul>
-            
             <p className="text-cream-muted leading-relaxed">
-              These nodes are always exactly opposite each other and play a crucial role in Vedic predictions, especially during their planetary periods.
+              Think of it like Fahrenheit vs Celsius—different systems, both valid, used for different purposes.
             </p>
 
+            {/* The Real Difference */}
             <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Nakshatras: The Lunar Mansions
+              The Real Difference: Focus and Approach
             </h2>
             
             <p className="text-cream-muted leading-relaxed">
-              One of the most distinctive features of Vedic astrology is the use of <strong className="text-cream">nakshatras</strong>, the 27 (or 28) lunar mansions that divide the zodiac into segments of 13°20' each. Each nakshatra has its own deity, symbol, planetary ruler, and qualities.
+              The zodiac shift gets all the attention, but the <strong className="text-cream">real difference</strong> is what each system prioritizes:
             </p>
+
+            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Western Astrology: Self-Understanding</h3>
+            <p className="text-cream-muted leading-relaxed">
+              Western astrology excels at psychological insight. It's like therapy through the stars—helping you understand your inner world, patterns, and growth edges. It's deeply influenced by Jungian psychology and focuses on:
+            </p>
+            <ul className="text-cream-muted space-y-2 my-4">
+              <li>Character traits and personality</li>
+              <li>Current transits and their psychological impact</li>
+              <li>Aspects between planets (angles that create dynamics)</li>
+              <li>Houses as life areas you experience internally</li>
+            </ul>
+            <p className="text-cream-muted leading-relaxed">
+              <strong className="text-cream">Best for:</strong> Understanding yourself, processing emotions, daily/weekly horoscopes
+            </p>
+
+            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Vedic Astrology: Strategic Timing</h3>
+            <p className="text-cream-muted leading-relaxed">
+              Vedic astrology is more like a strategic planning tool. It's focused on <strong className="text-cream">when</strong> things happen—the timing of opportunities, challenges, and life chapters. It uses:
+            </p>
+            <ul className="text-cream-muted space-y-2 my-4">
+              <li><strong className="text-cream">Planetary periods (dashas)</strong>: You're always in a specific planet's "chapter" that lasts years, with sub-chapters lasting months</li>
+              <li><strong className="text-cream">Nakshatras (lunar mansions)</strong>: 27 divisions of the zodiac that are more precise than the 12 signs</li>
+              <li><strong className="text-cream">Transits combined with periods</strong>: When a planet moves through your chart + you're in a favorable period = powerful timing window</li>
+            </ul>
+            <p className="text-cream-muted leading-relaxed">
+              <strong className="text-cream">Best for:</strong> Making major decisions, timing career moves, understanding life cycles
+            </p>
+
+            {/* Key Concepts Unique to Each System */}
+            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
+              Key Concepts Unique to Each System
+            </h2>
+
+            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Vedic Astrology's Unique Tools</h3>
             
-            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
-              <h3 className="text-xl font-semibold text-gold mb-3">Why Nakshatras Matter</h3>
+            <div className="bg-midnight/50 border border-border/30 rounded-xl p-6 my-6">
+              <h4 className="text-xl font-semibold text-gold mb-3">1. Planetary Periods (Dasha System)</h4>
               <p className="text-cream-muted m-0">
-                Your Moon's nakshatra is considered one of the most important factors in Vedic astrology. It reveals your emotional nature, instinctive reactions, and deeper psychological patterns. It's also crucial for determining your Dasha periods and for relationship compatibility.
+                You're always in a major "life chapter" governed by a specific planet—and that chapter has sub-chapters, and those have micro-chapters. These periods last for years, months, and weeks respectively.
               </p>
-            </div>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Each planet in your chart falls within a specific nakshatra, adding layers of meaning beyond the zodiac sign. For example, three people might all have their Moon in Vedic Taurus, but if one is in Krittika nakshatra, another in Rohini, and another in Mrigashira, their emotional expressions will be distinctly different.
-            </p>
-
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              The Dasha System: Vedic Predictive Timing
-            </h2>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Perhaps the most powerful predictive tool in Vedic astrology is the <strong className="text-cream">Dasha system</strong>, which has no direct equivalent in Western astrology (though it's somewhat comparable to profections or time-lord techniques).
-            </p>
-            
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Vimshottari Dasha</h3>
-            
-            <p className="text-cream-muted leading-relaxed">
-              The most commonly used system is <strong className="text-cream">Vimshottari Dasha</strong>, a 120-year cycle divided among the nine planets. Each person moves through planetary periods in a specific order based on their Moon's nakshatra at birth.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              The sequence of planetary periods is: Sun (6 years) → Moon (10 years) → Mars (7 years) → Rahu (18 years) → Jupiter (16 years) → Saturn (19 years) → Mercury (17 years) → Ketu (7 years) → Venus (20 years).
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Each major period (Maha Dasha) is subdivided into sub-periods (Antar Dasha), and even further into sub-sub-periods, creating a precise timing system for predicting when certain themes will dominate your life.
-            </p>
-            
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">How to Use Dashas</h3>
-            
-            <p className="text-cream-muted leading-relaxed">
-              During a planet's Dasha period, the themes represented by that planet, its house position, sign placement, and aspects become activated in your life. For example:
-            </p>
-            
-            <ul className="text-cream-muted space-y-2 my-4">
-              <li>During <strong className="text-cream">Venus Dasha</strong>, you might experience significant relationship developments, artistic pursuits, or material pleasures</li>
-              <li>During <strong className="text-cream">Saturn Dasha</strong>, you may face challenges, responsibilities, and important life lessons that lead to maturity</li>
-              <li>During <strong className="text-cream">Jupiter Dasha</strong>, expansion, learning, spiritual growth, and good fortune are emphasized</li>
-            </ul>
-
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Planetary Strengths and Dignities
-            </h2>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Like Western astrology, Vedic astrology recognizes planetary dignities, though with some differences:
-            </p>
-            
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Basic Dignities</h3>
-            
-            <ul className="text-cream-muted space-y-2 my-4">
-              <li><strong className="text-cream">Exaltation</strong> (Uccha): The sign where a planet functions at its highest potential</li>
-              <li><strong className="text-cream">Debilitation</strong> (Neecha): The sign opposite exaltation, where the planet is weakened</li>
-              <li><strong className="text-cream">Own Sign</strong> (Svakshetra): The sign(s) ruled by the planet</li>
-              <li><strong className="text-cream">Friendly Signs</strong>: Signs ruled by natural friends</li>
-              <li><strong className="text-cream">Enemy Signs</strong>: Signs ruled by natural enemies</li>
-            </ul>
-            
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Shadbala: Six-Fold Strength</h3>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Vedic astrology uses a sophisticated calculation system called <strong className="text-cream">Shadbala</strong> to determine planetary strength based on six different factors, including positional strength, directional strength, temporal strength, and more. This provides a nuanced understanding of how effectively each planet can deliver results.
-            </p>
-
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Yogas: Planetary Combinations
-            </h2>
-            
-            <p className="text-cream-muted leading-relaxed">
-              A unique feature of Vedic astrology is the emphasis on <strong className="text-cream">yogas</strong> (planetary combinations) that create specific life outcomes. There are hundreds of yogas ranging from highly auspicious to challenging:
-            </p>
-            
-            <ul className="text-cream-muted space-y-2 my-4">
-              <li><strong className="text-cream">Raja Yoga:</strong> Combinations that create success, status, and power, typically formed when lords of angles and trines connect.</li>
-              <li><strong className="text-cream">Dhana Yoga:</strong> Wealth-producing combinations involving the 2nd, 5th, 9th, and 11th house lords.</li>
-              <li><strong className="text-cream">Gaja Kesari Yoga:</strong> Formed when Jupiter and Moon are in mutual kendras (angles), bringing wisdom and prosperity.</li>
-            </ul>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Understanding yogas helps Vedic astrologers make predictions about specific life outcomes and potentials that might not be immediately obvious from simply looking at individual planetary placements.
-            </p>
-
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Remedial Measures: Proactive Astrology
-            </h2>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Unlike Western astrology, which tends to be more descriptive and psychological, Vedic astrology is inherently prescriptive. It offers <strong className="text-cream">upayas</strong> (remedies) to mitigate challenging planetary influences and enhance beneficial ones:
-            </p>
-            
-            <ul className="text-cream-muted space-y-2 my-4">
-              <li><strong className="text-cream">Gemstone therapy:</strong> Wearing specific gemstones associated with planets</li>
-              <li><strong className="text-cream">Mantras:</strong> Chanting planetary mantras to harmonize planetary energies</li>
-              <li><strong className="text-cream">Charity:</strong> Donating items associated with challenging planets on specific days</li>
-              <li><strong className="text-cream">Fasting:</strong> Observing fasts on days ruled by difficult planets</li>
-              <li><strong className="text-cream">Yantras:</strong> Using sacred geometrical diagrams for meditation</li>
-              <li><strong className="text-cream">Pujas and rituals:</strong> Performing specific ceremonies to honor planetary deities</li>
-            </ul>
-            
-            <p className="text-cream-muted leading-relaxed">
-              This remedial approach reflects Vedic astrology's roots in Vedic philosophy, which emphasizes personal responsibility and the ability to work with karma rather than being passive victims of fate.
-            </p>
-
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              The Philosophical Foundation: Karma and Dharma
-            </h2>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Vedic astrology is deeply rooted in Hindu philosophy, particularly the concepts of <strong className="text-cream">karma</strong> (the law of cause and effect) and <strong className="text-cream">dharma</strong> (one's duty or righteous path).
-            </p>
-
-            <br />
-            
-            <p className="text-cream-muted leading-relaxed">
-              Your birth chart is seen as a karmic blueprint showing the results of past actions and the lessons you're meant to learn in this lifetime. The chart doesn't cause events; rather, it reflects your karmic patterns and the timing of their manifestation.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              This philosophical perspective makes Vedic astrology feel more fate-oriented compared to Western astrology's emphasis on free will and psychological growth. However, Vedic astrologers believe that while the general karmic structure is set, you have free will in how you respond to circumstances and can use spiritual practices to transcend lower expressions of planetary energies.
-            </p>
-
-            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Getting Started with Your Vedic Chart
-            </h2>
-            
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">What You'll Need</h3>
-            
-            <p className="text-cream-muted leading-relaxed">
-              To calculate your Vedic birth chart, you'll need the same information as for a Western chart:
-            </p>
-            
-            <ul className="text-cream-muted space-y-2 my-4">
-              <li>Date of birth</li>
-              <li>Exact time of birth (as precise as possible)</li>
-              <li>Place of birth</li>
-            </ul>
-            
-            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">First Steps in Reading Your Chart</h3>
-            
-            <ol className="text-cream-muted space-y-2 my-4 list-decimal list-inside">
-              <li><strong className="text-cream">Identify your Vedic Ascendant (Lagna):</strong> This determines your house structure and is considered highly important</li>
-              <li><strong className="text-cream">Find your Moon sign and nakshatra:</strong> This reveals your emotional nature and determines your Dasha periods</li>
-              <li><strong className="text-cream">Note your Sun sign:</strong> Represents your soul and father</li>
-              <li><strong className="text-cream">Identify which Dasha period you're in:</strong> This shows what planetary energy is currently dominant in your life</li>
-              <li><strong className="text-cream">Look for strong planets:</strong> Check which planets are in their own signs, exalted, or have high Shadbala</li>
-              <li><strong className="text-cream">Identify any major yogas:</strong> These indicate special potentials or challenges</li>
-            </ol>
-            
-            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
-              <h3 className="text-xl font-semibold text-gold mb-3">A Note for Beginners</h3>
-              <p className="text-cream-muted m-0">
-                Don't be discouraged if your entire chart appears to shift and your familiar placements change. Many people find that their Vedic chart actually resonates more deeply with their inner experience, especially the Moon sign and nakshatra. Give yourself time to explore both systems and see what insights each provides.
+              <p className="text-cream-muted mt-3 mb-0">
+                <em>Example:</em> If you're in your Venus major period (lasts 20 years), and currently in the Mars sub-period (lasts ~1 year within that), the themes of Venus (relationships, values, beauty) get colored by Mars energy (action, conflict, drive).
+              </p>
+              <p className="text-cream-muted mt-3 mb-0">
+                <strong className="text-cream">Why it matters:</strong> This tells you what life areas are "activated" right now and for how long.
               </p>
             </div>
 
+            <div className="bg-midnight/50 border border-border/30 rounded-xl p-6 my-6">
+              <h4 className="text-xl font-semibold text-gold mb-3">2. Nakshatras (Lunar Mansions)</h4>
+              <p className="text-cream-muted m-0">
+                Instead of 12 zodiac signs, Vedic divides the sky into 27 lunar mansions—each with its own flavor and planetary ruler. Your moon's nakshatra is considered more important than your sun sign.
+              </p>
+              <p className="text-cream-muted mt-3 mb-0">
+                <strong className="text-cream">Why it matters:</strong> More precision. Two people with "Aquarius moon" might have totally different emotional natures depending on which of the 3 Aquarius nakshatras their moon occupies.
+              </p>
+            </div>
+
+            <div className="bg-midnight/50 border border-border/30 rounded-xl p-6 my-6">
+              <h4 className="text-xl font-semibold text-gold mb-3">3. Divisional Charts (Vargas)</h4>
+              <p className="text-cream-muted m-0">
+                Vedic creates multiple "sub-charts" from your main chart—one for career, one for marriage, one for spiritual life, etc. It's like zooming in on specific life areas.
+              </p>
+            </div>
+
+            <h3 className="text-2xl font-semibold text-cream mt-8 mb-4">Western Astrology's Unique Tools</h3>
+
+            <div className="bg-midnight/50 border border-border/30 rounded-xl p-6 my-6">
+              <h4 className="text-xl font-semibold text-gold mb-3">1. Psychological Archetypes</h4>
+              <p className="text-cream-muted m-0">
+                Western astrology interprets placements through the lens of psychology. Your Saturn isn't just about discipline—it's about your relationship with authority, structure, and the parts of life where you feel inadequate until you master them.
+              </p>
+              <p className="text-cream-muted mt-3 mb-0">
+                <strong className="text-cream">Why it matters:</strong> Deep self-awareness and shadow work.
+              </p>
+            </div>
+
+            <div className="bg-midnight/50 border border-border/30 rounded-xl p-6 my-6">
+              <h4 className="text-xl font-semibold text-gold mb-3">2. Aspects (Planetary Angles)</h4>
+              <p className="text-cream-muted m-0">
+                Western places huge emphasis on the angles planets make to each other—trines, squares, oppositions, etc. These create the "plot" of your life's story.
+              </p>
+              <p className="text-cream-muted mt-3 mb-0">
+                <strong className="text-cream">Why it matters:</strong> Understanding internal conflicts and natural talents.
+              </p>
+            </div>
+
+            <div className="bg-midnight/50 border border-border/30 rounded-xl p-6 my-6">
+              <h4 className="text-xl font-semibold text-gold mb-3">3. Outer Planets (Uranus, Neptune, Pluto)</h4>
+              <p className="text-cream-muted m-0">
+                Western astrology incorporated these modern discoveries; Vedic traditionally doesn't use them (though some modern Vedic astrologers do).
+              </p>
+              <p className="text-cream-muted mt-3 mb-0">
+                <strong className="text-cream">Why it matters:</strong> Generational themes and collective unconscious patterns.
+              </p>
+            </div>
+
+            {/* Which One Should You Use */}
             <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Vedic vs. Western: Using Both Systems
+              Which One Should You Use?
             </h2>
             
             <p className="text-cream-muted leading-relaxed">
-              Many astrologers find value in using both Vedic and Western astrology, as they offer complementary perspectives:
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              <strong className="text-cream">Western astrology</strong> excels at psychological insight, understanding personality dynamics, and exploring the archetypal journey of the soul through the seasons of life.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              <strong className="text-cream">Vedic astrology</strong> excels at precise timing predictions, understanding karmic patterns, revealing spiritual lessons, and providing concrete remedial measures.
-            </p>
-            
-            <p className="text-cream-muted leading-relaxed">
-              Rather than viewing these systems as contradictory, consider them as different languages describing the same cosmic reality. Your Western chart might tell you "who you are psychologically," while your Vedic chart might tell you "what you're here to do karmically."
+              <strong className="text-cream">The honest answer:</strong> It depends on what you need.
             </p>
 
+            <div className="grid md:grid-cols-2 gap-6 my-8">
+              <div className="bg-gold/10 border border-gold/30 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-gold mt-0 mb-4">Choose Vedic if you want:</h3>
+                <ul className="text-cream-muted space-y-2 m-0 list-none p-0">
+                  <li>✅ Strategic timing for major life decisions</li>
+                  <li>✅ To understand which "life chapter" you're in</li>
+                  <li>✅ Predictive accuracy for events and opportunities</li>
+                  <li>✅ Guidance on when to act vs when to wait</li>
+                  <li>✅ A system used for thousands of years with consistent techniques</li>
+                </ul>
+              </div>
+              <div className="bg-midnight/50 border border-border/30 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-cream mt-0 mb-4">Choose Western if you want:</h3>
+                <ul className="text-cream-muted space-y-2 m-0 list-none p-0">
+                  <li>✅ Psychological insight and self-understanding</li>
+                  <li>✅ To process emotions and inner patterns</li>
+                  <li>✅ Daily/weekly guidance on current energy</li>
+                  <li>✅ To understand relationship dynamics (synastry)</li>
+                  <li>✅ A system that integrates modern psychology</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-gold/10 border border-gold/30 rounded-xl p-6 my-8">
+              <h3 className="text-xl font-semibold text-gold mt-0 mb-4">Or Use Both</h3>
+              <p className="text-cream-muted m-0">
+                Many people do! Western for self-understanding and Vedic for timing. They're complementary, not competitive.
+              </p>
+              <p className="text-cream-muted mt-3 mb-0">
+                Think of it like this:
+              </p>
+              <ul className="text-cream-muted space-y-1 mt-2 mb-0">
+                <li><strong className="text-cream">Western astrology</strong> = understanding your personality, motivations, and inner world</li>
+                <li><strong className="text-cream">Vedic astrology</strong> = understanding your timeline, opportunities, and strategic windows</li>
+              </ul>
+            </div>
+
+            {/* Common Misconceptions */}
             <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
-              Conclusion
+              Common Misconceptions Debunked
+            </h2>
+
+            <div className="space-y-6">
+              <div className="border-l-4 border-gold/50 pl-6">
+                <h4 className="text-lg font-semibold text-cream mb-2">Myth 1: "Vedic is more accurate because it uses actual stars"</h4>
+                <p className="text-cream-muted m-0">
+                  <strong className="text-cream">Reality:</strong> Both are accurate for what they measure. Vedic tracks astronomical positions, Western tracks seasonal archetypes. Neither is "more right."
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-gold/50 pl-6">
+                <h4 className="text-lg font-semibold text-cream mb-2">Myth 2: "Vedic astrology is older, so it must be better"</h4>
+                <p className="text-cream-muted m-0">
+                  <strong className="text-cream">Reality:</strong> Age doesn't equal superiority. Western astrology has evolved and integrated modern psychology in valuable ways. Vedic has maintained consistent techniques. Both approaches have merit.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-gold/50 pl-6">
+                <h4 className="text-lg font-semibold text-cream mb-2">Myth 3: "I need to pick one and stick with it"</h4>
+                <p className="text-cream-muted m-0">
+                  <strong className="text-cream">Reality:</strong> You can use both! Many astrologers are versed in both systems and find them complementary.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-gold/50 pl-6">
+                <h4 className="text-lg font-semibold text-cream mb-2">Myth 4: "Western astrology is just pop culture fluff"</h4>
+                <p className="text-cream-muted m-0">
+                  <strong className="text-cream">Reality:</strong> Newspaper horoscopes aren't real Western astrology any more than fortune cookies are real Vedic astrology. Professional Western astrology is deep and psychologically sophisticated.
+                </p>
+              </div>
+              
+              <div className="border-l-4 border-gold/50 pl-6">
+                <h4 className="text-lg font-semibold text-cream mb-2">Myth 5: "If my signs are different, one must be wrong"</h4>
+                <p className="text-cream-muted m-0">
+                  <strong className="text-cream">Reality:</strong> Your signs are measuring different things. It's like saying "I'm 5'10" so I can't also be 178cm." Same height, different measurement systems.
+                </p>
+              </div>
+            </div>
+
+            {/* Real Example */}
+            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
+              Real Example: How They Differ in Practice
             </h2>
             
             <p className="text-cream-muted leading-relaxed">
-              Now that you understand the fundamentals of Vedic astrology, you can begin exploring your own Vedic chart and discovering the ancient wisdom of Jyotish. Remember that Vedic astrology is a vast and complex system that takes years to master, but every step of learning brings new insights into your karmic journey and spiritual evolution.
+              Let's say you're considering a career change.
             </p>
+
+            <div className="grid md:grid-cols-2 gap-6 my-8">
+              <div className="bg-midnight/50 border border-border/30 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-cream mt-0 mb-4">Western astrology approach:</h3>
+                <p className="text-cream-muted mb-3">
+                  "Look at your 10th house (career sector), see what sign is there and any planets. Check current transits—is Jupiter expanding your career zone? Is Saturn asking for restructuring? Examine your natal aspects to understand your career patterns and psychological blocks."
+                </p>
+                <p className="text-cream-muted m-0">
+                  <strong className="text-cream">What you get:</strong> Understanding of your career psychology, what fulfills you, and current energetic themes.
+                </p>
+              </div>
+              <div className="bg-gold/10 border border-gold/30 rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-gold mt-0 mb-4">Vedic astrology approach:</h3>
+                <p className="text-cream-muted mb-3">
+                  "Check which planetary period you're in. If you're in a Sun period and Sun rules your 10th house, career moves are favored. Look at when you enter a Mercury sub-period if Mercury is well-placed—that's your window. Check for major transits that align with favorable periods."
+                </p>
+                <p className="text-cream-muted m-0">
+                  <strong className="text-cream">What you get:</strong> Specific timing windows for action, understanding of which life chapter you're in, and when opportunities are most likely.
+                </p>
+              </div>
+            </div>
+
+            {/* The Bottom Line */}
+            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
+              The Bottom Line
+            </h2>
+            
+            <p className="text-cream-muted leading-relaxed">
+              Vedic and Western astrology are like two different lenses on the same subject—your life. Western zooms in on your psychology and current energy. Vedic zooms out on your timeline and life cycles.
+            </p>
+            
+            <p className="text-cream-muted leading-relaxed">
+              The "zodiac sign difference" gets all the attention, but the real power of Vedic astrology is its <strong className="text-cream">timing system</strong>—the planetary periods that tell you which areas of life are activated and for how long.
+            </p>
+            
+            <p className="text-cream-muted leading-relaxed">
+              If you've only ever used Western astrology, trying Vedic can feel like upgrading from a weather report to a 10-day forecast. Instead of just knowing "it's stormy," you know "the storm hits Tuesday, clears Thursday, and next week is ideal for that outdoor project."
+            </p>
+
+            {/* CTA Section */}
+            <div className="bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/40 rounded-2xl p-8 my-12 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-cream mt-0 mb-4">
+                Ready to Try Vedic Astrology?
+              </h2>
+              <p className="text-cream-muted text-lg mb-6">
+                Get your free 2026 forecast based on Vedic astrology. See which life chapter you're in, what themes are active this year, and when your key turning points arrive.
+              </p>
+              <Link to="/vedic/input">
+                <Button size="lg" className="bg-gold hover:bg-gold-light text-midnight font-semibold px-8 py-6 text-lg">
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Get Your Free 2026 Forecast
+                </Button>
+              </Link>
+              <p className="text-cream-muted/60 text-sm mt-4">
+                No credit card required. Takes 2 minutes.
+              </p>
+            </div>
+
+            {/* FAQ Section */}
+            <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
+              FAQ
+            </h2>
+
+            <div className="space-y-6">
+              <div>
+                <h4 className="text-lg font-semibold text-cream mb-2">Q: Will my personality change if I use Vedic astrology?</h4>
+                <p className="text-cream-muted m-0">
+                  A: No! You're the same person. Vedic just uses a different measurement system that might describe you differently—or might resonate more. Think of it as getting a second opinion that might reveal something your first opinion missed.
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="text-lg font-semibold text-cream mb-2">Q: Can I ignore Western astrology if I use Vedic?</h4>
+                <p className="text-cream-muted m-0">
+                  A: You can, but you don't have to! Many people find value in both. Western for psychological insight, Vedic for timing.
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="text-lg font-semibold text-cream mb-2">Q: Is Vedic astrology tied to Hinduism?</h4>
+                <p className="text-cream-muted m-0">
+                  A: Vedic astrology originated in ancient India and shares cultural roots with Hindu philosophy, but you don't need to be Hindu to use it — just like you don't need to be Greek to use Western astrology (which has roots in Hellenistic Greece).
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="text-lg font-semibold text-cream mb-2">Q: Which celebrities use Vedic astrology?</h4>
+                <p className="text-cream-muted m-0">
+                  A: Vedic astrology is widely used in India by everyone from Bollywood stars to business leaders. In the West, it's gaining popularity among those who want predictive timing rather than just personality insights.
+                </p>
+              </div>
+              
+              <div>
+                <h4 className="text-lg font-semibold text-cream mb-2">Q: How do I find out my Vedic chart?</h4>
+                <p className="text-cream-muted m-0">
+                  A: You need your exact birth time, date, and location. Enter that information <Link to="/vedic/input" className="text-gold hover:text-gold-light underline">here</Link> to get your free Vedic forecast.
+                </p>
+              </div>
+            </div>
           </article>
-
-          {/* CTA Section */}
-          <div className="mt-16 text-center py-12 bg-midnight/40 border border-border/30 rounded-2xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/30 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-gold" />
-              <span className="text-gold text-sm font-medium">Ready to Explore Your Vedic Chart?</span>
-            </div>
-            
-            <h3 className="text-2xl md:text-3xl font-bold text-cream mb-4">
-              Discover Your 2026 Vedic Forecast
-            </h3>
-            
-            <p className="text-cream-muted max-w-xl mx-auto mb-8">
-              Get personalized insights based on your Moon sign, nakshatra, and current Dasha period. See what the ancient wisdom of Jyotish reveals about your year ahead.
-            </p>
-            
-            <Link to="/vedic/input">
-              <Button size="lg" className="bg-gold hover:bg-gold/90 text-midnight font-bold text-xl px-8">
-                <Sparkles className="w-5 h-5 mr-2" />
-                Generate My Vedic Forecast
-              </Button>
-            </Link>
-          </div>
         </main>
 
-        {/* Sticky Mobile CTA */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-midnight/95 backdrop-blur-md border-t border-border/30 p-4">
-          <Link to="/vedic/input" className="block">
-            <Button size="lg" className="w-full bg-gold hover:bg-gold/90 text-midnight font-bold text-base py-5">
-              <Sparkles className="w-5 h-5 mr-2" />
-              Generate My Vedic Forecast
-            </Button>
-          </Link>
-        </div>
-        
-        {/* Bottom padding to account for sticky CTA on mobile */}
-        <div className="h-24 md:hidden" />
+        {/* Footer */}
+        <footer className="relative z-10 border-t border-border/30 bg-midnight/50 backdrop-blur-sm py-8">
+          <div className="container mx-auto px-4 text-center text-cream-muted text-xs">
+            <p>&copy; {new Date().getFullYear()} Cosmic Brief. All rights reserved.</p>
+            <div className="mt-2 space-x-4">
+              <Link to="/privacy" className="hover:text-cream transition-colors">Privacy</Link>
+              <Link to="/terms" className="hover:text-cream transition-colors">Terms</Link>
+              <Link to="/contact" className="hover:text-cream transition-colors">Contact</Link>
+            </div>
+          </div>
+        </footer>
       </div>
-    </>;
+    </>
+  );
 };
+
 export default VedicAstrologyExplainedPage;
