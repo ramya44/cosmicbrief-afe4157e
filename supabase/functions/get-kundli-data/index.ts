@@ -266,11 +266,12 @@ async function getPlanetPositions(
     
     positions.push(position);
     
-    // Ascendant is id: 0
-    if (planet.id === 0) {
+    // Ascendant has id: 100 or name "Ascendant" (NOT id: 0 which is Sun)
+    if (planet.id === 100 || planet.name === 'Ascendant') {
       ascendant_sign = position.sign;
       ascendant_sign_id = position.sign_id;
       ascendant_sign_lord = position.sign_lord;
+      logStep("Found Ascendant", { id: planet.id, name: planet.name, sign: position.sign });
     }
   }
 
