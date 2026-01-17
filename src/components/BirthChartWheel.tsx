@@ -121,9 +121,24 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
   };
 
   // Calculate planet positions in the wheel based on their HOUSE placement
+  // Priority order for visibility when planets overlap
+  const PLANET_PRIORITY: Record<string, number> = {
+    'Sun': 1,
+    'Moon': 2,
+    'Mars': 3,
+    'Mercury': 4,
+    'Jupiter': 5,
+    'Venus': 6,
+    'Saturn': 7,
+    'Rahu': 8,
+    'Ketu': 9,
+  };
+
+  // Calculate planet positions with smart collision detection
   const planetPositions = useMemo(() => {
     const planetsByHouse: Record<number, PlanetPosition[]> = {};
     
+    // Group planets by house
     planets.forEach(planet => {
       const house = calculateHouse(planet.sign_id, ascendant_sign_id);
       if (!planetsByHouse[house]) {
@@ -132,9 +147,18 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
       planetsByHouse[house].push(planet);
     });
 
+    // Sort planets within each house by priority (most important first)
     Object.values(planetsByHouse).forEach(housePlanets => {
-      housePlanets.sort((a, b) => a.degree - b.degree);
+      housePlanets.sort((a, b) => {
+        const priorityA = PLANET_PRIORITY[a.name] || 10;
+        const priorityB = PLANET_PRIORITY[b.name] || 10;
+        return priorityA - priorityB;
+      });
     });
+
+    // Minimum spacing in pixels (adjusted for mobile)
+    const minSpacing = 50;
+    const radialOffset = 28; // How much to offset inward/outward
 
     return planets.map(planet => {
       const house = calculateHouse(planet.sign_id, ascendant_sign_id);
@@ -145,21 +169,67 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
       const baseAngle = getHouseCenterAngle(house);
       
       let offsetAngle = 0;
-      if (totalInHouse > 1) {
-        const spreadRange = 20;
-        offsetAngle = (indexInHouse - (totalInHouse - 1) / 2) * (spreadRange / Math.max(totalInHouse - 1, 1));
+      let radiusOffset = 0;
+
+      if (totalInHouse === 1) {
+        // Single planet - center it
+        offsetAngle = 0;
+        radiusOffset = 0;
+      } else if (totalInHouse === 2) {
+        // Two planets - spread horizontally within house
+        const angleSpread = 12;
+        offsetAngle = indexInHouse === 0 ? -angleSpread / 2 : angleSpread / 2;
+        radiusOffset = 0;
+      } else if (totalInHouse === 3) {
+        // Three planets - triangle arrangement
+        if (indexInHouse === 0) {
+          offsetAngle = 0;
+          radiusOffset = radialOffset; // Top priority moves outward
+        } else if (indexInHouse === 1) {
+          offsetAngle = -10;
+          radiusOffset = -radialOffset / 2; // Move inward left
+        } else {
+          offsetAngle = 10;
+          radiusOffset = -radialOffset / 2; // Move inward right
+        }
+      } else if (totalInHouse === 4) {
+        // Four planets - diamond/square arrangement
+        const patterns = [
+          { angle: 0, radius: radialOffset },      // Top (outward)
+          { angle: -12, radius: 0 },               // Left (middle)
+          { angle: 12, radius: 0 },                // Right (middle)
+          { angle: 0, radius: -radialOffset },     // Bottom (inward)
+        ];
+        offsetAngle = patterns[indexInHouse].angle;
+        radiusOffset = patterns[indexInHouse].radius;
+      } else {
+        // 5+ planets - staggered arc with radial variation
+        const maxAngleSpread = 22;
+        const angleStep = maxAngleSpread / Math.max(totalInHouse - 1, 1);
+        offsetAngle = (indexInHouse - (totalInHouse - 1) / 2) * angleStep;
+        
+        // Alternate between inner and outer radius
+        if (indexInHouse % 3 === 0) {
+          radiusOffset = radialOffset; // Outer
+        } else if (indexInHouse % 3 === 1) {
+          radiusOffset = 0; // Middle
+        } else {
+          radiusOffset = -radialOffset; // Inner
+        }
       }
 
       const finalAngle = baseAngle + offsetAngle;
       const radians = (finalAngle * Math.PI) / 180;
+      const adjustedRadius = planetRadius + radiusOffset;
 
       return {
         ...planet,
         house,
         angle: finalAngle,
         radians,
-        x: center + Math.cos(radians) * planetRadius,
-        y: center + Math.sin(radians) * planetRadius,
+        radiusOffset,
+        x: center + Math.cos(radians) * adjustedRadius,
+        y: center + Math.sin(radians) * adjustedRadius,
       };
     });
   }, [planets, ascendant_sign_id, center, planetRadius]);
