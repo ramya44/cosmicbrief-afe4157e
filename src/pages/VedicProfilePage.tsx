@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from '@/lib/deviceId';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { SaveProfileDialog } from '@/components/SaveProfileDialog';
@@ -60,20 +61,28 @@ const VedicProfilePage = () => {
       }
 
       try {
-        // Fetch kundli data
-        const { data: kundliData, error: kundliError } = await supabase
-          .from('user_kundli_details')
-          .select('id, animal_sign, nakshatra, moon_sign, sun_sign, ascendant_sign, name, user_id')
-          .eq('id', kundliId)
-          .maybeSingle();
+        // Fetch kundli data via edge function (handles RLS properly)
+        const deviceId = getDeviceId();
+        const { data: kundliData, error: fnError } = await supabase.functions.invoke('get-vedic-kundli-details', {
+          body: { kundli_id: kundliId, device_id: deviceId },
+        });
 
-        if (kundliError || !kundliData) {
-          console.error('Failed to fetch kundli:', kundliError);
+        if (fnError || !kundliData) {
+          console.error('Failed to fetch kundli:', fnError);
           setLoading(false);
           return;
         }
 
-        setKundli(kundliData);
+        setKundli({
+          id: kundliData.id,
+          animal_sign: kundliData.animal_sign,
+          nakshatra: kundliData.nakshatra,
+          moon_sign: kundliData.moon_sign,
+          sun_sign: kundliData.sun_sign,
+          ascendant_sign: kundliData.ascendant_sign,
+          name: kundliData.name,
+          user_id: kundliData.user_id,
+        });
 
         // Fetch zodiac lookup for Western names
         const { data: zodiacData } = await supabase
