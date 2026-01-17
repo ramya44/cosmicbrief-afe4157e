@@ -585,7 +585,7 @@ Deno.serve(async (req) => {
         model: "claude-sonnet-4-20250514",
         max_tokens: 12000,
         messages: [{ role: "user", content: userPrompt }],
-        system: SYSTEM_PROMPT,
+        system: PAID_SYSTEM_PROMPT,
       }),
     });
 
