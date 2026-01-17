@@ -590,7 +590,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
             );
           })}
 
-          {/* Center emblem - refined */}
+          {/* Center emblem - zodiac symbol with sign name */}
           <motion.g
             initial={{ opacity: 0, rotate: -180 }}
             animate={{ opacity: 1, rotate: 0 }}
@@ -605,24 +605,30 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               strokeWidth="1.5"
               opacity="0.8"
             />
+            {/* Large zodiac symbol */}
             <text
               x={center}
-              y={center - 12}
+              y={center - 2}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="#f59e0b"
+              fontSize="32"
+              fontFamily="serif"
+              fontWeight="normal"
+              className="select-none"
+              style={{ fontVariantEmoji: 'text' }}
+            >
+              {ZODIAC_SIGNS[(chartData.ascendant_sign_id - 1) % 12]?.symbol || '♎'}
+            </text>
+            {/* Small sign name below */}
+            <text
+              x={center}
+              y={center + 28}
               textAnchor="middle"
               fill="#f59e0b"
               fontSize="10"
-              fontWeight="bold"
-              className="select-none"
-            >
-              LAGNA
-            </text>
-            <text
-              x={center}
-              y={center + 10}
-              textAnchor="middle"
-              fill="#E5E7EB"
-              fontSize="13"
               fontWeight="500"
+              opacity="0.8"
               className="select-none"
             >
               {chartData.ascendant_sign}
