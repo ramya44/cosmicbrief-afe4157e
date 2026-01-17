@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin } from 'lucide-react';
+import { BirthChartWheel } from '@/components/BirthChartWheel';
+import { SaveProfileDialog } from '@/components/SaveProfileDialog';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Save, Download } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Matches the KundliResult from get-kundli-data edge function
 interface PlanetPosition {
@@ -58,6 +61,7 @@ interface ChartData {
   lat: number;
   lon: number;
   birthDateTimeUtc?: string;
+  kundliId?: string;
   kundliData: KundliData;
 }
 
@@ -201,6 +205,7 @@ const SouthIndianChart = ({
 const BirthChartPage = () => {
   const navigate = useNavigate();
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('birth_chart_data');
@@ -217,6 +222,15 @@ const BirthChartPage = () => {
       navigate('/get-birth-chart');
     }
   }, [navigate]);
+
+  const handleSaveSuccess = () => {
+    toast.success('Birth chart saved to your profile!');
+    setSaveDialogOpen(false);
+  };
+
+  const handleDownloadImage = () => {
+    toast.info('Download feature coming soon!');
+  };
 
   if (!chartData) {
     return (
@@ -277,9 +291,9 @@ const BirthChartPage = () => {
           </div>
         </header>
 
-        <main className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
+        <main className="relative z-10 container mx-auto px-4 py-12 max-w-5xl">
           {/* Birth Details Summary */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h1 className="font-display text-3xl md:text-4xl text-cream mb-4">
               Your Vedic Birth Chart
             </h1>
@@ -300,6 +314,34 @@ const BirthChartPage = () => {
                 {getSimpleLocation(chartData.birthPlace)}
               </span>
             </div>
+          </div>
+
+          {/* Beautiful Circular Birth Chart Wheel */}
+          <section className="mb-16">
+            <BirthChartWheel chartData={kundliData} />
+          </section>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mb-16">
+            {chartData.kundliId && (
+              <Button
+                onClick={() => setSaveDialogOpen(true)}
+                size="lg"
+                className="bg-gold hover:bg-gold-light text-midnight font-semibold"
+              >
+                <Save className="w-5 h-5 mr-2" />
+                Save to Profile
+              </Button>
+            )}
+            <Button
+              onClick={handleDownloadImage}
+              variant="outline"
+              size="lg"
+              className="border-gold/40 text-gold hover:bg-gold/10"
+            >
+              <Download className="w-5 h-5 mr-2" />
+              Download as Image
+            </Button>
           </div>
 
           {/* Key Details Cards */}
@@ -472,6 +514,16 @@ const BirthChartPage = () => {
             </div>
           </div>
         </footer>
+        {/* Save Profile Dialog */}
+        {chartData.kundliId && (
+          <SaveProfileDialog
+            open={saveDialogOpen}
+            onOpenChange={setSaveDialogOpen}
+            kundliId={chartData.kundliId}
+            defaultName={chartData.name}
+            onSuccess={handleSaveSuccess}
+          />
+        )}
       </div>
     </>
   );

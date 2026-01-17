@@ -168,6 +168,42 @@ const BirthChartInputPage = () => {
         throw new Error(kundliData.error);
       }
 
+      // Save kundli to database and get ID for save-to-profile functionality
+      let kundliId: string | undefined;
+      try {
+        const { data: saveResult, error: saveError } = await supabase.functions.invoke(
+          'save-kundli-details',
+          {
+            body: {
+              birth_date: formData.birthDate,
+              birth_time: formData.birthTime,
+              birth_place: formData.birthPlace,
+              birth_time_utc: birthDateTimeUtc || undefined,
+              latitude: placeCoords.lat,
+              longitude: placeCoords.lon,
+              email: formData.email.trim(),
+              name: formData.name.trim() || undefined,
+              device_id: getDeviceId(),
+              kundli_data: {
+                ...kundliData,
+                // Provide empty dasha_periods if not present (only needed for forecast, not chart)
+                dasha_periods: kundliData.dasha_periods || [],
+              },
+            },
+          }
+        );
+
+        if (!saveError && saveResult?.id) {
+          kundliId = saveResult.id;
+          console.log('[BirthChartInputPage] Saved kundli with ID:', kundliId);
+        } else {
+          console.warn('[BirthChartInputPage] Could not save kundli:', saveError?.message || saveResult?.error);
+        }
+      } catch (saveErr) {
+        console.warn('[BirthChartInputPage] Error saving kundli (non-blocking):', saveErr);
+        // Continue anyway - saving to DB is optional for viewing the chart
+      }
+
       // Store data for birth chart page
       const chartData = {
         name: formData.name.trim() || undefined,
@@ -178,6 +214,7 @@ const BirthChartInputPage = () => {
         lat: placeCoords.lat,
         lon: placeCoords.lon,
         birthDateTimeUtc,
+        kundliId,
         kundliData,
       };
       
