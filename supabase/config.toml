@@ -41,3 +41,30 @@ verify_jwt = false
 
 [functions.update-kundli-details]
 verify_jwt = false
+
+[functions.save-birth-chart]
+verify_jwt = false
+
+[functions.calculate-dasha-periods]
+verify_jwt = false
+
+[functions.get-kundli-data]
+verify_jwt = false
+
+[functions.generate-free-vedic-forecast]
+verify_jwt = false
+
+[functions.generate-paid-vedic-forecast]
+verify_jwt = false
+
+[functions.create-vedic-payment]
+verify_jwt = false
+
+[functions.get-birth-chart]
+verify_jwt = false
+
+[functions.get-vedic-kundli-details]
+verify_jwt = false
+
+[functions.link-forecast-to-user]
+verify_jwt = false
