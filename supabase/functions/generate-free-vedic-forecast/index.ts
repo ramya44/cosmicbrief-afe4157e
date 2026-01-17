@@ -397,7 +397,42 @@ Deno.serve(async (req) => {
       sun_sign: kundliData.sun_sign,
       nakshatra: kundliData.nakshatra,
       ascendant: kundliData.ascendant_sign,
+      has_dasha_periods: !!(kundliData.dasha_periods && kundliData.dasha_periods.length > 0),
     });
+
+    // Check if dasha periods need to be calculated (lazy calculation)
+    if (!kundliData.dasha_periods || kundliData.dasha_periods.length === 0) {
+      logStep("Dasha periods not found, calculating on-demand");
+      
+      // Invoke the calculate-dasha-periods function
+      const { data: dashaResult, error: dashaError } = await supabase.functions.invoke(
+        'calculate-dasha-periods',
+        { body: { kundli_id } }
+      );
+
+      if (dashaError) {
+        logStep("Failed to calculate dasha periods", { error: dashaError.message });
+        return errorResponse("Failed to calculate dasha periods for forecast", 500);
+      }
+
+      logStep("Dasha periods calculated", { result: dashaResult });
+
+      // Re-fetch the kundli data with the new dasha periods
+      const { data: refreshedKundli, error: refreshError } = await supabase
+        .from("user_kundli_details")
+        .select("*")
+        .eq("id", kundli_id)
+        .single();
+
+      if (refreshError || !refreshedKundli) {
+        logStep("Failed to refresh kundli after dasha calculation");
+        return errorResponse("Failed to retrieve updated kundli data", 500);
+      }
+
+      // Replace kundliData with refreshed data
+      Object.assign(kundliData, refreshedKundli);
+      logStep("Kundli data refreshed with dasha periods");
+    }
 
     // Get planetary positions from kundli data
     const planetaryPositions: PlanetaryPosition[] = kundliData.planetary_positions || [];

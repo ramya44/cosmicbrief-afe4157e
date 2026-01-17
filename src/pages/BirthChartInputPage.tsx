@@ -168,11 +168,11 @@ const BirthChartInputPage = () => {
         throw new Error(kundliData.error);
       }
 
-      // Save kundli to database and get ID for save-to-profile functionality
+      // Save birth chart to database (lightweight, no dasha periods)
       let kundliId: string | undefined;
       try {
         const { data: saveResult, error: saveError } = await supabase.functions.invoke(
-          'save-kundli-details',
+          'save-birth-chart',
           {
             body: {
               birth_date: formData.birthDate,
@@ -184,23 +184,19 @@ const BirthChartInputPage = () => {
               email: formData.email.trim(),
               name: formData.name.trim() || undefined,
               device_id: getDeviceId(),
-              kundli_data: {
-                ...kundliData,
-                // Provide empty dasha_periods if not present (only needed for forecast, not chart)
-                dasha_periods: kundliData.dasha_periods || [],
-              },
+              kundli_data: kundliData,
             },
           }
         );
 
         if (!saveError && saveResult?.id) {
           kundliId = saveResult.id;
-          console.log('[BirthChartInputPage] Saved kundli with ID:', kundliId);
+          console.log('[BirthChartInputPage] Saved birth chart with ID:', kundliId);
         } else {
-          console.warn('[BirthChartInputPage] Could not save kundli:', saveError?.message || saveResult?.error);
+          console.warn('[BirthChartInputPage] Could not save birth chart:', saveError?.message || saveResult?.error);
         }
       } catch (saveErr) {
-        console.warn('[BirthChartInputPage] Error saving kundli (non-blocking):', saveErr);
+        console.warn('[BirthChartInputPage] Error saving birth chart (non-blocking):', saveErr);
         // Continue anyway - saving to DB is optional for viewing the chart
       }
 
