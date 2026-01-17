@@ -21,6 +21,8 @@ import VedicAstrologyExplainedPage from "./pages/VedicAstrologyExplainedPage";
 import VedicProfilePage from "./pages/VedicProfilePage";
 import ContactPage from "./pages/ContactPage";
 import BackgroundPage from "./pages/BackgroundPage";
+import WeeklyHoroscopePage from "./pages/WeeklyHoroscopePage";
+import CompatibilityPage from "./pages/CompatibilityPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -97,6 +99,8 @@ const App = () => (
           <Route path="/vedic-astrology-explained" element={<VedicAstrologyExplainedPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/background" element={<BackgroundPage />} />
+          <Route path="/weekly-horoscope" element={<WeeklyHoroscopePage />} />
+          <Route path="/compatibility" element={<CompatibilityPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>

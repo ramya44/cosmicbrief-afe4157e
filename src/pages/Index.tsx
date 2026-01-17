@@ -1,27 +1,55 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { Sparkles, LogIn } from 'lucide-react';
 
+const navItems = [
+  { label: '2026 Forecast', path: '/' },
+  { label: 'Weekly Horoscope', path: '/weekly-horoscope' },
+  { label: 'Compatibility', path: '/compatibility' },
+  { label: 'What is Vedic Astrology', path: '/vedic-astrology-explained' },
+];
+
 const Index = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">
       <StarField />
       
-      {/* Login button in top right */}
-      <div className="absolute top-4 right-4 z-20">
+      {/* Secondary Navigation */}
+      <nav className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 md:px-8 py-4">
+        <div className="flex items-center gap-1 md:gap-6 overflow-x-auto scrollbar-hide">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={`whitespace-nowrap px-3 py-2 text-sm font-sans transition-colors rounded-md ${
+                  isActive 
+                    ? 'text-gold bg-gold/10' 
+                    : 'text-cream-muted hover:text-cream hover:bg-gold/5'
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+        
+        {/* Login button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate('/vedic/input')}
-          className="text-cream-muted hover:text-cream hover:bg-gold/10"
+          className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0"
         >
           <LogIn className="w-4 h-4 mr-2" />
           Log In
         </Button>
-      </div>
+      </nav>
       
       {/* Subtle gradient orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gold/5 rounded-full blur-3xl animate-pulse-slow" />
