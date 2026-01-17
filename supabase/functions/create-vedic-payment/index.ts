@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,11 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[create-vedic-payment] ${step}${detailsStr}`);
 };
+
+// Input validation schema
+const PaymentRequestSchema = z.object({
+  kundli_id: z.string().uuid("Invalid kundli ID format"),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -33,12 +39,29 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { kundli_id } = await req.json();
-    logStep("Request body parsed", { kundli_id });
-
-    if (!kundli_id) {
-      throw new Error("kundli_id is required");
+    // Parse and validate input
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const validationResult = PaymentRequestSchema.safeParse(rawBody);
+    if (!validationResult.success) {
+      const errorMessages = validationResult.error.errors.map((e) => e.message).join(", ");
+      logStep("Validation failed", { errors: errorMessages });
+      return new Response(
+        JSON.stringify({ error: `Invalid input: ${errorMessages}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { kundli_id } = validationResult.data;
+    logStep("Request validated", { kundli_id });
 
     // Fetch kundli details to get birth data and email
     const { data: kundliData, error: kundliError } = await supabase
