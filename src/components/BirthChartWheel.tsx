@@ -437,32 +437,58 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
             </motion.text>
           ))}
 
-          {/* Ascendant marker (લ symbol) */}
-          <motion.g
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 1.2 }}
-          >
-            <circle
-              cx={ascendantDisplayPos.x}
-              cy={ascendantDisplayPos.y}
-              r={18}
-              fill="hsl(45, 93%, 58%)"
-              opacity="0.2"
-            />
-            <text
-              x={ascendantDisplayPos.x}
-              y={ascendantDisplayPos.y}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fill="hsl(45, 93%, 58%)"
-              fontSize="20"
-              fontWeight="bold"
+          {/* Ascendant marker (લ symbol) - with hover interactivity */}
+          {ascendantPosition && (
+            <motion.g
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ 
+                opacity: 1, 
+                scale: hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 1.15 : 1 
+              }}
+              transition={{ duration: 0.5, delay: 1.2, scale: { duration: 0.2 } }}
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={() => setHoveredPlanet({
+                ...ascendantPosition,
+                id: 100,
+                name: 'Ascendant',
+              })}
+              onMouseLeave={() => setHoveredPlanet(null)}
+              onClick={() => setSelectedPlanet(
+                selectedPlanet?.id === 100 
+                  ? null 
+                  : { ...ascendantPosition, id: 100, name: 'Ascendant' }
+              )}
               filter="url(#glow-Ascendant)"
             >
-              લ
-            </text>
-          </motion.g>
+              <circle
+                cx={ascendantDisplayPos.x}
+                cy={ascendantDisplayPos.y}
+                r={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 24 : 20}
+                fill="hsl(45, 93%, 58%)"
+                opacity={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 0.35 : 0.2}
+              />
+              <circle
+                cx={ascendantDisplayPos.x}
+                cy={ascendantDisplayPos.y}
+                r={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 28 : 24}
+                fill="none"
+                stroke="hsl(45, 93%, 58%)"
+                strokeWidth="1"
+                opacity={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 0.4 : 0.15}
+              />
+              <text
+                x={ascendantDisplayPos.x}
+                y={ascendantDisplayPos.y}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill="hsl(45, 93%, 58%)"
+                fontSize={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 24 : 20}
+                fontWeight="bold"
+              >
+                લ
+              </text>
+            </motion.g>
+          )}
 
           {/* Planets - positioned by house */}
           {planetPositions.map((planet, i) => {
