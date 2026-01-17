@@ -56,8 +56,11 @@ export const VedicLoadingScreen = () => {
         <h2 className="font-display text-2xl md:text-3xl text-cream mb-3">
           Generating Your Vedic Forecast
         </h2>
+        <p className="text-cream/50 text-sm mb-2">
+          This may take up to 2 minutes
+        </p>
         <p className="text-cream/50 text-sm mb-8">
-          This may take up to 30 seconds
+          Your cosmic brief will be emailed to you
         </p>
         
         {/* Rotating phrase */}

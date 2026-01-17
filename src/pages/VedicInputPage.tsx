@@ -46,6 +46,7 @@ const VedicInputPage = () => {
   const [kundliId, setKundliId] = useState<string | null>(null);
   const [forecastReady, setForecastReady] = useState(false);
   const forecastPromiseRef = useRef<Promise<any> | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Load saved form data on mount
   useEffect(() => {
@@ -276,7 +277,9 @@ const VedicInputPage = () => {
   };
 
   const handleNameSubmit = async () => {
-    if (!kundliId) return;
+    if (!kundliId || isNavigating) return;
+    
+    setIsNavigating(true);
     
     // Save name if provided via secure edge function
     if (userName.trim()) {
@@ -317,7 +320,9 @@ const VedicInputPage = () => {
   };
 
   const handleSkipName = async () => {
-    if (!kundliId) return;
+    if (!kundliId || isNavigating) return;
+    
+    setIsNavigating(true);
     
     // If forecast is ready, go directly to results
     if (forecastReady) {
@@ -392,16 +397,27 @@ const VedicInputPage = () => {
                 size="lg" 
                 className="w-full group"
                 onClick={handleNameSubmit}
+                disabled={isNavigating}
               >
-                Continue
-                <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
+                {isNavigating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Continue
+                    <Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />
+                  </>
+                )}
               </Button>
               
               <button
                 onClick={handleSkipName}
-                className="w-full text-cream-muted hover:text-cream text-sm transition-colors py-2"
+                disabled={isNavigating}
+                className="w-full text-cream-muted hover:text-cream text-sm transition-colors py-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Skip for now
+                {isNavigating ? 'Please wait...' : 'Skip for now'}
               </button>
             </div>
           </div>
