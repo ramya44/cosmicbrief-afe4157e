@@ -284,7 +284,7 @@ const InputPage = () => {
             >
               <Label htmlFor="birthTime" className="text-cream flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gold" />
-                Time of Birth <span className="text-muted-foreground text-xs">(Approximate)</span>
+                Time of Birth
               </Label>
               <Input
                 id="birthTime"
