@@ -690,6 +690,22 @@ const VedicAstrologyExplainedPage = () => {
                 </p>
               </div>
             </div>
+
+            {/* Birth Chart CTA Section */}
+            <div className="bg-midnight/50 border border-border/30 rounded-2xl p-8 my-12 text-center">
+              <h2 className="text-2xl md:text-3xl font-bold text-cream mt-0 mb-4">
+                Get Your Free Birth Chart
+              </h2>
+              <p className="text-cream-muted text-lg mb-6">
+                See your planetary positions, ascendant, moon sign, and nakshatra based on Vedic calculations—completely free.
+              </p>
+              <Link to="/get-birth-chart">
+                <Button size="lg" variant="outline" className="border-gold/50 text-cream hover:bg-gold/10 font-semibold px-8 py-6 text-lg">
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Get Your Free Birth Chart
+                </Button>
+              </Link>
+            </div>
           </article>
         </main>
 
