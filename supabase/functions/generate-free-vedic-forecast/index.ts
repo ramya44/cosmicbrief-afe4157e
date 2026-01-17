@@ -41,69 +41,49 @@ const ForecastRequestSchema = z.object({
   kundli_id: z.string().uuid("Invalid kundli ID format"),
 });
 
-const SYSTEM_PROMPT = `You are an expert Vedic astrologer who writes personalized forecasts in accessible, engaging language. Your writing style is:
+// MODERNIZED SYSTEM PROMPT - Westernized Vedic Astrology
 
-- Conversational and warm, never academic or preachy
-- Focused on practical implications before technical details
-- Empowering and growth-oriented, never fatalistic
-- Clear and concise—every sentence adds value
+const SYSTEM_PROMPT = `You are an expert astrologer who writes personalized forecasts in accessible, modern language. Your writing style is:
 
-When writing forecasts:
-1. Lead with WHAT the person will experience (the practical reality)
+- Conversational and warm, like talking to a trusted mentor
+- Focused on practical life guidance before astrological mechanics
+- Empowering and growth-oriented, never mystical or fatalistic
+- Clear and relatable—every sentence adds value
+
+**Language Guidelines - CRITICAL:**
+- Use "rising sign" instead of "ascendant"
+- Use "life chapter" or "planetary period" instead of "dasha"
+- Use "lunar mansion" sparingly; usually just describe the moon's quality
+- Use "growth edge" or "karmic path" instead of "Rahu-Ketu axis"
+- Say "Saturn brings lessons" not "Saturn's malefic influence"
+- Say "Jupiter expands" not "Jupiter bestows"
+- Describe WHAT happens, not astrological mechanics
+
+**Writing Structure:**
+1. Lead with WHAT the person will experience (the human reality)
 2. Follow with WHY (the astrological explanation) in separate "astrology_note" sections
-3. Use plain language for the main content
-4. Save technical terms for the astrology notes
-5. Make predictions specific and actionable
-6. Describe personality traits directly without using phrases like "the Pisces in you" or "your Aquarius heart"
+3. Main content reads like modern lifestyle advice
+4. Technical terms stay in astrology notes only
+5. Predictions are specific and actionable
+6. Personality traits are direct: "You're naturally intuitive" not "The Pisces moon in you..."
 
 Return ONLY valid JSON. No markdown code blocks, no additional text before or after the JSON.`;
 
-interface ForecastPromptInputs {
-  name?: string;
-  birth_date: string;
-  birth_time: string;
-  birth_location: string;
-  ascendant_sign: string;
-  ascendant_degree?: number;
-  planetary_positions_text: string; // Pre-formatted planetary positions string
-  current_mahadasha: {
-    name: string;
-    start: string;
-    end: string;
-  };
-  current_antardasha: {
-    name: string;
-    start: string;
-    end: string;
-  } | null;
-  past_dashas: string;
-  moon_nakshatra: string;
-  ascendant_lord?: string;
-  ascendant_lord_position?: string;
-  dasha_changes_2026?: string;
-  transits_2026?: string;
-}
-
-// calculateHouseFromAscendant and getSignLord imported from _shared/lib/planetary-positions.ts
+// MODERNIZED USER PROMPT BUILDER
 
 export function buildUserPrompt(inputs: ForecastPromptInputs): string {
-  // Planetary positions already formatted
-
-  // Format ascendant lord info
-  const ascendantLordInfo =
-    inputs.ascendant_lord && inputs.ascendant_lord_position
-      ? `\n**Ascendant Lord:** ${inputs.ascendant_lord} in ${inputs.ascendant_lord_position}`
-      : "";
-
-  // Get birth year for prompt
   const birthYear = new Date(inputs.birth_date).getFullYear();
-
-  // Get person identifier for prompt
   const personReference = inputs.name ? `for ${inputs.name}` : "for this person";
 
-  return `Create a free astrology forecast ${personReference}. Return ONLY valid JSON (no markdown code blocks, no additional text).
+  return `Create a modern astrology forecast ${personReference}. Return ONLY valid JSON (no markdown code blocks).
 
-CRITICAL INSTRUCTION - LIFE AREA BALANCE:
+**LANGUAGE RULES - APPLY TO ALL SECTIONS:**
+- Never use: "dasha", "ascendant", "nakshatra", "malefic", "benefic", "exalted"
+- Instead use: "life chapter/period", "rising sign", descriptive qualities, "challenging energy", "supportive energy", "at peak strength"
+- Write as if explaining to someone who's curious about astrology but new to it
+- Save technical terms for "astrology_note" sections only
+
+**CRITICAL INSTRUCTION - LIFE AREA BALANCE:**
 This forecast must cover MULTIPLE areas of life, not just career. Include appropriate discussion of:
 - Personal relationships (romantic, family, friendships)
 - Career and life purpose
@@ -113,123 +93,141 @@ This forecast must cover MULTIPLE areas of life, not just career. Include approp
 - Creative expression
 - Personal transformation
 
-DO NOT focus predominantly on career unless the chart overwhelmingly indicates a 10th house emphasis. Most people want guidance across ALL life areas.
+DO NOT focus predominantly on career unless the chart overwhelmingly indicates it. Most people want guidance across ALL life areas.
 
 The JSON should include:
 
-1. **WHO YOU ARE: Natural Orientation**
-   - 2-3 paragraphs describing personality based on ascendant, sun, moon signs
-   - How they process the world and key traits
-   - One "astrology_note" with chart explanation
+**1. WHO YOU ARE: Natural Orientation**
+- 2-3 paragraphs describing personality based on their rising sign, sun, moon
+- How they naturally process the world and core traits
+- Written in modern, relatable language
+- One "astrology_note" with technical chart explanation
 
-2. **YOUR JOURNEY SO FAR: Key Patterns**
-   - 2-3 paragraphs summarizing their past as ONE flowing narrative
-   - CRITICAL: Only discuss the Maha Dasha periods explicitly provided in "Past Dasha Periods" section below
-   - DO NOT discuss childhood, early years, or formative experiences unless a dasha period clearly covers that time AFTER birth
-   - If a dasha started before birth, only discuss the years AFTER the birth year
-   - Cover MULTIPLE life areas: relationships, career, personal growth, spiritual development, creative pursuits, health, family dynamics
-   - Balance the narrative - don't focus exclusively on career unless the chart strongly indicates it
-   - Connect the PROVIDED mahadasha periods to diverse adult life themes
-   - NO detailed breakdowns - just touch on key transitions during their adult life
-   - One "astrology_note" explaining dasha progression
+Example opening: "You're someone who processes the world through ideas and innovation. While others get caught up in details, you're seeing patterns and possibilities three steps ahead..."
 
-3. **WHAT'S NEXT: Path Forward**
-   - 3-4 paragraphs teasing what the current year holds (general themes only)
-   - Cover MULTIPLE life areas: personal relationships, career/purpose, financial matters, health, spiritual growth, creativity
-   - Balance the focus across different life domains based on the person's chart
-   - Emphasize that timing matters across ALL these areas
-   - Create intrigue without giving specifics
-   - Mention this is a "pivotal year" or "setup phase"
+NOT: "With Aquarius ascendant, you are an air sign ruled by Saturn..."
 
-4. **YOUR TURNING POINT (Hook Section - CRITICAL)**
-   - ONE specific upcoming date or period in 2026 that will be highly significant
-   - Keep it to 1-2 sentences ONLY
-   - Lead with the WHAT (the event/moment), not the WHY
-   - VARY THE FOCUS: Don't default to career - consider relationships, health, spiritual growth, creativity, family, finances
-   - Examples across different life areas:
-     * Career: "June 1st, 2026 marks a rare professional alignment that happens once every 12 years."
-     * Relationships: "Between March and May, a critical window opens for relationship decisions and deep connections."
-     * Spiritual: "August 2026 presents a powerful period for spiritual awakening and inner transformation."
-     * Creative: "The spring of 2026 activates your creative potential in ways not seen since 2014."
-     * Financial: "Late summer 2026 brings your most auspicious financial opportunity in years."
-   - End with: "Get the full forecast for details on [what they need to know]"
-   - Make the [what they need to know] specific to the life area
-   - DO NOT explain why it matters or give astrological details (that's for paid)
-   - DO NOT give any guidance or actions (that's for paid)
-   - Just name the moment + tell them to upgrade for the details
+**2. YOUR JOURNEY SO FAR: Key Patterns**
+- 2-3 paragraphs summarizing their adult life as ONE flowing narrative
+- Use "life chapters" or "periods" instead of "dasha"
+- Example: "From 2015-2022, you were in a chapter focused on..." NOT "During your Venus Mahadasha..."
+- CRITICAL: Only discuss the periods explicitly provided in "Past Life Chapters" section below
+- DO NOT discuss childhood, early years, or formative experiences unless a period clearly covers that time AFTER birth
+- If a period started before birth, only discuss the years AFTER the birth year
+- Cover MULTIPLE life areas: relationships, career, personal growth, spiritual development, creative pursuits, health, family
+- Balance the narrative - don't focus exclusively on career
+- Connect the PROVIDED periods to diverse adult life themes
+- NO detailed breakdowns - just key transitions
+- One "astrology_note" explaining the astrological progression
 
-5. **UPGRADE SECTION**
-   - Brief intro paragraph that builds on the hook: "The difference between those who capitalize on pivotal moments and those who miss them? Preparation and precision."
-   - "benefits_list" with 5 specific items (first item should reference the turning point)
-   - "cta" with main text and subtext
+Example: "The past seven years have been about building your foundation—both literally in your home life and figuratively in your career. You've learned what stability means to you..."
+
+NOT: "During your Saturn Mahadasha, the lord of your 10th house brought career challenges..."
+
+**3. WHAT'S NEXT: Path Forward**
+- 3-4 paragraphs teasing what the current year holds (general themes only)
+- Cover MULTIPLE life areas: relationships, career/purpose, finances, health, spiritual growth, creativity
+- Balance focus across different life domains based on their chart
+- Emphasize that timing matters across ALL these areas
+- Create intrigue without giving specifics
+- Mention this is a "pivotal year" or "setup phase"
+
+Example: "This year is setting the stage for something bigger. You'll feel pulled toward deeper connections while simultaneously craving more independence in your work..."
+
+NOT: "2026 features Jupiter transiting your 7th house while Saturn aspects your Moon..."
+
+**4. YOUR TURNING POINT (Hook Section - CRITICAL)**
+- ONE specific upcoming date or period in 2026 that will be highly significant
+- Keep it to 1-2 sentences ONLY
+- Lead with the WHAT (the moment/experience), not the WHY
+- Use modern language: "Late spring brings a rare alignment" NOT "Jupiter's transit to your 5th house"
+- VARY THE FOCUS across different life areas based on the chart:
+  * Relationships: "Between March and May, a critical window opens for relationship decisions and deep connections."
+  * Creative work: "Spring 2026 activates your creative potential in ways not seen since 2014."
+  * Career: "June 1st marks a rare professional opportunity that happens once every 12 years."
+  * Spiritual: "August 2026 presents a powerful period for inner transformation and spiritual awakening."
+  * Financial: "Late summer brings your most auspicious financial opportunity in years."
+  * Health/Wellness: "Early fall 2026 is ideal for making lasting changes to your health and daily routines."
+- End with: "Get the full forecast for details on [what they need to know]"
+- Make the [what they need to know] specific to the life area
+- DO NOT explain why it matters or give astrological details (that's for paid)
+- DO NOT give guidance or actions (that's for paid)
+- Just name the moment + tell them to upgrade for details
+
+Example: "Between June and August 2026, a rare window opens for creative and romantic breakthroughs—the kind that reshape your entire trajectory. Get the full forecast for details on how to make the most of this pivotal period."
+
+NOT: "Jupiter's transit through your 5th house from June-August creates a powerful dasha period. Get the full forecast to understand the Vedic implications."
+
+**5. UPGRADE SECTION**
+- Brief intro paragraph building on the hook: "The difference between those who capitalize on pivotal moments and those who miss them? Preparation and precision."
+- "benefits_list" with 5 specific items (first item references the turning point)
+- "cta" with main text and subtext
+
+---
 
 **Birth Details:**
 ${inputs.name ? `Name: ${inputs.name}` : ""}
 Date: ${inputs.birth_date}
 Time: ${inputs.birth_time}
 Location: ${inputs.birth_location}
-Birth Year: ${birthYear} (CRITICAL: Do not discuss any life events before this year)
+Birth Year: ${birthYear}
 
-**Ascendant:** ${inputs.ascendant_sign}${inputs.ascendant_degree ? ` at ${inputs.ascendant_degree.toFixed(1)}°` : ""}${ascendantLordInfo}
+**Rising Sign (Ascendant):** ${inputs.ascendant_sign}${inputs.ascendant_degree ? ` at ${inputs.ascendant_degree.toFixed(1)}°` : ""}${
+    inputs.ascendant_lord && inputs.ascendant_lord_position
+      ? `\n**Chart Ruler:** ${inputs.ascendant_lord} in ${inputs.ascendant_lord_position}`
+      : ""
+  }
 
-**Key Planets:**
+**Key Planetary Placements:**
 ${inputs.planetary_positions_text}
 
-**Moon Nakshatra:** ${inputs.moon_nakshatra}
+**Moon's Placement:** ${inputs.moon_nakshatra} lunar mansion
 
-**Current Dasha Period:**
-- Mahadasha: ${inputs.current_mahadasha.name} (${inputs.current_mahadasha.start} to ${inputs.current_mahadasha.end})
-- Antardasha: ${inputs.current_antardasha?.name || "Unknown"} (${inputs.current_antardasha?.start || "?"} to ${inputs.current_antardasha?.end || "?"})
+**Current Life Chapter:**
+- Main period: ${inputs.current_mahadasha.name} chapter (${inputs.current_mahadasha.start} to ${inputs.current_mahadasha.end})
+- Sub-period: ${inputs.current_antardasha?.name || "Unknown"} (${inputs.current_antardasha?.start || "?"} to ${inputs.current_antardasha?.end || "?"})
 
-**Past Dasha Periods (ONLY discuss these periods, ONLY for years after birth):**
+**Past Life Chapters (ONLY discuss these periods, ONLY for years after ${birthYear}):**
 ${inputs.past_dashas}
 
-CRITICAL RESTRICTIONS FOR "JOURNEY SO FAR" SECTION:
+**CRITICAL RESTRICTIONS FOR "JOURNEY SO FAR" SECTION:**
 - Birth year is ${birthYear}
-- Only discuss the Maha Dasha periods listed above under "Past Dasha Periods"
-- Do NOT extrapolate to childhood, early years, or pre-teen experiences
-- If a dasha started before birth, ONLY discuss the portion from ${birthYear} onward
-- Cover diverse life areas: education, relationships, personal growth, career, spiritual development, creative pursuits
-- Example: If Mercury dasha is 1998-2015 and birth is 1989, discuss ages 9-26 across multiple life dimensions
-- Do NOT say things like "your early years were..." or "childhood likely..." or "formative experiences..."
+- Only discuss the periods listed above under "Past Life Chapters"
+- DO NOT extrapolate to childhood, early years, or pre-teen experiences
+- If a period started before birth, ONLY discuss the portion from ${birthYear} onward
+- Use modern language: "During your 2010-2018 chapter..." NOT "During your Mars Mahadasha..."
+- Cover diverse life areas: education, relationships, personal growth, career, spiritual development, creativity
+- Example: If a period is 1998-2015 and birth is 1989, discuss ages 9-26 across multiple life dimensions
 
-CORRECT APPROACH EXAMPLE (shows balanced life areas):
-"From the late 1990s through 2015, your world expanded intellectually and socially. This was your era of education and forming meaningful connections, while also discovering your creative voice and beginning to understand your place in the world..."
+**CORRECT APPROACH (balanced, modern language):**
+"From the late 1990s through 2015, your world expanded intellectually and socially. This was your era of education and forming meaningful connections, while also discovering your creative voice..."
 
-INCORRECT APPROACH (NEVER DO THIS):
-"Your childhood likely felt structured and serious. Early responsibilities shaped you..." [WRONG - we don't have childhood data]
+**INCORRECT (NEVER DO THIS - technical language):**
+"Your Mercury Mahadasha brought intellectual expansion and communication skills development through educational institutions..."
 
-ALSO INCORRECT (too career-focused):
-"This period was all about professional development and career formation..." [WRONG - too narrow, missing other life areas]
+**ALSO INCORRECT (too narrow):**
+"This period was all about professional development..." [WRONG - missing other life areas]
 
 **2026 Context (use this to identify the turning point):**
-${inputs.dasha_changes_2026 ? `Antar Dasha Changes: ${inputs.dasha_changes_2026}` : "Use current dasha context"}
-${inputs.transits_2026 ? `Major Transits: ${inputs.transits_2026}` : ""}
+${inputs.dasha_changes_2026 ? `Life Chapter Shifts: ${inputs.dasha_changes_2026}` : "Use current chapter context"}
+${inputs.transits_2026 ? `Major Planetary Movements: ${inputs.transits_2026}` : ""}
 
-INSTRUCTIONS FOR TURNING POINT SECTION:
-- Analyze the 2026 dasha changes and transits above
+**INSTRUCTIONS FOR TURNING POINT SECTION:**
+- Analyze the 2026 shifts and movements above
 - Identify the MOST auspicious or transformative period/date
-- IMPORTANT: Determine which LIFE AREA this period most affects based on house placements:
-  * 1st house: Self-discovery, health, new beginnings
-  * 2nd/11th house: Finances, wealth, resources
-  * 3rd house: Communication, siblings, short travels
-  * 4th house: Home, family, emotional foundation
-  * 5th house: Creativity, romance, children
-  * 6th house: Health, service, daily routines
-  * 7th house: Partnerships, marriage, relationships
-  * 8th house: Transformation, shared resources, occult
-  * 9th house: Spirituality, higher learning, long journeys
-  * 10th house: Career, public life, reputation
-  * 12th house: Spirituality, foreign lands, solitude
-- DO NOT default to career unless the chart clearly emphasizes 10th house
-- Make it specific: "May 15th" or "The window between June-August" or "Late March 2026"
-- Match the turning point to the actual life area the transits/dashas affect
-- Create genuine curiosity: What opportunity? What decision? What transformation?
-- Leave them wanting more
+- Determine which LIFE AREA this affects based on chart emphasis
+- Use modern, engaging language - NO technical jargon in the main text
+- Make it specific: "May 15th" or "Between June-August" or "Late March 2026"
+- Match the turning point to the actual life area the chart indicates
+- Create genuine curiosity without being clickbaity
+- Save all technical explanation for the paid forecast
+
+---
+
+**OUTPUT FORMAT:**
 
 Return valid JSON only. Use markdown within text fields for emphasis (**bold**, *italic*).
 
-Output format:
 {
   "title": "Your Life Forecast",
   "subtitle": "Born ${inputs.birth_date} • ${inputs.birth_location}",
@@ -247,8 +245,8 @@ Output format:
         },
         {
           "type": "astrology_note",
-          "label": "Why This Is:",
-          "text": "..."
+          "label": "The Astrology:",
+          "text": "Technical explanation using proper astrological terms..."
         }
       ]
     },
@@ -257,12 +255,12 @@ Output format:
       "content": [
         {
           "type": "paragraph",
-          "text": "..."
+          "text": "Narrative using modern language (life chapters, periods, etc)..."
         },
         {
           "type": "astrology_note",
           "label": "The Astrology:",
-          "text": "..."
+          "text": "Technical dasha progression explanation..."
         }
       ]
     },
@@ -271,7 +269,7 @@ Output format:
       "content": [
         {
           "type": "paragraph",
-          "text": "..."
+          "text": "Forward-looking narrative in accessible language..."
         }
       ]
     },
@@ -280,7 +278,7 @@ Output format:
       "content": [
         {
           "type": "paragraph",
-          "text": "... [1-2 sentences: Specific date/period + what it represents. Example: 'June 1st, 2026 marks a rare career alignment that happens once every 12 years. Get the full forecast for details on how to prepare and what actions to take during this critical window.']"
+          "text": "[Specific date/period in modern language + what it represents + CTA to upgrade]"
         }
       ]
     },
@@ -294,7 +292,7 @@ Output format:
         {
           "type": "benefits_list",
           "items": [
-            "Exactly what to do during your [specific month] turning point window",
+            "Exactly what to do during your [specific month] window",
             "Month-by-month breakdown of opportunities and challenges",
             "Specific dates for major decisions and pivotal moments",
             "Strategic guidance on career, relationships, and finances",
@@ -470,13 +468,13 @@ Deno.serve(async (req) => {
         includeDegree: false,
         includeRetrograde: false,
         useWesternSigns: true,
-      }
+      },
     );
 
     // Calculate 2026 dasha changes for the turning point hook
     const year2026Start = new Date(2026, 0, 1);
     const year2026End = new Date(2026, 11, 31);
-    
+
     const dashaChanges2026: string[] = [];
     for (const maha of allMahaDashas) {
       const antarDashas = calculateAntarDashas(maha);
@@ -490,18 +488,13 @@ Deno.serve(async (req) => {
         }
       }
     }
-    const dashaChanges2026Text = dashaChanges2026.length > 0 
-      ? dashaChanges2026.join(", ") 
-      : undefined;
+    const dashaChanges2026Text = dashaChanges2026.length > 0 ? dashaChanges2026.join(", ") : undefined;
 
     // Fetch 2026 transits from the transits_lookup table
     let transits2026Text: string | undefined;
     try {
-      const { data: transitsData } = await supabase
-        .from("transits_lookup")
-        .select("id, transit_data")
-        .eq("year", 2026);
-      
+      const { data: transitsData } = await supabase.from("transits_lookup").select("id, transit_data").eq("year", 2026);
+
       if (transitsData && transitsData.length > 0) {
         const transitParts: string[] = [];
         for (const row of transitsData) {
@@ -513,7 +506,9 @@ Deno.serve(async (req) => {
           } else if (row.id === "rahu_ketu" && data?.rahu_sign) {
             transitParts.push(`Rahu in ${data.rahu_sign}, Ketu in ${data.ketu_sign}`);
             if (data.shift_date && data.rahu_sign_after) {
-              transitParts.push(`Rahu-Ketu shift to ${data.rahu_sign_after}/${data.ketu_sign_after} on ${data.shift_date}`);
+              transitParts.push(
+                `Rahu-Ketu shift to ${data.rahu_sign_after}/${data.ketu_sign_after} on ${data.shift_date}`,
+              );
             }
           }
         }
@@ -592,24 +587,27 @@ Deno.serve(async (req) => {
     if (!claudeResponse.ok) {
       const errorText = await claudeResponse.text();
       const isRateLimited = claudeResponse.status === 429;
-      
-      logStep("Claude API error", { 
-        status: claudeResponse.status, 
+
+      logStep("Claude API error", {
+        status: claudeResponse.status,
         error: errorText,
-        is_rate_limit: isRateLimited 
+        is_rate_limit: isRateLimited,
       });
-      
+
       if (isRateLimited) {
-        return new Response(JSON.stringify({
-          high_demand: true,
-          message: "We're experiencing high demand right now. Please try again in a few minutes.",
-          retry_after: 60,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 503,
-        });
+        return new Response(
+          JSON.stringify({
+            high_demand: true,
+            message: "We're experiencing high demand right now. Please try again in a few minutes.",
+            retry_after: 60,
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 503,
+          },
+        );
       }
-      
+
       return errorResponse(`Claude API error: ${claudeResponse.status}`, 500);
     }
 
@@ -676,14 +674,14 @@ Deno.serve(async (req) => {
           const resend = new Resend(resendApiKey);
           const resultsUrl = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}`;
           const emailHtml = buildVedicFreeEmailHtml(kundliData.name, resultsUrl);
-          
+
           const emailResponse = await resend.emails.send({
             from: "Cosmic Brief <noreply@cosmicbrief.com>",
             to: [customerEmail],
             subject: "Your Free Vedic Forecast is Ready! ✨",
             html: emailHtml,
           });
-          
+
           logStep("Email sent successfully", { emailId: emailResponse?.data?.id });
         } else {
           logStep("RESEND_API_KEY not configured, skipping email");
