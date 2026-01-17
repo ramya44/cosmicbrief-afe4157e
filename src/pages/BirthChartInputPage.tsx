@@ -10,13 +10,15 @@ import { useForecastStore } from '@/store/forecastStore';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Loader2, User, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 
 const FORM_STORAGE_KEY = 'birth_chart_form_data';
 
 interface SavedFormData {
+  name: string;
+  email: string;
   birthDate: string;
   birthTime: string;
   birthPlace: string;
@@ -29,6 +31,8 @@ const BirthChartInputPage = () => {
   const { setBirthData } = useForecastStore();
   
   const [formData, setFormData] = useState({
+    name: '',
+    email: '',
     birthDate: '',
     birthTime: '',
     birthPlace: '',
@@ -46,6 +50,8 @@ const BirthChartInputPage = () => {
         const currentDeviceId = getDeviceId();
         if (parsed.deviceId === currentDeviceId) {
           setFormData({
+            name: parsed.name || '',
+            email: parsed.email || '',
             birthDate: parsed.birthDate || '',
             birthTime: parsed.birthTime || '',
             birthPlace: parsed.birthPlace || '',
@@ -79,6 +85,16 @@ const BirthChartInputPage = () => {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    
+    // Email is required
+    if (!formData.email.trim()) {
+      newErrors.email = 'Please enter your email address';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+    }
     
     if (!formData.birthDate) {
       newErrors.birthDate = 'Please enter your birth date';
@@ -154,6 +170,8 @@ const BirthChartInputPage = () => {
 
       // Store data for birth chart page
       const chartData = {
+        name: formData.name.trim() || undefined,
+        email: formData.email.trim(),
         birthDate: formData.birthDate,
         birthTime: formData.birthTime,
         birthPlace: formData.birthPlace,
@@ -232,10 +250,55 @@ const BirthChartInputPage = () => {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6 overflow-visible">
-              {/* Date of Birth */}
+              {/* Name (Optional) */}
               <div 
                 className="space-y-2 animate-fade-up"
                 style={{ animationDelay: '100ms', animationFillMode: 'both' }}
+              >
+                <Label htmlFor="name" className="text-cream flex items-center gap-2">
+                  <User className="w-4 h-4 text-gold" />
+                  Name <span className="text-muted-foreground text-xs">(Optional)</span>
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Your name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                  disabled={isSubmitting}
+                  maxLength={100}
+                />
+              </div>
+
+              {/* Email (Required) */}
+              <div 
+                className="space-y-2 animate-fade-up"
+                style={{ animationDelay: '150ms', animationFillMode: 'both' }}
+              >
+                <Label htmlFor="email" className="text-cream flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-gold" />
+                  Email Address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                  disabled={isSubmitting}
+                  maxLength={255}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Date of Birth */}
+              <div 
+                className="space-y-2 animate-fade-up"
+                style={{ animationDelay: '200ms', animationFillMode: 'both' }}
               >
                 <Label htmlFor="birthDate" className="text-cream flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-gold" />
@@ -259,7 +322,7 @@ const BirthChartInputPage = () => {
               {/* Time of Birth */}
               <div 
                 className="space-y-2 animate-fade-up"
-                style={{ animationDelay: '150ms', animationFillMode: 'both' }}
+                style={{ animationDelay: '250ms', animationFillMode: 'both' }}
               >
                 <Label htmlFor="birthTime" className="text-cream flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gold" />
@@ -281,7 +344,7 @@ const BirthChartInputPage = () => {
               {/* Place of Birth */}
               <div 
                 className="space-y-2 animate-fade-up relative z-50"
-                style={{ animationDelay: '200ms', animationFillMode: 'both' }}
+                style={{ animationDelay: '300ms', animationFillMode: 'both' }}
               >
                 <Label htmlFor="birthPlace" className="text-cream flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-gold" />
@@ -323,7 +386,7 @@ const BirthChartInputPage = () => {
               {/* Submit Button */}
               <div 
                 className="pt-4 animate-fade-up"
-                style={{ animationDelay: '250ms', animationFillMode: 'both' }}
+                style={{ animationDelay: '350ms', animationFillMode: 'both' }}
               >
                 <Button 
                   type="submit" 
@@ -349,13 +412,13 @@ const BirthChartInputPage = () => {
 
             <p 
               className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
-              style={{ animationDelay: '300ms', animationFillMode: 'both' }}
+              style={{ animationDelay: '400ms', animationFillMode: 'both' }}
             >
               Your information is used only to generate your birth chart.
             </p>
             <p 
               className="text-center text-xs text-muted-foreground mt-3 animate-fade-up"
-              style={{ animationDelay: '350ms', animationFillMode: 'both' }}
+              style={{ animationDelay: '450ms', animationFillMode: 'both' }}
             >
               <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology?</a>
               {' · '}
