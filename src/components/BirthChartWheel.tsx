@@ -605,7 +605,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               strokeWidth="1.5"
               opacity="0.8"
             />
-            {/* Large zodiac symbol */}
+            {/* Large zodiac symbol - lookup by Vedic name */}
             <text
               x={center}
               y={center - 2}
@@ -618,7 +618,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               className="select-none"
               style={{ fontVariantEmoji: 'text' }}
             >
-              {ZODIAC_SIGNS[(chartData.ascendant_sign_id - 1) % 12]?.symbol || '♎'}
+              {ZODIAC_SIGNS.find(z => z.vedic === chartData.ascendant_sign)?.symbol || '♎'}
             </text>
             {/* Small sign name below */}
             <text
