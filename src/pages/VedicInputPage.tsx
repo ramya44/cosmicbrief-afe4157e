@@ -278,14 +278,26 @@ const VedicInputPage = () => {
   const handleNameSubmit = async () => {
     if (!kundliId) return;
     
-    // Save name if provided
+    // Save name if provided via secure edge function
     if (userName.trim()) {
       try {
-        await supabase
-          .from('user_kundli_details')
-          .update({ name: userName.trim() })
-          .eq('id', kundliId);
-        console.log('[VedicInputPage] Name saved:', userName);
+        const { data: updateResult, error: updateError } = await supabase.functions.invoke(
+          'update-kundli-details',
+          {
+            body: {
+              type: 'update_name',
+              kundli_id: kundliId,
+              name: userName.trim(),
+              device_id: getDeviceId(),
+            },
+          }
+        );
+        
+        if (updateError || updateResult?.error) {
+          console.error('[VedicInputPage] Error saving name:', updateError || updateResult?.error);
+        } else {
+          console.log('[VedicInputPage] Name saved:', userName);
+        }
       } catch (e) {
         console.error('[VedicInputPage] Error saving name:', e);
       }

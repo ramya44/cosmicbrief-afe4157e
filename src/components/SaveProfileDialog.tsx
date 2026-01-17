@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from '@/lib/deviceId';
 import {
   Dialog,
   DialogContent,
@@ -102,18 +103,23 @@ export const SaveProfileDialog = ({
       }
 
       if (authData.user) {
-        // Link the kundli to the user
-        const { error: updateError } = await supabase
-          .from('user_kundli_details')
-          .update({ 
-            user_id: authData.user.id,
-            email: data.email,
-            name: data.displayName,
-          })
-          .eq('id', kundliId);
+        // Link the kundli to the user via secure edge function
+        const { data: updateResult, error: updateError } = await supabase.functions.invoke(
+          'update-kundli-details',
+          {
+            body: {
+              type: 'link_user',
+              kundli_id: kundliId,
+              user_id: authData.user.id,
+              email: data.email,
+              name: data.displayName,
+              device_id: getDeviceId(),
+            },
+          }
+        );
 
-        if (updateError) {
-          console.error('Failed to link profile:', updateError);
+        if (updateError || updateResult?.error) {
+          console.error('Failed to link profile:', updateError || updateResult?.error);
           throw new Error('Failed to save profile. Please try again.');
         }
 
@@ -142,17 +148,22 @@ export const SaveProfileDialog = ({
       }
 
       if (authData.user) {
-        // Link the kundli to the user
-        const { error: updateError } = await supabase
-          .from('user_kundli_details')
-          .update({ 
-            user_id: authData.user.id,
-            email: data.email,
-          })
-          .eq('id', kundliId);
+        // Link the kundli to the user via secure edge function
+        const { data: updateResult, error: updateError } = await supabase.functions.invoke(
+          'update-kundli-details',
+          {
+            body: {
+              type: 'link_user',
+              kundli_id: kundliId,
+              user_id: authData.user.id,
+              email: data.email,
+              device_id: getDeviceId(),
+            },
+          }
+        );
 
-        if (updateError) {
-          console.error('Failed to link profile:', updateError);
+        if (updateError || updateResult?.error) {
+          console.error('Failed to link profile:', updateError || updateResult?.error);
           throw new Error('Failed to save profile. Please try again.');
         }
 

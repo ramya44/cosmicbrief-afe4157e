@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.debug-llm-payload]
 verify_jwt = false
+
+[functions.update-kundli-details]
+verify_jwt = false
