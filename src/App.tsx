@@ -19,6 +19,7 @@ import VedicResultsPage from "./pages/VedicResultsPage";
 import VedicPaymentSuccessPage from "./pages/VedicPaymentSuccessPage";
 import VedicAstrologyExplainedPage from "./pages/VedicAstrologyExplainedPage";
 import VedicProfilePage from "./pages/VedicProfilePage";
+import AuthPage from "./pages/AuthPage";
 import ContactPage from "./pages/ContactPage";
 import BackgroundPage from "./pages/BackgroundPage";
 import WeeklyHoroscopePage from "./pages/WeeklyHoroscopePage";
@@ -100,6 +101,7 @@ const App = () => (
           <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="/vedic/payment-success" element={<VedicPaymentSuccessPage />} />
           <Route path="/vedic/profile" element={<VedicProfilePage />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/vedic-astrology-explained" element={<VedicAstrologyExplainedPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/background" element={<BackgroundPage />} />

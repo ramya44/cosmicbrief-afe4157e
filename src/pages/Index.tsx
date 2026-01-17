@@ -43,7 +43,7 @@ const Index = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate('/vedic/input')}
+          onClick={() => navigate('/auth')}
           className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0"
         >
           <LogIn className="w-4 h-4 mr-2" />
