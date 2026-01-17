@@ -81,6 +81,7 @@ const calculateHouse = (planetSignId: number, ascendantSignId: number): number =
 export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetPosition | null>(null);
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetPosition | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
   const { planetary_positions, ascendant_sign_id } = chartData;
 
@@ -353,10 +354,10 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
-              stroke="hsl(45, 50%, 50%)"
-              strokeWidth="0.5"
-              strokeDasharray="2,3"
-              opacity="0.25"
+              stroke="hsl(45, 70%, 60%)"
+              strokeWidth="1"
+              strokeDasharray="3,4"
+              opacity="0.4"
             />
           ))}
 
@@ -447,12 +448,18 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               }}
               transition={{ duration: 0.5, delay: 1.2, scale: { duration: 0.2 } }}
               style={{ cursor: 'pointer' }}
-              onMouseEnter={() => setHoveredPlanet({
-                ...ascendantPosition,
-                id: 100,
-                name: 'Ascendant',
-              })}
-              onMouseLeave={() => setHoveredPlanet(null)}
+              onMouseEnter={() => {
+                setHoveredPlanet({
+                  ...ascendantPosition,
+                  id: 100,
+                  name: 'Ascendant',
+                });
+                setTooltipPos({ x: ascendantDisplayPos.x, y: ascendantDisplayPos.y });
+              }}
+              onMouseLeave={() => {
+                setHoveredPlanet(null);
+                setTooltipPos(null);
+              }}
               onClick={() => setSelectedPlanet(
                 selectedPlanet?.id === 100 
                   ? null 
@@ -510,8 +517,14 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
                   scale: { duration: 0.2 }
                 }}
                 style={{ cursor: 'pointer' }}
-                onMouseEnter={() => setHoveredPlanet(planet)}
-                onMouseLeave={() => setHoveredPlanet(null)}
+                onMouseEnter={() => {
+                  setHoveredPlanet(planet);
+                  setTooltipPos({ x: planet.x, y: planet.y });
+                }}
+                onMouseLeave={() => {
+                  setHoveredPlanet(null);
+                  setTooltipPos(null);
+                }}
                 onClick={() => setSelectedPlanet(selectedPlanet?.id === planet.id ? null : planet)}
                 filter={`url(#glow-${planet.name})`}
               >
@@ -600,29 +613,36 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
           </motion.g>
         </svg>
 
-        {/* Tooltip on hover */}
+        {/* Tooltip on hover - positioned near the planet */}
         <AnimatePresence>
-          {hoveredPlanet && !selectedPlanet && (
+          {hoveredPlanet && !selectedPlanet && tooltipPos && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute left-1/2 -translate-x-1/2 bottom-0 translate-y-full mt-4 z-20"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="absolute z-20 pointer-events-none"
+              style={{
+                // Convert SVG coords to percentage of container
+                // The SVG viewBox is 600x600, so we calculate percentage
+                left: `${(tooltipPos.x / 600) * 100}%`,
+                top: `${(tooltipPos.y / 600) * 100}%`,
+                transform: 'translate(-50%, -120%)',
+              }}
             >
-              <div className="bg-midnight/90 backdrop-blur-lg border border-gold/30 rounded-xl p-4 shadow-xl min-w-[220px]">
+              <div className="bg-midnight/95 backdrop-blur-lg border border-gold/40 rounded-xl p-3 shadow-2xl min-w-[180px]">
                 <div className="flex items-center gap-2 mb-2">
                   <span 
-                    className="text-2xl"
+                    className="text-xl"
                     style={{ color: PLANET_CONFIG[hoveredPlanet.name]?.color }}
                   >
                     {PLANET_CONFIG[hoveredPlanet.name]?.symbol}
                   </span>
-                  <span className="text-cream font-semibold">{hoveredPlanet.name}</span>
+                  <span className="text-cream font-semibold text-sm">{hoveredPlanet.name}</span>
                   {hoveredPlanet.is_retrograde && (
-                    <span className="text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">R</span>
+                    <span className="text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">R</span>
                   )}
                 </div>
-                <div className="space-y-1 text-sm">
+                <div className="space-y-0.5 text-xs">
                   <p className="text-cream-muted">
                     <span className="text-cream">Sign:</span> {hoveredPlanet.sign}
                   </p>
