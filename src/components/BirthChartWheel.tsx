@@ -395,7 +395,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
             />
           ))}
 
-          {/* House numbers - reduced size and 60% opacity */}
+          {/* House numbers - visible gold at 60% opacity */}
           {houseNumbers.map((pos, i) => (
             <motion.text
               key={i}
@@ -404,9 +404,8 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               textAnchor="middle"
               dominantBaseline="middle"
               fill="#f59e0b"
-              fontSize="14"
+              fontSize="18"
               fontWeight="600"
-              opacity="0.6"
               className="select-none"
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 0.6, scale: 1 }}
@@ -424,12 +423,13 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y={pos.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill="#8B7355"
-              fontSize="18"
-              fontWeight="400"
+              fill="#a08060"
+              fontSize="20"
+              fontWeight="500"
               className="select-none"
+              style={{ opacity: 0.5 }}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
+              animate={{ opacity: 0.5 }}
               transition={{ duration: 0.5, delay: 0.6 + i * 0.02 }}
             >
               {pos.symbol}
