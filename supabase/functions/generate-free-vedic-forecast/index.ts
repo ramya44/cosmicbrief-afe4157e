@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { corsHeaders, jsonResponse, errorResponse } from "../_shared/lib/http.ts";
 import type { UserData, TransitLookupRow, PlanetaryPosition } from "./lib/types.ts";
 import { generateForecastInputs } from "./lib/generate-forecast-inputs.ts";
@@ -34,6 +35,11 @@ function logStep(step: string, details?: Record<string, unknown>) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[generate-free-vedic-forecast] ${step}${detailsStr}`);
 }
+
+// Input validation schema
+const ForecastRequestSchema = z.object({
+  kundli_id: z.string().uuid("Invalid kundli ID format"),
+});
 
 const SYSTEM_PROMPT = `You are an expert Vedic astrologer who writes personalized forecasts in accessible, engaging language. Your writing style is:
 
@@ -334,14 +340,23 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body: RequestBody = await req.json();
-    const { kundli_id } = body;
-
-    if (!kundli_id) {
-      return errorResponse("kundli_id is required", 400);
+    // Parse and validate input
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return errorResponse("Invalid JSON", 400);
     }
 
-    logStep("Fetching kundli details", { kundli_id });
+    const validationResult = ForecastRequestSchema.safeParse(rawBody);
+    if (!validationResult.success) {
+      const errorMessages = validationResult.error.errors.map((e) => e.message).join(", ");
+      logStep("Validation failed", { errors: errorMessages });
+      return errorResponse(`Invalid input: ${errorMessages}`, 400);
+    }
+
+    const { kundli_id } = validationResult.data;
+    logStep("Request validated", { kundli_id });
 
     // Fetch the kundli details
     const { data: kundliData, error: kundliError } = await supabase

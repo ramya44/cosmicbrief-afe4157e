@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,6 +11,75 @@ function logStep(step: string, details?: Record<string, unknown>) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
   console.log(`[save-kundli-details] ${step}${detailsStr}`);
 }
+
+// Input validation schema
+const PlanetPositionSchema = z.object({
+  id: z.number(),
+  name: z.string().max(50),
+  sign: z.string().max(50),
+  sign_id: z.number(),
+  sign_lord: z.string().max(50),
+  degree: z.number().min(0).max(360),
+  full_degree: z.number().min(0).max(360),
+  is_retrograde: z.boolean(),
+  nakshatra: z.string().max(50).optional(),
+  nakshatra_id: z.number().optional(),
+  nakshatra_pada: z.number().min(1).max(4).optional(),
+  nakshatra_lord: z.string().max(50).optional(),
+});
+
+const AntarDashaSchema = z.object({
+  name: z.string().max(50),
+  start: z.string().max(50),
+  end: z.string().max(50),
+});
+
+const MahaDashaSchema = z.object({
+  name: z.string().max(50),
+  start: z.string().max(50),
+  end: z.string().max(50),
+  antardasha: z.array(AntarDashaSchema).max(20),
+});
+
+const KundliInputSchema = z.object({
+  birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD"),
+  birth_time: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format. Use HH:MM"),
+  birth_place: z.string().min(1, "Birth place is required").max(200, "Birth place too long"),
+  birth_time_utc: z.string().max(50).optional(),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  email: z.string().email("Invalid email").max(255).toLowerCase().trim().optional().or(z.literal("")),
+  name: z.string().max(100).trim().optional(),
+  device_id: z.string().uuid("Invalid device ID").optional(),
+  kundli_data: z.object({
+    nakshatra: z.string().max(50),
+    nakshatra_id: z.number(),
+    nakshatra_pada: z.number().min(1).max(4),
+    nakshatra_lord: z.string().max(50),
+    nakshatra_gender: z.string().max(20),
+    deity: z.string().max(100),
+    ganam: z.string().max(50),
+    birth_symbol: z.string().max(100),
+    animal_sign: z.string().max(50),
+    nadi: z.string().max(50),
+    lucky_color: z.string().max(50),
+    best_direction: z.string().max(50),
+    syllables: z.string().max(100),
+    birth_stone: z.string().max(50),
+    moon_sign: z.string().max(50),
+    moon_sign_id: z.number(),
+    moon_sign_lord: z.string().max(50),
+    sun_sign: z.string().max(50),
+    sun_sign_id: z.number(),
+    sun_sign_lord: z.string().max(50),
+    zodiac_sign: z.string().max(50),
+    ascendant_sign: z.string().max(50),
+    ascendant_sign_id: z.number(),
+    ascendant_sign_lord: z.string().max(50),
+    planetary_positions: z.array(PlanetPositionSchema).max(15),
+    dasha_periods: z.array(MahaDashaSchema).max(12),
+  }),
+});
 
 interface AntarDasha {
   name: string;
@@ -149,8 +219,29 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body: KundliInput = await req.json();
-    logStep("Request body parsed", { 
+    // Parse and validate input
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const validationResult = KundliInputSchema.safeParse(rawBody);
+    if (!validationResult.success) {
+      const errorMessages = validationResult.error.errors.map((e) => e.message).join(", ");
+      logStep("Validation failed", { errors: errorMessages });
+      return new Response(
+        JSON.stringify({ error: `Invalid input: ${errorMessages}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const body = validationResult.data;
+    logStep("Request validated", { 
       birth_date: body.birth_date,
       birth_place: body.birth_place,
       hasKundliData: !!body.kundli_data 
