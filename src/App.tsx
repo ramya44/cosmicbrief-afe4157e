@@ -25,6 +25,8 @@ import WeeklyHoroscopePage from "./pages/WeeklyHoroscopePage";
 import CompatibilityPage from "./pages/CompatibilityPage";
 import HowToReadChartPage from "./pages/HowToReadChartPage";
 import VedicVsWesternPage from "./pages/VedicVsWesternPage";
+import BirthChartInputPage from "./pages/BirthChartInputPage";
+import BirthChartPage from "./pages/BirthChartPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -105,6 +107,8 @@ const App = () => (
           <Route path="/compatibility" element={<CompatibilityPage />} />
           <Route path="/how-to-read-vedic-chart" element={<HowToReadChartPage />} />
           <Route path="/vedic-vs-western-astrology" element={<VedicVsWesternPage />} />
+          <Route path="/get-birth-chart" element={<BirthChartInputPage />} />
+          <Route path="/birth-chart" element={<BirthChartPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </HashRouter>
