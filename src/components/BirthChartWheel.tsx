@@ -39,18 +39,18 @@ interface BirthChartWheelProps {
   chartData: KundliData;
 }
 
-// Planet symbols and colors
+// Refined planet colors - vibrant focal points
 const PLANET_CONFIG: Record<string, { symbol: string; color: string; glowColor: string }> = {
-  Sun: { symbol: '☉', color: 'hsl(45, 93%, 58%)', glowColor: 'hsl(45, 93%, 58%)' },
-  Moon: { symbol: '☽', color: 'hsl(210, 20%, 85%)', glowColor: 'hsl(210, 40%, 70%)' },
-  Mars: { symbol: '♂', color: 'hsl(0, 72%, 60%)', glowColor: 'hsl(0, 72%, 50%)' },
-  Mercury: { symbol: '☿', color: 'hsl(142, 70%, 60%)', glowColor: 'hsl(142, 70%, 50%)' },
-  Jupiter: { symbol: '♃', color: 'hsl(48, 96%, 65%)', glowColor: 'hsl(48, 96%, 55%)' },
-  Venus: { symbol: '♀', color: 'hsl(330, 80%, 75%)', glowColor: 'hsl(330, 80%, 65%)' },
-  Saturn: { symbol: '♄', color: 'hsl(210, 60%, 60%)', glowColor: 'hsl(210, 60%, 50%)' },
-  Rahu: { symbol: '☊', color: 'hsl(270, 60%, 65%)', glowColor: 'hsl(270, 60%, 55%)' },
-  Ketu: { symbol: '☋', color: 'hsl(280, 50%, 55%)', glowColor: 'hsl(280, 50%, 45%)' },
-  Ascendant: { symbol: 'લ', color: 'hsl(45, 93%, 58%)', glowColor: 'hsl(45, 93%, 48%)' },
+  Sun: { symbol: '☉', color: '#FCD34D', glowColor: '#FCD34D' },           // Bright gold
+  Moon: { symbol: '☽', color: '#E5E7EB', glowColor: '#E5E7EB' },          // Silver/white
+  Mars: { symbol: '♂', color: '#DC2626', glowColor: '#DC2626' },          // Red
+  Mercury: { symbol: '☿', color: '#10B981', glowColor: '#10B981' },       // Green
+  Jupiter: { symbol: '♃', color: '#FBBF24', glowColor: '#FBBF24' },       // Yellow-gold
+  Venus: { symbol: '♀', color: '#EC4899', glowColor: '#EC4899' },         // Pink
+  Saturn: { symbol: '♄', color: '#3B82F6', glowColor: '#3B82F6' },        // Blue
+  Rahu: { symbol: '☊', color: '#A855F7', glowColor: '#A855F7' },          // Purple
+  Ketu: { symbol: '☋', color: '#A855F7', glowColor: '#A855F7' },          // Purple
+  Ascendant: { symbol: 'લ', color: '#FCD34D', glowColor: '#FCD34D' },     // Gold
 };
 
 // Zodiac signs with their symbols
@@ -70,10 +70,7 @@ const ZODIAC_SIGNS = [
 ];
 
 // Calculate house number using Whole Sign system
-// In Whole Sign: the sign containing the Ascendant is the 1st house
-// sign_id is 1-based (1 = Aries, 2 = Taurus, etc.)
 const calculateHouse = (planetSignId: number, ascendantSignId: number): number => {
-  // Both IDs are 1-based
   const house = ((planetSignId - ascendantSignId + 12) % 12) + 1;
   return house;
 };
@@ -85,7 +82,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
 
   const { planetary_positions, ascendant_sign_id } = chartData;
 
-  // Filter planets (exclude Ascendant from regular planets, we'll show it separately)
+  // Filter planets (exclude Ascendant from regular planets)
   const planets = useMemo(() => 
     planetary_positions.filter(p => p.id !== 100 && p.name !== 'Ascendant'),
     [planetary_positions]
@@ -106,12 +103,6 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
   const innerRadius = planetRadius - 65;
   const nakshatraRadius = outerRadius - 8;
 
-  // The chart is rotated so that the 1st house (Ascendant's sign) is at the top (12 o'clock)
-  // In standard astrology charts, houses go counter-clockwise
-  // ascendant_sign_id is 1-based (1 = Aries)
-  // Rotation offset: we want the Ascendant's sign to start at -90° (top)
-  const chartRotation = 0; // We'll position elements relative to house number
-
   // Get ordinal suffix
   const getOrdinal = (n: number): string => {
     const s = ['th', 'st', 'nd', 'rd'];
@@ -120,21 +111,17 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
   };
 
   // Calculate angle for a house number (1-12)
-  // House 1 is at the top (12 o'clock = -90°), houses go counter-clockwise
   const getHouseAngle = (houseNum: number): number => {
-    // House 1 starts at -90° (top), each house spans 30°
-    // Going counter-clockwise means subtracting
     return -90 - (houseNum - 1) * 30;
   };
 
   // Get center angle for a house
   const getHouseCenterAngle = (houseNum: number): number => {
-    return getHouseAngle(houseNum) - 15; // Center of the 30° span
+    return getHouseAngle(houseNum) - 15;
   };
 
   // Calculate planet positions in the wheel based on their HOUSE placement
   const planetPositions = useMemo(() => {
-    // Group planets by house to handle multiple planets in same house
     const planetsByHouse: Record<number, PlanetPosition[]> = {};
     
     planets.forEach(planet => {
@@ -145,25 +132,21 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
       planetsByHouse[house].push(planet);
     });
 
-    // Sort planets within each house by degree for consistent ordering
     Object.values(planetsByHouse).forEach(housePlanets => {
       housePlanets.sort((a, b) => a.degree - b.degree);
     });
 
-    // Calculate visual positions
     return planets.map(planet => {
       const house = calculateHouse(planet.sign_id, ascendant_sign_id);
       const housePlanets = planetsByHouse[house];
       const indexInHouse = housePlanets.indexOf(planet);
       const totalInHouse = housePlanets.length;
 
-      // Base angle is the center of the house
       const baseAngle = getHouseCenterAngle(house);
       
-      // Spread multiple planets within the house
       let offsetAngle = 0;
       if (totalInHouse > 1) {
-        const spreadRange = 20; // degrees to spread across
+        const spreadRange = 20;
         offsetAngle = (indexInHouse - (totalInHouse - 1) / 2) * (spreadRange / Math.max(totalInHouse - 1, 1));
       }
 
@@ -181,7 +164,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
     });
   }, [planets, ascendant_sign_id, center, planetRadius]);
 
-  // Draw house divisions (12 lines, starting from house 1 at top)
+  // Draw house divisions
   const houseDivisions = useMemo(() => {
     const lines = [];
     for (let i = 0; i < 12; i++) {
@@ -196,16 +179,12 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
     return lines;
   }, [center, innerRadius, outerRadius]);
 
-  // Nakshatra boundaries (27 divisions, each ~13.33°)
+  // Nakshatra boundaries (27 divisions)
   const nakshatraBoundaries = useMemo(() => {
     const lines = [];
     for (let i = 0; i < 27; i++) {
-      // Each nakshatra spans 360/27 = 13.333... degrees
-      // Starting from 0° Aries, but we need to rotate based on Ascendant
       const nakshatraAngle = i * (360 / 27);
-      // Convert to our chart coordinate system
-      // In our system, Ascendant's sign starts at -90°
-      const signOffset = (ascendant_sign_id - 1) * 30; // Where Aries is in our chart
+      const signOffset = (ascendant_sign_id - 1) * 30;
       const chartAngle = -90 - (nakshatraAngle - signOffset);
       const radians = (chartAngle * Math.PI) / 180;
       
@@ -218,7 +197,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
     return lines;
   }, [center, zodiacRadius, nakshatraRadius, ascendant_sign_id]);
 
-  // House number positions (placed in outer ring area)
+  // House number positions
   const houseNumbers = useMemo(() => {
     const numbers = [];
     for (let i = 0; i < 12; i++) {
@@ -226,7 +205,6 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
       const angle = (getHouseCenterAngle(houseNum) * Math.PI) / 180;
       const x = center + Math.cos(angle) * (outerRadius - 18);
       const y = center + Math.sin(angle) * (outerRadius - 18);
-      // Get the zodiac sign for this house
       const signIndex = (ascendant_sign_id - 1 + i) % 12;
       numbers.push({ x, y, house: houseNum, signIndex });
     }
@@ -241,7 +219,6 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
       const angle = (getHouseCenterAngle(houseNum) * Math.PI) / 180;
       const x = center + Math.cos(angle) * (zodiacRadius - 8);
       const y = center + Math.sin(angle) * (zodiacRadius - 8);
-      // Get the zodiac sign for this house position
       const signIndex = (ascendant_sign_id - 1 + i) % 12;
       positions.push({ x, y, ...ZODIAC_SIGNS[signIndex], houseNum });
     }
@@ -252,11 +229,10 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
   const sunPosition = planets.find(p => p.name === 'Sun');
   const moonPosition = planets.find(p => p.name === 'Moon');
 
-  // Ascendant position for display on the wheel (at house 1 center)
+  // Ascendant position for display on the wheel
   const ascendantDisplayPos = useMemo(() => {
     const angle = getHouseCenterAngle(1);
     const radians = (angle * Math.PI) / 180;
-    // Position it closer to the outer edge
     const radius = planetRadius + 30;
     return {
       x: center + Math.cos(radians) * radius,
@@ -268,11 +244,11 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
     <div className="flex flex-col items-center gap-8">
       {/* Main Chart */}
       <div className="relative">
-        {/* Background glow effect */}
+        {/* Subtle background glow effect */}
         <div 
-          className="absolute inset-0 rounded-full opacity-20 blur-3xl"
+          className="absolute inset-0 rounded-full opacity-15 blur-3xl"
           style={{
-            background: 'radial-gradient(circle, hsl(45, 93%, 58%) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, #FCD34D 0%, transparent 60%)',
           }}
         />
         
@@ -281,27 +257,55 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
           className="w-full max-w-[600px] h-auto md:w-[600px] md:h-[600px] relative z-10"
           style={{ minWidth: '320px', maxWidth: '600px' }}
         >
-          {/* Background */}
           <defs>
-            {/* Starry pattern */}
+            {/* Radial gradient for background depth */}
+            <radialGradient id="bgGradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#0f172a" />
+              <stop offset="100%" stopColor="#1e293b" />
+            </radialGradient>
+
+            {/* Zodiac ring subtle background */}
+            <radialGradient id="zodiacRingBg" cx="50%" cy="50%" r="50%">
+              <stop offset="70%" stopColor="#0f172a" />
+              <stop offset="100%" stopColor="#1a2332" />
+            </radialGradient>
+
+            {/* Starry pattern - subtle */}
             <pattern id="stars" width="100" height="100" patternUnits="userSpaceOnUse">
-              {[...Array(20)].map((_, i) => (
+              {[...Array(15)].map((_, i) => (
                 <circle
                   key={i}
                   cx={Math.random() * 100}
                   cy={Math.random() * 100}
-                  r={Math.random() * 0.8 + 0.2}
+                  r={Math.random() * 0.6 + 0.1}
                   fill="white"
-                  opacity={Math.random() * 0.5 + 0.2}
+                  opacity={Math.random() * 0.3 + 0.1}
                 />
               ))}
             </pattern>
             
-            {/* Planet glow filters - one for each planet color */}
+            {/* Enhanced planet glow filters with drop shadow and inner glow */}
             {Object.entries(PLANET_CONFIG).map(([name, config]) => (
-              <filter key={name} id={`glow-${name}`} x="-100%" y="-100%" width="300%" height="300%">
-                <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-                <feFlood floodColor={config.glowColor} floodOpacity="0.6"/>
+              <filter key={name} id={`glow-${name}`} x="-150%" y="-150%" width="400%" height="400%">
+                {/* Drop shadow */}
+                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="rgba(0,0,0,0.4)" />
+                {/* Outer glow */}
+                <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                <feFlood floodColor={config.glowColor} floodOpacity="0.5"/>
+                <feComposite in2="coloredBlur" operator="in"/>
+                <feMerge>
+                  <feMergeNode/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            ))}
+
+            {/* Hover glow filter - 50% more intense */}
+            {Object.entries(PLANET_CONFIG).map(([name, config]) => (
+              <filter key={`hover-${name}`} id={`glow-hover-${name}`} x="-150%" y="-150%" width="400%" height="400%">
+                <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="rgba(0,0,0,0.5)" />
+                <feGaussianBlur stdDeviation="9" result="coloredBlur"/>
+                <feFlood floodColor={config.glowColor} floodOpacity="0.75"/>
                 <feComposite in2="coloredBlur" operator="in"/>
                 <feMerge>
                   <feMergeNode/>
@@ -310,31 +314,22 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               </filter>
             ))}
             
-            {/* Generic planet glow */}
-            <filter id="planetGlow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-            
-            {/* Gradient for outer ring */}
+            {/* Subtle outer ring gradient */}
             <linearGradient id="outerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="hsl(45, 93%, 58%)" stopOpacity="0.4" />
-              <stop offset="50%" stopColor="hsl(45, 93%, 48%)" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="hsl(45, 93%, 58%)" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="#8B7355" stopOpacity="0.2" />
+              <stop offset="50%" stopColor="#8B7355" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#8B7355" stopOpacity="0.2" />
             </linearGradient>
           </defs>
 
-          {/* Outer background circle */}
+          {/* Outer background circle with radial gradient */}
           <circle
             cx={center}
             cy={center}
             r={outerRadius}
-            fill="hsl(222, 47%, 11%)"
+            fill="url(#bgGradient)"
             stroke="url(#outerGradient)"
-            strokeWidth="2.5"
+            strokeWidth="1.5"
           />
           
           {/* Subtle star pattern overlay */}
@@ -343,10 +338,10 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
             cy={center}
             r={outerRadius - 1}
             fill="url(#stars)"
-            opacity="0.3"
+            opacity="0.25"
           />
 
-          {/* Nakshatra boundaries (very subtle dotted lines) */}
+          {/* Nakshatra boundaries - very subtle */}
           {nakshatraBoundaries.map((line, i) => (
             <line
               key={`nakshatra-${i}`}
@@ -354,22 +349,22 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
-              stroke="hsl(45, 70%, 60%)"
-              strokeWidth="1"
-              strokeDasharray="3,4"
-              opacity="0.4"
+              stroke="#8B7355"
+              strokeWidth="0.5"
+              strokeDasharray="2,4"
+              opacity="0.2"
             />
           ))}
 
-          {/* Zodiac ring background */}
+          {/* Zodiac ring background - subtle separation */}
           <circle
             cx={center}
             cy={center}
             r={zodiacRadius}
             fill="none"
-            stroke="hsl(45, 93%, 58%)"
-            strokeWidth="1.5"
-            opacity="0.4"
+            stroke="#8B7355"
+            strokeWidth="1"
+            opacity="0.15"
           />
 
           {/* Inner circle */}
@@ -377,13 +372,13 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
             cx={center}
             cy={center}
             r={innerRadius}
-            fill="hsl(222, 47%, 8%)"
-            stroke="hsl(45, 93%, 58%)"
-            strokeWidth="1.5"
-            opacity="0.6"
+            fill="url(#bgGradient)"
+            stroke="#f59e0b"
+            strokeWidth="1"
+            opacity="0.15"
           />
 
-          {/* House division lines */}
+          {/* House division lines - reduced to 15% opacity */}
           {houseDivisions.map((line, i) => (
             <motion.line
               key={i}
@@ -391,16 +386,16 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
-              stroke="hsl(45, 93%, 58%)"
-              strokeWidth="1.5"
-              opacity="0.5"
+              stroke="#f59e0b"
+              strokeWidth="1"
+              opacity="0.15"
               initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.5 }}
-              transition={{ duration: 0.5, delay: i * 0.05 }}
+              animate={{ pathLength: 1, opacity: 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.03 }}
             />
           ))}
 
-          {/* House numbers - larger for mobile readability */}
+          {/* House numbers - reduced size and 60% opacity */}
           {houseNumbers.map((pos, i) => (
             <motion.text
               key={i}
@@ -408,18 +403,20 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y={pos.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill="hsl(45, 93%, 58%)"
-              fontSize="17"
-              fontWeight="bold"
+              fill="#f59e0b"
+              fontSize="14"
+              fontWeight="600"
+              opacity="0.6"
+              className="select-none"
               initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.5 + i * 0.05 }}
+              animate={{ opacity: 0.6, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.4 + i * 0.03 }}
             >
               {pos.house}
             </motion.text>
           ))}
 
-          {/* Zodiac symbols - larger and more visible */}
+          {/* Zodiac symbols - muted brass/gold at 40% opacity */}
           {zodiacPositions.map((pos, i) => (
             <motion.text
               key={i}
@@ -427,12 +424,13 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y={pos.y}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill="hsl(47, 60%, 75%)"
-              fontSize="22"
-              fontWeight="500"
+              fill="#8B7355"
+              fontSize="18"
+              fontWeight="400"
+              className="select-none"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.85 }}
-              transition={{ duration: 0.5, delay: 0.8 + i * 0.03 }}
+              animate={{ opacity: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.6 + i * 0.02 }}
             >
               {pos.symbol}
             </motion.text>
@@ -444,9 +442,9 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               initial={{ opacity: 0, scale: 0 }}
               animate={{ 
                 opacity: 1, 
-                scale: hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 1.15 : 1 
+                scale: hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 1.1 : 1 
               }}
-              transition={{ duration: 0.5, delay: 1.2, scale: { duration: 0.2 } }}
+              transition={{ duration: 0.2, delay: 1 }}
               style={{ cursor: 'pointer' }}
               onMouseEnter={() => {
                 setHoveredPlanet({
@@ -465,43 +463,48 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
                   ? null 
                   : { ...ascendantPosition, id: 100, name: 'Ascendant' }
               )}
-              filter="url(#glow-Ascendant)"
+              filter={hoveredPlanet?.id === 100 ? "url(#glow-hover-Ascendant)" : "url(#glow-Ascendant)"}
             >
+              {/* Inner glow circle */}
               <circle
                 cx={ascendantDisplayPos.x}
                 cy={ascendantDisplayPos.y}
-                r={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 24 : 20}
-                fill="hsl(45, 93%, 58%)"
+                r={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 26 : 24}
+                fill="#FCD34D"
+                opacity={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 0.25 : 0.15}
+              />
+              {/* Outer ring */}
+              <circle
+                cx={ascendantDisplayPos.x}
+                cy={ascendantDisplayPos.y}
+                r={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 30 : 28}
+                fill="none"
+                stroke="#FCD34D"
+                strokeWidth="1.5"
                 opacity={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 0.35 : 0.2}
               />
-              <circle
-                cx={ascendantDisplayPos.x}
-                cy={ascendantDisplayPos.y}
-                r={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 28 : 24}
-                fill="none"
-                stroke="hsl(45, 93%, 58%)"
-                strokeWidth="1"
-                opacity={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 0.4 : 0.15}
-              />
+              {/* Symbol - crisp white */}
               <text
                 x={ascendantDisplayPos.x}
                 y={ascendantDisplayPos.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fill="hsl(45, 93%, 58%)"
-                fontSize={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 24 : 20}
+                fill="#FFFFFF"
+                fontSize={hoveredPlanet?.id === 100 || selectedPlanet?.id === 100 ? 26 : 24}
                 fontWeight="bold"
+                className="select-none"
               >
                 લ
               </text>
             </motion.g>
           )}
 
-          {/* Planets - positioned by house */}
+          {/* Planets - vibrant focal points */}
           {planetPositions.map((planet, i) => {
-            const config = PLANET_CONFIG[planet.name] || { symbol: '?', color: 'white', glowColor: 'white' };
+            const config = PLANET_CONFIG[planet.name] || { symbol: '?', color: '#FFFFFF', glowColor: '#FFFFFF' };
             const isHovered = hoveredPlanet?.id === planet.id;
             const isSelected = selectedPlanet?.id === planet.id;
+            const isActive = isHovered || isSelected;
 
             return (
               <motion.g
@@ -509,12 +512,12 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ 
                   opacity: 1, 
-                  scale: isHovered || isSelected ? 1.15 : 1,
+                  scale: isActive ? 1.1 : 1,
                 }}
                 transition={{ 
-                  duration: 0.5, 
-                  delay: 1 + i * 0.1,
-                  scale: { duration: 0.2 }
+                  duration: 0.2,
+                  delay: 0.8 + i * 0.08,
+                  scale: { duration: 0.2, ease: 'easeInOut' }
                 }}
                 style={{ cursor: 'pointer' }}
                 onMouseEnter={() => {
@@ -526,78 +529,85 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
                   setTooltipPos(null);
                 }}
                 onClick={() => setSelectedPlanet(selectedPlanet?.id === planet.id ? null : planet)}
-                filter={`url(#glow-${planet.name})`}
+                filter={isActive ? `url(#glow-hover-${planet.name})` : `url(#glow-${planet.name})`}
               >
-                {/* Planet glow halo */}
+                {/* Inner glow - 20% opacity, matches planet color */}
                 <circle
                   cx={planet.x}
                   cy={planet.y}
-                  r={isHovered || isSelected ? 26 : 22}
+                  r={isActive ? 28 : 25}
                   fill={config.color}
-                  opacity={isHovered || isSelected ? 0.35 : 0.2}
+                  opacity={isActive ? 0.25 : 0.15}
+                  style={{ transition: 'all 0.2s ease-in-out' }}
                 />
                 
-                {/* Outer glow ring */}
+                {/* Outer ring */}
                 <circle
                   cx={planet.x}
                   cy={planet.y}
-                  r={isHovered || isSelected ? 30 : 26}
+                  r={isActive ? 32 : 29}
                   fill="none"
                   stroke={config.color}
-                  strokeWidth="1"
-                  opacity={isHovered || isSelected ? 0.4 : 0.15}
+                  strokeWidth="1.5"
+                  opacity={isActive ? 0.4 : 0.2}
+                  style={{ transition: 'all 0.2s ease-in-out' }}
                 />
                 
-                {/* Planet symbol */}
+                {/* Planet symbol - crisp white */}
                 <text
                   x={planet.x}
                   y={planet.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fill={config.color}
-                  fontSize={isHovered || isSelected ? 26 : 23}
+                  fill="#FFFFFF"
+                  fontSize={isActive ? 28 : 25}
                   fontWeight="bold"
+                  className="select-none"
+                  style={{ transition: 'font-size 0.2s ease-in-out' }}
                 >
                   {config.symbol}
                 </text>
 
-                {/* Planet label */}
-                <motion.text
+                {/* Degree label - muted gray, smaller, 70% opacity */}
+                <text
                   x={planet.x}
-                  y={planet.y + 30}
+                  y={planet.y + 32}
                   textAnchor="middle"
-                  fill="hsl(47, 37%, 82%)"
-                  fontSize="9"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: isHovered || isSelected ? 1 : 0.7 }}
+                  fill="#9CA3AF"
+                  fontSize="7"
+                  opacity={isActive ? 0.9 : 0.7}
+                  className="select-none"
+                  style={{ transition: 'opacity 0.2s ease-in-out' }}
                 >
                   {planet.sign.substring(0, 3)} {planet.degree.toFixed(0)}°
-                </motion.text>
+                </text>
               </motion.g>
             );
           })}
 
-          {/* Center emblem */}
+          {/* Center emblem - refined */}
           <motion.g
             initial={{ opacity: 0, rotate: -180 }}
             animate={{ opacity: 1, rotate: 0 }}
-            transition={{ duration: 1, delay: 1.5 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
           >
             <circle
               cx={center}
               cy={center}
-              r={45}
-              fill="hsl(222, 47%, 11%)"
-              stroke="hsl(45, 93%, 58%)"
-              strokeWidth="2"
+              r={48}
+              fill="url(#bgGradient)"
+              stroke="#f59e0b"
+              strokeWidth="1.5"
+              opacity="0.8"
             />
             <text
               x={center}
-              y={center - 10}
+              y={center - 12}
               textAnchor="middle"
-              fill="hsl(45, 93%, 58%)"
-              fontSize="11"
+              fill="#f59e0b"
+              fontSize="10"
               fontWeight="bold"
+              className="select-none"
             >
               LAGNA
             </text>
@@ -605,8 +615,10 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               x={center}
               y={center + 10}
               textAnchor="middle"
-              fill="hsl(47, 37%, 82%)"
-              fontSize="12"
+              fill="#E5E7EB"
+              fontSize="13"
+              fontWeight="500"
+              className="select-none"
             >
               {chartData.ascendant_sign}
             </text>
@@ -620,42 +632,41 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.15 }}
               className="absolute z-20 pointer-events-none"
               style={{
-                // Convert SVG coords to percentage of container
-                // The SVG viewBox is 600x600, so we calculate percentage
                 left: `${(tooltipPos.x / 600) * 100}%`,
                 top: `${(tooltipPos.y / 600) * 100}%`,
-                transform: 'translate(-50%, -120%)',
+                transform: 'translate(-50%, -130%)',
               }}
             >
-              <div className="bg-midnight/95 backdrop-blur-lg border border-gold/40 rounded-xl p-3 shadow-2xl min-w-[180px]">
+              <div className="bg-[#0f172a]/95 backdrop-blur-xl border border-[#8B7355]/30 rounded-xl p-3 shadow-2xl min-w-[170px]">
                 <div className="flex items-center gap-2 mb-2">
                   <span 
-                    className="text-xl"
+                    className="text-lg"
                     style={{ color: PLANET_CONFIG[hoveredPlanet.name]?.color }}
                   >
                     {PLANET_CONFIG[hoveredPlanet.name]?.symbol}
                   </span>
-                  <span className="text-cream font-semibold text-sm">{hoveredPlanet.name}</span>
+                  <span className="text-white font-semibold text-sm">{hoveredPlanet.name}</span>
                   {hoveredPlanet.is_retrograde && (
-                    <span className="text-[10px] text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded">R</span>
+                    <span className="text-[9px] text-amber-400 bg-amber-400/10 px-1 py-0.5 rounded">R</span>
                   )}
                 </div>
-                <div className="space-y-0.5 text-xs">
-                  <p className="text-cream-muted">
-                    <span className="text-cream">Sign:</span> {hoveredPlanet.sign}
+                <div className="space-y-0.5 text-[11px]">
+                  <p className="text-[#9CA3AF]">
+                    <span className="text-[#E5E7EB]">Sign:</span> {hoveredPlanet.sign}
                   </p>
-                  <p className="text-cream-muted">
-                    <span className="text-cream">Degree:</span> {hoveredPlanet.degree.toFixed(2)}°
+                  <p className="text-[#9CA3AF]">
+                    <span className="text-[#E5E7EB]">Degree:</span> {hoveredPlanet.degree.toFixed(2)}°
                   </p>
-                  <p className="text-cream-muted">
-                    <span className="text-cream">House:</span> {getOrdinal(calculateHouse(hoveredPlanet.sign_id, ascendant_sign_id))}
+                  <p className="text-[#9CA3AF]">
+                    <span className="text-[#E5E7EB]">House:</span> {getOrdinal(calculateHouse(hoveredPlanet.sign_id, ascendant_sign_id))}
                   </p>
                   {hoveredPlanet.nakshatra && (
-                    <p className="text-cream-muted">
-                      <span className="text-cream">Nakshatra:</span> {hoveredPlanet.nakshatra}
-                      {hoveredPlanet.nakshatra_pada && ` (Pada ${hoveredPlanet.nakshatra_pada})`}
+                    <p className="text-[#9CA3AF]">
+                      <span className="text-[#E5E7EB]">Nakshatra:</span> {hoveredPlanet.nakshatra}
+                      {hoveredPlanet.nakshatra_pada && ` (P${hoveredPlanet.nakshatra_pada})`}
                     </p>
                   )}
                 </div>
@@ -674,7 +685,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="w-full max-w-xl overflow-hidden"
           >
-            <div className="bg-midnight/80 backdrop-blur-lg border border-gold/30 rounded-2xl p-6">
+            <div className="bg-[#0f172a]/90 backdrop-blur-xl border border-[#8B7355]/20 rounded-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <span 
@@ -684,7 +695,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
                     {PLANET_CONFIG[selectedPlanet.name]?.symbol}
                   </span>
                   <div>
-                    <h3 className="text-xl font-semibold text-cream">{selectedPlanet.name}</h3>
+                    <h3 className="text-xl font-semibold text-white">{selectedPlanet.name}</h3>
                     {selectedPlanet.is_retrograde && (
                       <span className="text-xs text-amber-400">Retrograde</span>
                     )}
@@ -692,45 +703,45 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
                 </div>
                 <button
                   onClick={() => setSelectedPlanet(null)}
-                  className="text-cream-muted hover:text-cream transition-colors text-xl"
+                  className="text-[#9CA3AF] hover:text-white transition-colors text-xl"
                 >
                   ×
                 </button>
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-midnight/50 rounded-lg p-3">
-                  <p className="text-cream-muted text-xs mb-1">Sign</p>
-                  <p className="text-cream font-medium">{selectedPlanet.sign}</p>
+                <div className="bg-[#1e293b]/50 rounded-lg p-3">
+                  <p className="text-[#9CA3AF] text-xs mb-1">Sign</p>
+                  <p className="text-white font-medium">{selectedPlanet.sign}</p>
                 </div>
-                <div className="bg-midnight/50 rounded-lg p-3">
-                  <p className="text-cream-muted text-xs mb-1">Degree</p>
-                  <p className="text-cream font-medium">{selectedPlanet.degree.toFixed(2)}°</p>
+                <div className="bg-[#1e293b]/50 rounded-lg p-3">
+                  <p className="text-[#9CA3AF] text-xs mb-1">Degree</p>
+                  <p className="text-white font-medium">{selectedPlanet.degree.toFixed(2)}°</p>
                 </div>
-                <div className="bg-midnight/50 rounded-lg p-3">
-                  <p className="text-cream-muted text-xs mb-1">House</p>
-                  <p className="text-cream font-medium">{getOrdinal(calculateHouse(selectedPlanet.sign_id, ascendant_sign_id))}</p>
+                <div className="bg-[#1e293b]/50 rounded-lg p-3">
+                  <p className="text-[#9CA3AF] text-xs mb-1">House</p>
+                  <p className="text-white font-medium">{getOrdinal(calculateHouse(selectedPlanet.sign_id, ascendant_sign_id))}</p>
                 </div>
-                <div className="bg-midnight/50 rounded-lg p-3">
-                  <p className="text-cream-muted text-xs mb-1">Sign Lord</p>
-                  <p className="text-cream font-medium">{selectedPlanet.sign_lord}</p>
+                <div className="bg-[#1e293b]/50 rounded-lg p-3">
+                  <p className="text-[#9CA3AF] text-xs mb-1">Sign Lord</p>
+                  <p className="text-white font-medium">{selectedPlanet.sign_lord}</p>
                 </div>
                 {selectedPlanet.nakshatra && (
                   <>
-                    <div className="bg-midnight/50 rounded-lg p-3">
-                      <p className="text-cream-muted text-xs mb-1">Nakshatra</p>
-                      <p className="text-cream font-medium">{selectedPlanet.nakshatra}</p>
+                    <div className="bg-[#1e293b]/50 rounded-lg p-3">
+                      <p className="text-[#9CA3AF] text-xs mb-1">Nakshatra</p>
+                      <p className="text-white font-medium">{selectedPlanet.nakshatra}</p>
                     </div>
                     {selectedPlanet.nakshatra_pada && (
-                      <div className="bg-midnight/50 rounded-lg p-3">
-                        <p className="text-cream-muted text-xs mb-1">Pada</p>
-                        <p className="text-cream font-medium">{selectedPlanet.nakshatra_pada}</p>
+                      <div className="bg-[#1e293b]/50 rounded-lg p-3">
+                        <p className="text-[#9CA3AF] text-xs mb-1">Pada</p>
+                        <p className="text-white font-medium">{selectedPlanet.nakshatra_pada}</p>
                       </div>
                     )}
                     {selectedPlanet.nakshatra_lord && (
-                      <div className="bg-midnight/50 rounded-lg p-3">
-                        <p className="text-cream-muted text-xs mb-1">Nakshatra Lord</p>
-                        <p className="text-cream font-medium">{selectedPlanet.nakshatra_lord}</p>
+                      <div className="bg-[#1e293b]/50 rounded-lg p-3">
+                        <p className="text-[#9CA3AF] text-xs mb-1">Nakshatra Lord</p>
+                        <p className="text-white font-medium">{selectedPlanet.nakshatra_lord}</p>
                       </div>
                     )}
                   </>
@@ -741,76 +752,76 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
         )}
       </AnimatePresence>
 
-      {/* Glassmorphism Cards - 4 cards now including Birth Nakshatra */}
+      {/* Glassmorphism Cards - refined styling */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-4xl">
         {/* Ascendant Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.8 }}
-          className="bg-gradient-to-br from-gold/10 to-gold/5 backdrop-blur-lg border border-gold/30 rounded-2xl p-5 text-center"
+          transition={{ delay: 1.4 }}
+          className="bg-gradient-to-br from-[#FCD34D]/10 to-[#FCD34D]/5 backdrop-blur-lg border border-[#FCD34D]/20 rounded-2xl p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gold/20 flex items-center justify-center">
-            <span className="text-2xl text-gold">લ</span>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#FCD34D]/15 flex items-center justify-center">
+            <span className="text-2xl text-[#FCD34D]">લ</span>
           </div>
-          <p className="text-cream-muted text-sm mb-1">Ascendant (Lagna)</p>
-          <p className="text-cream font-semibold text-xl">{chartData.ascendant_sign}</p>
+          <p className="text-[#9CA3AF] text-sm mb-1">Ascendant (Lagna)</p>
+          <p className="text-white font-semibold text-xl">{chartData.ascendant_sign}</p>
           {ascendantPosition && (
-            <p className="text-gold/80 text-sm mt-1">{ascendantPosition.degree.toFixed(1)}°</p>
+            <p className="text-[#FCD34D]/70 text-sm mt-1">{ascendantPosition.degree.toFixed(1)}°</p>
           )}
-          <p className="text-cream-muted text-xs mt-1">Lord: {chartData.ascendant_sign_lord}</p>
+          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.ascendant_sign_lord}</p>
         </motion.div>
 
         {/* Birth Nakshatra Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.85 }}
-          className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 backdrop-blur-lg border border-purple-400/30 rounded-2xl p-5 text-center"
+          transition={{ delay: 1.5 }}
+          className="bg-gradient-to-br from-[#A855F7]/10 to-[#A855F7]/5 backdrop-blur-lg border border-[#A855F7]/20 rounded-2xl p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-400/20 flex items-center justify-center">
-            <span className="text-2xl" style={{ color: 'hsl(270, 60%, 70%)' }}>✧</span>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#A855F7]/15 flex items-center justify-center">
+            <span className="text-2xl text-[#A855F7]">✧</span>
           </div>
-          <p className="text-cream-muted text-sm mb-1">Birth Nakshatra</p>
-          <p className="text-cream font-semibold text-xl">{chartData.nakshatra}</p>
-          <p className="text-purple-300/80 text-sm mt-1">Pada {chartData.nakshatra_pada}</p>
-          <p className="text-cream-muted text-xs mt-1">Lord: {chartData.nakshatra_lord}</p>
+          <p className="text-[#9CA3AF] text-sm mb-1">Birth Nakshatra</p>
+          <p className="text-white font-semibold text-xl">{chartData.nakshatra}</p>
+          <p className="text-[#A855F7]/70 text-sm mt-1">Pada {chartData.nakshatra_pada}</p>
+          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.nakshatra_lord}</p>
         </motion.div>
 
-        {/* Moon Card - without nakshatra */}
+        {/* Moon Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.9 }}
-          className="bg-gradient-to-br from-slate-500/10 to-slate-500/5 backdrop-blur-lg border border-slate-400/30 rounded-2xl p-5 text-center"
+          transition={{ delay: 1.6 }}
+          className="bg-gradient-to-br from-[#E5E7EB]/10 to-[#E5E7EB]/5 backdrop-blur-lg border border-[#E5E7EB]/15 rounded-2xl p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-400/20 flex items-center justify-center">
-            <span className="text-2xl" style={{ color: 'hsl(210, 20%, 85%)' }}>☽</span>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#E5E7EB]/15 flex items-center justify-center">
+            <span className="text-2xl text-[#E5E7EB]">☽</span>
           </div>
-          <p className="text-cream-muted text-sm mb-1">Moon (Chandra)</p>
-          <p className="text-cream font-semibold text-xl">{chartData.moon_sign}</p>
+          <p className="text-[#9CA3AF] text-sm mb-1">Moon (Chandra)</p>
+          <p className="text-white font-semibold text-xl">{chartData.moon_sign}</p>
           {moonPosition && (
-            <p className="text-slate-300/80 text-sm mt-1">{moonPosition.degree.toFixed(1)}°</p>
+            <p className="text-[#E5E7EB]/70 text-sm mt-1">{moonPosition.degree.toFixed(1)}°</p>
           )}
-          <p className="text-cream-muted text-xs mt-1">Lord: {chartData.moon_sign_lord}</p>
+          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.moon_sign_lord}</p>
         </motion.div>
 
         {/* Sun Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.0 }}
-          className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 backdrop-blur-lg border border-amber-400/30 rounded-2xl p-5 text-center"
+          transition={{ delay: 1.7 }}
+          className="bg-gradient-to-br from-[#FCD34D]/10 to-[#FCD34D]/5 backdrop-blur-lg border border-[#FCD34D]/20 rounded-2xl p-5 text-center"
         >
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-400/20 flex items-center justify-center">
-            <span className="text-2xl" style={{ color: 'hsl(45, 93%, 58%)' }}>☉</span>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#FCD34D]/15 flex items-center justify-center">
+            <span className="text-2xl text-[#FCD34D]">☉</span>
           </div>
-          <p className="text-cream-muted text-sm mb-1">Sun (Surya)</p>
-          <p className="text-cream font-semibold text-xl">{chartData.sun_sign}</p>
+          <p className="text-[#9CA3AF] text-sm mb-1">Sun (Surya)</p>
+          <p className="text-white font-semibold text-xl">{chartData.sun_sign}</p>
           {sunPosition && (
-            <p className="text-gold/80 text-sm mt-1">{sunPosition.degree.toFixed(1)}°</p>
+            <p className="text-[#FCD34D]/70 text-sm mt-1">{sunPosition.degree.toFixed(1)}°</p>
           )}
-          <p className="text-cream-muted text-xs mt-1">Lord: {chartData.sun_sign_lord}</p>
+          <p className="text-[#9CA3AF] text-xs mt-1">Lord: {chartData.sun_sign_lord}</p>
         </motion.div>
       </div>
     </div>
