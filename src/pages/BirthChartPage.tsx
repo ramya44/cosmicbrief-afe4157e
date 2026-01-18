@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { supabase } from '@/integrations/supabase/client';
+import { getDeviceId } from '@/lib/deviceId';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { BirthChartWheel } from '@/components/BirthChartWheel';
 import { SaveProfileDialog } from '@/components/SaveProfileDialog';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Save, Share2 } from 'lucide-react';
+import { Sparkles, Calendar, Clock, MapPin, Save, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Matches the KundliResult from get-kundli-data edge function
@@ -204,22 +206,84 @@ const SouthIndianChart = ({
 
 const BirthChartPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const kundliIdFromUrl = searchParams.get('id');
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedData = sessionStorage.getItem('birth_chart_data');
-    if (storedData) {
-      try {
-        const parsed = JSON.parse(storedData);
-        setChartData(parsed);
-      } catch {
+    const loadData = async () => {
+      // First try to load from URL parameter (shared link)
+      if (kundliIdFromUrl) {
+        try {
+          const deviceId = getDeviceId();
+          // Try as owner first, then as shared
+          let { data } = await supabase.functions.invoke('get-vedic-kundli-details', {
+            body: { kundli_id: kundliIdFromUrl, device_id: deviceId },
+          });
+
+          if (!data) {
+            // Try as shared link
+            const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
+              body: { kundli_id: kundliIdFromUrl, shared: true },
+            });
+            data = sharedResult.data;
+          }
+
+          if (data && data.planetary_positions) {
+            setChartData({
+              birthDate: data.birth_date,
+              birthTime: data.birth_time,
+              birthPlace: data.birth_place,
+              name: data.name,
+              lat: 0,
+              lon: 0,
+              kundliId: data.id,
+              kundliData: {
+                nakshatra: data.nakshatra || '',
+                nakshatra_id: data.nakshatra_id || 1,
+                nakshatra_pada: data.nakshatra_pada || 1,
+                nakshatra_lord: data.nakshatra_lord || '',
+                moon_sign: data.moon_sign || '',
+                moon_sign_id: data.moon_sign_id || 1,
+                moon_sign_lord: data.moon_sign_lord || '',
+                sun_sign: data.sun_sign || '',
+                sun_sign_id: data.sun_sign_id || 1,
+                sun_sign_lord: data.sun_sign_lord || '',
+                ascendant_sign: data.ascendant_sign || '',
+                ascendant_sign_id: data.ascendant_sign_id || 1,
+                ascendant_sign_lord: data.ascendant_sign_lord || '',
+                planetary_positions: data.planetary_positions,
+                animal_sign: data.animal_sign,
+                deity: data.deity,
+              },
+            });
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // Fall through to sessionStorage
+        }
+      }
+
+      // Fall back to sessionStorage
+      const storedData = sessionStorage.getItem('birth_chart_data');
+      if (storedData) {
+        try {
+          const parsed = JSON.parse(storedData);
+          setChartData(parsed);
+        } catch {
+          navigate('/get-birth-chart');
+        }
+      } else {
         navigate('/get-birth-chart');
       }
-    } else {
-      navigate('/get-birth-chart');
-    }
-  }, [navigate]);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [navigate, kundliIdFromUrl]);
 
   const handleSaveSuccess = () => {
     toast.success('Birth chart saved to your profile!');
@@ -227,10 +291,15 @@ const BirthChartPage = () => {
   };
 
   const handleShare = async () => {
+    // Build shareable URL with kundliId
+    const shareUrl = chartData?.kundliId
+      ? `${window.location.origin}/#/birth-chart?id=${chartData.kundliId}`
+      : window.location.href;
+
     const shareData = {
       title: 'My Vedic Birth Chart | Cosmic Brief',
       text: `Check out my Vedic birth chart - ${kundliData?.ascendant_sign} Ascendant, ${kundliData?.moon_sign} Moon`,
-      url: window.location.href,
+      url: shareUrl,
     };
 
     // Check if native share is available (iOS/mobile)
@@ -243,15 +312,15 @@ const BirthChartPage = () => {
     } else {
       // Fallback: copy link to clipboard
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(shareUrl);
         toast.success('Link copied to clipboard!');
-      } catch (err) {
+      } catch {
         toast.error('Failed to copy link');
       }
     }
   };
 
-  if (!chartData) {
+  if (loading || !chartData) {
     return (
       <div className="relative min-h-screen bg-celestial flex items-center justify-center">
         <StarField />
@@ -299,16 +368,6 @@ const BirthChartPage = () => {
 
       <div className="relative min-h-screen bg-celestial">
         <StarField />
-
-        {/* Header */}
-        <header className="relative z-20 border-b border-border/30 bg-midnight/80 backdrop-blur-md sticky top-0">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/get-birth-chart" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2 font-sans">
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Link>
-          </div>
-        </header>
 
         <main className="relative z-10 container mx-auto px-4 py-12 max-w-5xl">
           {/* Birth Details Summary */}

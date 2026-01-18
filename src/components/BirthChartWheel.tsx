@@ -37,6 +37,7 @@ interface KundliData {
 
 interface BirthChartWheelProps {
   chartData: KundliData;
+  hideDetailCards?: boolean;
 }
 
 // Refined planet colors - vibrant focal points
@@ -75,7 +76,7 @@ const calculateHouse = (planetSignId: number, ascendantSignId: number): number =
   return house;
 };
 
-export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
+export const BirthChartWheel = ({ chartData, hideDetailCards = false }: BirthChartWheelProps) => {
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetPosition | null>(null);
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetPosition | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
@@ -322,10 +323,10 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
           }}
         />
         
-        <svg 
+        <svg
           viewBox={`0 0 ${size} ${size}`}
           className="w-full max-w-[600px] h-auto md:w-[600px] md:h-[600px] relative z-10"
-          style={{ minWidth: '320px', maxWidth: '600px' }}
+          style={{ minWidth: '360px', maxWidth: '600px' }}
         >
           <defs>
             {/* Radial gradient for background depth */}
@@ -411,7 +412,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
             opacity="0.25"
           />
 
-          {/* Nakshatra boundaries - very subtle */}
+          {/* Nakshatra boundaries - dotted lines */}
           {nakshatraBoundaries.map((line, i) => (
             <line
               key={`nakshatra-${i}`}
@@ -419,10 +420,11 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
-              stroke="#8B7355"
-              strokeWidth="0.5"
-              strokeDasharray="2,4"
-              opacity="0.2"
+              stroke="#d4af37"
+              strokeWidth="1"
+              strokeDasharray="1,4"
+              strokeLinecap="round"
+              opacity="0.4"
             />
           ))}
 
@@ -834,6 +836,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
       </AnimatePresence>
 
       {/* Glassmorphism Cards - mobile optimized */}
+      {!hideDetailCards && (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 w-full max-w-4xl">
         {/* Ascendant Card */}
         <motion.div
@@ -905,6 +908,7 @@ export const BirthChartWheel = ({ chartData }: BirthChartWheelProps) => {
           <p className="text-[#9CA3AF] text-[10px] sm:text-xs mt-0.5 sm:mt-1">Lord: {chartData.sun_sign_lord}</p>
         </motion.div>
       </div>
+      )}
     </div>
   );
 };

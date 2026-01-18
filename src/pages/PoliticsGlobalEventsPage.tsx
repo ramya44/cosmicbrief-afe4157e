@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { StarField } from "@/components/StarField";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 
@@ -22,7 +22,7 @@ const PoliticsGlobalEventsPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://2026forecast.com/2026-astrology-forecast/politics-and-global-events"
+      "@id": "https://cosmicbrief.com/blog/politics-and-global-events"
     },
     "keywords": ["political astrology 2026", "saturn in aries politics", "neptune in aries", "2026 global events", "astrology predictions politics", "pluto in aquarius usa"]
   };
@@ -71,29 +71,28 @@ const PoliticsGlobalEventsPage = () => {
       <Helmet>
         <title>2026 Political Astrology: What Aries Energy Means for Global Events</title>
         <meta name="description" content="Explore how Saturn and Neptune in Aries may shape global politics in 2026. Political astrology analysis of nationalism, leadership shifts, and grassroots movements." />
-        <link rel="canonical" href="https://2026forecast.com/2026-astrology-forecast/politics-and-global-events" />
+        <link rel="canonical" href="https://cosmicbrief.com/blog/politics-and-global-events" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
       </Helmet>
       <StarField />
       
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        {/* Back link */}
-        <Link
-          to="/2026-astrology-forecast"
-          className="inline-flex items-center gap-2 text-cream/60 hover:text-cream transition-colors mb-12 font-sans"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to 2026 Forecast
-        </Link>
-
         {/* Title */}
         <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
           2026 Political Astrology
         </h1>
-        <p className="text-lg text-gold mb-8">
+        <p className="text-lg text-gold mb-4">
           What Aries Energy Means for Global Events
         </p>
+
+        {/* Author and Date */}
+        <div className="flex items-center gap-3 mb-8">
+          <img src="/maya.png" alt="Maya G." className="w-8 h-8 rounded-full" />
+          <p className="text-cream/50 text-sm">
+            By Maya G. · January 1, 2025
+          </p>
+        </div>
 
         {/* Scope Note */}
         <p className="text-cream/60 italic text-sm mb-12 border-l-2 border-gold/30 pl-4">
@@ -389,15 +388,15 @@ const PoliticsGlobalEventsPage = () => {
         <div className="mt-16 pt-12 border-t border-cream/10">
           <p className="text-cream/60 mb-6 text-sm">Continue reading:</p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link 
-              to="/2026-astrology-forecast/why-2026-is-a-turning-point" 
+            <Link
+              to="/blog/why-2026-is-a-turning-point"
               className="flex-1 p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors"
             >
               <p className="text-gold text-sm mb-1">Deep Dive</p>
               <p className="text-cream">Why 2026 Is a Turning Point</p>
             </Link>
-            <Link 
-              to="/2026-astrology-forecast" 
+            <Link
+              to="/blog"
               className="flex-1 p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors"
             >
               <p className="text-gold text-sm mb-1">Overview</p>

@@ -1,6 +1,6 @@
 import { StarField } from '@/components/StarField';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ContactPage = () => {
@@ -9,19 +9,6 @@ const ContactPage = () => {
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
       <StarField />
-
-      {/* Back button */}
-      <div className="absolute top-6 left-6 z-20">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/')}
-          className="text-cream-muted hover:text-cream"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-      </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
         <div className="w-full max-w-lg text-center">

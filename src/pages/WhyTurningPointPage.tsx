@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { StarField } from "@/components/StarField";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 
@@ -8,381 +8,440 @@ const WhyTurningPointPage = () => {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "Why 2026 Is a Turning Point in Astrology: Major Planetary Transits Explained",
-    "description": "A comprehensive analysis of the major planetary transits in 2026 including Saturn and Neptune entering Aries, Jupiter in Cancer, Uranus in Gemini, and Pluto in Aquarius.",
+    "headline": "Why 2026 Is a Turning Point in Astrology",
+    "description": "Jupiter exalted in Cancer, the Rahu-Ketu nodal shift, a five-planet stellium in Aquarius, and more. A Vedic astrology breakdown of 2026's major transits.",
     "datePublished": "2025-01-01",
-    "dateModified": "2025-01-10",
+    "dateModified": "2025-01-01",
     "author": {
-      "@type": "Organization",
-      "name": "2026 Astrology Forecast"
+      "@type": "Person",
+      "name": "Maya G."
     },
     "publisher": {
       "@type": "Organization",
-      "name": "2026 Astrology Forecast"
+      "name": "Cosmic Brief"
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://2026forecast.com/2026-astrology-forecast/why-2026-is-a-turning-point"
+      "@id": "https://cosmicbrief.com/blog/why-2026-is-a-turning-point"
     },
-    "keywords": ["astrology 2026", "saturn in aries 2026", "neptune in aries 2026", "jupiter in cancer", "uranus in gemini", "pluto in aquarius", "2026 planetary transits", "astrological turning point"],
-    "about": [
-      {"@type": "Thing", "name": "Saturn in Aries"},
-      {"@type": "Thing", "name": "Neptune in Aries"},
-      {"@type": "Thing", "name": "Jupiter in Cancer"},
-      {"@type": "Thing", "name": "Uranus in Gemini"},
-      {"@type": "Thing", "name": "Pluto in Aquarius"}
-    ]
-  };
-
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is the most important astrological event in 2026?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "The most significant shift is Saturn leaving Pisces for Aries in May 2026, combined with Neptune making the same move in March. This double transition from water to fire changes the entire energetic landscape from passive to active."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How is 2026 different from 2025 astrologically?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "While 2025 introduced us to Aries energy through brief previews (Saturn and Neptune both dipped into Aries before retrograding back to Pisces), 2026 is when these planets settle permanently in Aries. The difference is between getting a taste of something and fully committing to it. Additionally, Jupiter's presence in Cancer through June 2026 provides emotional grounding."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Will 2026 be a good year?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "'Good' depends on your relationship with change and action. 2026 appears to favor those ready to take risks, start new ventures, and embrace discomfort. It may be challenging for those who prefer stability, careful planning, or waiting for perfect conditions."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What sign will be most affected in 2026?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Cardinal signs (Aries, Cancer, Libra, Capricorn) will feel these transits most intensely, as Saturn and Neptune in Aries will aspect their Sun signs directly. However, everyone will experience the shift in collective energy."
-        }
-      }
-    ]
+    "keywords": ["vedic astrology 2026", "jupiter exalted cancer", "rahu ketu transit 2026", "aquarius stellium 2026", "saturn pisces 2026", "2026 planetary transits"]
   };
 
   return (
     <div className="min-h-screen bg-midnight text-cream relative overflow-hidden">
       <Helmet>
-        <title>Why 2026 Is a Turning Point in Astrology | Major Transits Explained</title>
-        <meta name="description" content="Deep dive into 2026's major planetary transits: Saturn and Neptune in Aries, Jupiter in Cancer, Uranus in Gemini, Pluto in Aquarius. Understand the cosmic shift." />
-        <link rel="canonical" href="https://2026forecast.com/2026-astrology-forecast/why-2026-is-a-turning-point" />
+        <title>Why 2026 Is a Turning Point in Astrology | Cosmic Brief</title>
+        <meta name="description" content="Jupiter exalted in Cancer, the Rahu-Ketu nodal shift, a five-planet stellium in Aquarius, and more. A Vedic astrology breakdown of 2026's major transits." />
+        <link rel="canonical" href="https://cosmicbrief.com/blog/why-2026-is-a-turning-point" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-        <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
       </Helmet>
       <StarField />
-      
+
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        {/* Back link */}
-        <Link
-          to="/2026-astrology-forecast"
-          className="inline-flex items-center gap-2 text-cream/60 hover:text-cream transition-colors mb-12 font-sans"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to 2026 Forecast
-        </Link>
+        {/* Breadcrumb */}
+        <div className="mb-8">
+          <Link to="/blog" className="text-cream/50 hover:text-cream text-sm">
+            Journal
+          </Link>
+          <span className="text-cream/30 mx-2">/</span>
+          <Link to="/blog/category/transits" className="text-cream/50 hover:text-cream text-sm">
+            Cosmic Weather
+          </Link>
+        </div>
+
+        {/* Category Badge */}
+        <span className="inline-block px-3 py-1 text-xs bg-gold/10 text-gold rounded mb-4">
+          Cosmic Weather
+        </span>
 
         {/* Title */}
         <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
           Why 2026 Is a Turning Point in Astrology
         </h1>
-        <p className="text-lg text-gold mb-8">
-          Major Planetary Transits Explained
-        </p>
 
-        {/* Note */}
-        <p className="text-cream/60 italic text-sm mb-12 border-l-2 border-gold/30 pl-4">
-          Note: This analysis focuses on collective astrology and major planetary transits affecting the broader cultural and psychological landscape of 2026. It does not replace a personal astrology reading, which depends on individual birth data such as date, time, and location.
-        </p>
+        {/* Author and Date */}
+        <div className="flex items-center gap-3 mb-8">
+          <img src="/maya.png" alt="Maya G." className="w-8 h-8 rounded-full" />
+          <p className="text-cream/50 text-sm">
+            Maya G. · January 1, 2025 · 8 min read
+          </p>
+        </div>
 
         <div className="prose prose-invert max-w-none space-y-6 text-cream/80 leading-relaxed">
-          <p className="text-lg">
-            If 2025 felt like standing at the edge of something, 2026 is the year we finally jump. The cosmic difference between these two years isn't subtle. It's a complete recalibration of energy, intention, and collective destiny.
+          <p className="text-lg text-cream/90">
+            Every year has its transits. But 2026 is different.
           </p>
 
-          {/* Quick Reference Table */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-6">
-            Quick Reference: Major 2026 Transits
+          <p>
+            Three slow-moving planets shift into new positions. Jupiter reaches its most powerful placement in twelve years. The lunar nodes change signs for the first time since mid-2025, redirecting collective karma toward themes of ambition and security. And a rare alignment in February concentrates five planets in a single sign.
+          </p>
+
+          <p>
+            Astrologers — Vedic and Western alike — have been watching 2026 approach for years. Here's why.
+          </p>
+
+          {/* Jupiter Section */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
+            Jupiter Becomes Exalted
           </h2>
-          <div className="overflow-x-auto mb-12">
+
+          <p>
+            In Vedic astrology, each planet has a sign where it functions at its absolute best — its sign of "exaltation." For Jupiter, that sign is Cancer.
+          </p>
+
+          <p className="text-cream font-medium">
+            Jupiter enters Cancer on June 2, 2026 and remains there until October 30.
+          </p>
+
+          <p>
+            This matters because Jupiter is the planet of growth, wisdom, opportunity, and good fortune. When Jupiter is exalted, these qualities amplify. Doors open more easily. Optimism feels grounded rather than naive. Expansion has staying power.
+          </p>
+
+          <p>
+            Jupiter was last exalted in Cancer in 2014. Before that, 2002. This is a once-in-twelve-years event — and in 2026, it coincides with other major shifts that multiply its significance.
+          </p>
+
+          <p>
+            During these five months, Jupiter also forms a harmonious aspect with Saturn in Pisces. In Vedic terms, this creates a kind of productive tension: Saturn provides structure and discipline; Jupiter provides vision and faith. Together, they help turn aspirations into tangible results.
+          </p>
+
+          <p className="p-4 bg-gold/10 border-l-4 border-gold rounded-r-lg text-cream">
+            <strong>If you're planning a major life move</strong> — career change, business launch, relocation, marriage — June through October 2026 is worth circling.
+          </p>
+
+          {/* Nodal Shift Section */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
+            The Nodal Shift: Rahu and Ketu Change Signs
+          </h2>
+
+          <p>
+            The lunar nodes — called Rahu (North Node) and Ketu (South Node) in Vedic astrology — are not planets. They're the points where the Moon's orbit crosses the Sun's path, and they're responsible for eclipses.
+          </p>
+
+          <p>
+            In Vedic tradition, Rahu and Ketu represent karma. Rahu shows where we're hungry, ambitious, and destined to grow through unfamiliar territory. Ketu shows where we've already been — what we're releasing, what feels instinctive but no longer serves us.
+          </p>
+
+          <p>
+            The nodes move backward through the zodiac, spending about 18 months in each sign pair. On December 7, 2026, they shift:
+          </p>
+
+          <ul className="list-none space-y-3 my-6">
+            <li className="flex items-start gap-3">
+              <span className="text-gold font-bold">→</span>
+              <span><strong className="text-cream">Rahu enters Capricorn</strong> — the sign of structure, authority, career, and worldly achievement</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-gold font-bold">→</span>
+              <span><strong className="text-cream">Ketu enters Cancer</strong> — the sign of home, family, emotions, and inner security</span>
+            </li>
+          </ul>
+
+          <p>
+            This axis defines collective themes for the next year and a half. Expect cultural conversations to intensify around work-life balance, the meaning of success, institutional trust, and what "security" really means.
+          </p>
+
+          <p>
+            On a personal level, wherever Capricorn and Cancer fall in your birth chart will become activated. These houses will demand attention — growth on one end, release on the other.
+          </p>
+
+          <p className="text-cream/60 italic">
+            The last time the nodes occupied this axis was 2008-2009. Think back to what was happening globally and in your own life. Patterns may rhyme.
+          </p>
+
+          {/* Stellium Section */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
+            Five Planets in Aquarius: The February Stellium
+          </h2>
+
+          <p>
+            Between late February and early March 2026, five planets gather in Aquarius: Sun, Mars, Mercury, Venus, and Rahu.
+          </p>
+
+          <p>
+            This is called a stellium — a concentration of planetary energy in a single sign. Stelliums focus and intensify. They're not subtle.
+          </p>
+
+          <p>
+            Aquarius is the sign of innovation, collective ideals, technology, and unconventional thinking. With five planets here — plus an annular solar eclipse on February 17 — expect breakthroughs and disruptions in equal measure. Old systems get questioned. New frameworks emerge.
+          </p>
+
+          <p className="p-4 bg-cream/5 border border-cream/20 rounded-lg">
+            This is chaotic energy, but it's also creative. <strong className="text-cream">If you've been waiting for permission to break from convention, the cosmos is offering it.</strong>
+          </p>
+
+          <p>
+            The eclipse on February 17 (Sun conjunct Rahu in Aquarius) is particularly potent. Eclipses are wild cards — they obscure, reveal, and accelerate. This one emphasizes collective identity, technology, and how we organize as societies.
+          </p>
+
+          <p>
+            A total lunar eclipse follows on March 3 in Leo, illuminating themes of individual expression, leadership, and creative courage.
+          </p>
+
+          <p className="text-cream/60 italic">
+            Eclipse seasons are not ideal for major decisions, but they're powerful for insight. Pay attention to what surfaces.
+          </p>
+
+          {/* Saturn Section */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
+            Saturn Continues Its Work in Pisces
+          </h2>
+
+          <p>
+            Saturn entered Pisces in early 2023 and remains there throughout 2026, moving through the nakshatras (lunar mansions) of Purva Bhadrapada, Uttara Bhadrapada, and Revati.
+          </p>
+
+          <p>
+            Saturn in Pisces is a slow dissolve. It asks us to release rigid structures, confront escapism, and find discipline within uncertainty. Wherever Pisces falls in your chart has been undergoing quiet restructuring for years.
+          </p>
+
+          <p>
+            In 2026, Saturn's work continues — but now it's supported by Jupiter's exaltation. The two planets form a trine aspect (Jupiter in Cancer, Saturn in Pisces), linking water signs in a flow of maturity and growth.
+          </p>
+
+          <p className="text-cream"><strong>This combination favors:</strong></p>
+          <ul className="list-disc pl-6 space-y-2 text-cream/70">
+            <li><strong className="text-cream">Spiritual practices that require commitment</strong> — meditation, therapy, long-term healing work</li>
+            <li><strong className="text-cream">Creative projects that need both vision and follow-through</strong></li>
+            <li><strong className="text-cream">Institutions focused on care</strong> — healthcare, education, elder support</li>
+            <li><strong className="text-cream">Financial stability built on realistic foundations</strong></li>
+          </ul>
+
+          <p className="text-cream/90 mt-6">
+            Saturn in Pisces without Jupiter's support can feel like drowning. With Jupiter exalted in Cancer, there's a life raft.
+          </p>
+
+          {/* Year of the Sun Section */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
+            The Year of the Sun
+          </h2>
+
+          <p>
+            In Vedic astrology, each year has a ruling planet based on the weekday of the Hindu New Year (Ugadi/Gudi Padwa). 2026 is ruled by the Sun.
+          </p>
+
+          <p className="text-cream"><strong>Sun years emphasize:</strong></p>
+          <ul className="list-disc pl-6 space-y-2 text-cream/70">
+            <li><strong className="text-cream">Leadership and authority</strong> — who holds power and how they wield it</li>
+            <li><strong className="text-cream">Visibility and recognition</strong> — efforts become seen</li>
+            <li><strong className="text-cream">Health and vitality</strong> — the heart, spine, and core energy</li>
+            <li><strong className="text-cream">Father figures and government</strong> — paternal themes in personal and collective life</li>
+          </ul>
+
+          <p className="mt-6">
+            Combined with the nodal shift into Capricorn-Cancer (both signs connected to authority and nurturing), 2026 puts leadership under a spotlight. This plays out in politics, institutions, families, and individual careers.
+          </p>
+
+          <p>
+            Questions of legitimacy — who deserves to lead, what authority is based on, how power is transferred — become culturally loud.
+          </p>
+
+          {/* Summary Table */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-6">
+            What Makes 2026 a Turning Point
+          </h2>
+
+          <p>Any single transit can be significant. What makes 2026 exceptional is the convergence:</p>
+
+          <div className="overflow-x-auto my-8">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="border-b border-cream/20">
-                  <th className="text-left py-3 px-4 text-gold font-medium">Planet</th>
-                  <th className="text-left py-3 px-4 text-gold font-medium">Sign Change</th>
-                  <th className="text-left py-3 px-4 text-gold font-medium">Date</th>
+                  <th className="text-left py-3 px-4 text-gold font-medium">Transit</th>
+                  <th className="text-left py-3 px-4 text-gold font-medium">Dates</th>
                   <th className="text-left py-3 px-4 text-gold font-medium">Significance</th>
                 </tr>
               </thead>
               <tbody className="text-cream/70">
                 <tr className="border-b border-cream/10">
-                  <td className="py-3 px-4">Saturn</td>
-                  <td className="py-3 px-4">Re-enters Aries</td>
-                  <td className="py-3 px-4">February 2026</td>
-                  <td className="py-3 px-4">Structures shift from dissolution to action</td>
+                  <td className="py-3 px-4">Jupiter exalted in Cancer</td>
+                  <td className="py-3 px-4 whitespace-nowrap">June 2 – Oct 30</td>
+                  <td className="py-3 px-4">Peak expansion, opportunity, wisdom</td>
                 </tr>
                 <tr className="border-b border-cream/10">
-                  <td className="py-3 px-4">Neptune</td>
-                  <td className="py-3 px-4">Re-enters Aries</td>
-                  <td className="py-3 px-4">January 2026</td>
-                  <td className="py-3 px-4">Dreams shift from escape to inspiration</td>
+                  <td className="py-3 px-4">Saturn in Pisces (ongoing)</td>
+                  <td className="py-3 px-4">All year</td>
+                  <td className="py-3 px-4">Continued restructuring, spiritual discipline</td>
                 </tr>
                 <tr className="border-b border-cream/10">
-                  <td className="py-3 px-4">Jupiter</td>
-                  <td className="py-3 px-4">Cancer (ongoing)</td>
-                  <td className="py-3 px-4">Through June 2026</td>
-                  <td className="py-3 px-4">Emotional security and nurturing favored</td>
+                  <td className="py-3 px-4">Jupiter-Saturn trine</td>
+                  <td className="py-3 px-4">June – October</td>
+                  <td className="py-3 px-4">Vision meets structure; dreams become real</td>
                 </tr>
                 <tr className="border-b border-cream/10">
-                  <td className="py-3 px-4">Uranus</td>
-                  <td className="py-3 px-4">Gemini (ongoing)</td>
-                  <td className="py-3 px-4">Started July 2025</td>
-                  <td className="py-3 px-4">Information revolution accelerates</td>
+                  <td className="py-3 px-4">Rahu enters Capricorn</td>
+                  <td className="py-3 px-4">December 7</td>
+                  <td className="py-3 px-4">Collective ambition intensifies</td>
+                </tr>
+                <tr className="border-b border-cream/10">
+                  <td className="py-3 px-4">Ketu enters Cancer</td>
+                  <td className="py-3 px-4">December 7</td>
+                  <td className="py-3 px-4">Karmic release around security, home</td>
+                </tr>
+                <tr className="border-b border-cream/10">
+                  <td className="py-3 px-4">Five-planet stellium in Aquarius</td>
+                  <td className="py-3 px-4 whitespace-nowrap">Late Feb – early March</td>
+                  <td className="py-3 px-4">Innovation, disruption, collective reset</td>
+                </tr>
+                <tr className="border-b border-cream/10">
+                  <td className="py-3 px-4">Solar eclipse in Aquarius</td>
+                  <td className="py-3 px-4">February 17</td>
+                  <td className="py-3 px-4">Wild card for systems and technology</td>
+                </tr>
+                <tr className="border-b border-cream/10">
+                  <td className="py-3 px-4">Lunar eclipse in Leo</td>
+                  <td className="py-3 px-4">March 3</td>
+                  <td className="py-3 px-4">Spotlight on leadership and self-expression</td>
                 </tr>
                 <tr>
-                  <td className="py-3 px-4">Pluto</td>
-                  <td className="py-3 px-4">Aquarius (ongoing)</td>
-                  <td className="py-3 px-4">Continues through 2026</td>
-                  <td className="py-3 px-4">Collective transformation deepens</td>
+                  <td className="py-3 px-4">Sun-ruled year</td>
+                  <td className="py-3 px-4">All year</td>
+                  <td className="py-3 px-4">Authority, recognition, vitality</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Saturn Section */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
-            Saturn Leaves Pisces: From Fog to Fire
-          </h2>
           <p>
-            <strong className="text-cream">The most significant shift?</strong> Saturn finally leaves Pisces in May 2026 and enters Aries. This represents a fundamental shift in astrological emphasis.
-          </p>
-          <p>
-            For the past three years, Saturn in Pisces has kept us marinating in confusion, spiritual bypassing, and institutional dissolution. We've watched structures crumble without clear replacements. I interpret this as the necessary dissolution phase before reconstruction can begin, and that fog appears to lift in 2026.
-          </p>
-          <p className="text-cream"><strong>Saturn in Aries tends to be:</strong></p>
-          <ul className="list-disc pl-6 space-y-2 text-cream/70">
-            <li>Direct and aggressive in its approach</li>
-            <li>Focused on individual action over collective processing</li>
-            <li>Rewarding to pioneers and early adopters</li>
-            <li>Punishing to those who wait for permission</li>
-          </ul>
-          <p>
-            I read this transit as one that demands action, rewards pioneers, and punishes those who wait for permission. Where 2025 was about grieving what no longer works, 2026 appears to be about building what comes next, with our bare hands if necessary.
-          </p>
-          <p>
-            <strong className="text-cream">The key astrological difference:</strong> Saturn's shift from a mutable water sign (dissolution, confusion) to a cardinal fire sign (initiation, clarity). This is the difference between asking "why did this fall apart?" and declaring "here's what I'm building instead."
+            These transits don't just coexist — they interact. Jupiter's exaltation gives structure to Saturn's dissolution. The nodal shift redirects the energy stirred up by February's stellium. The Sun's rulership amplifies everything related to power and visibility.
           </p>
 
-          {/* Neptune Section */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
-            Neptune's 14-Year Journey Ends
-          </h2>
-          <p>
-            Neptune completes its 14-year journey through Pisces in early 2026 before entering Aries. This marks the end of an unusually long period where Neptune occupied its home sign.
-          </p>
-          <p>Since 2012, I've observed this creating a prolonged era of:</p>
-          <ul className="list-disc pl-6 space-y-2 text-cream/70">
-            <li>Disillusionment with traditional institutions</li>
-            <li>Increased spiritual seeking and alternative beliefs</li>
-            <li>Blurred boundaries between truth and fiction</li>
-            <li>Escapism through technology and substances</li>
-          </ul>
-          <p>
-            The correlation with the social media illusion age, the rise of conspiracy thinking, and pandemic dissociation seems noteworthy when examining Neptune in Pisces.
+          <p className="text-cream font-medium text-lg">
+            2026 is a hinge year. What you build between June and October has unusual staying power. What you release at the December nodal shift won't come back the same way.
           </p>
 
-          <h3 className="font-display text-xl text-gold mt-8 mb-3">
-            What Neptune in Aries Means
-          </h3>
-          <p>
-            When Neptune re-enters Aries in January 2026 (after previewing this energy in early 2025), I interpret the collective dream as shifting from escapism to inspiration. The focus appears to move from fantasizing about change to romanticizing action itself.
-          </p>
-          <p className="text-cream"><strong>This suggests:</strong></p>
-          <ul className="list-disc pl-6 space-y-2 text-cream/70">
-            <li>A cultural obsession with courage and authenticity</li>
-            <li>Idealization of new frontiers and pioneers</li>
-            <li>Decreased tolerance for deception and manipulation</li>
-            <li>Dreams focused on individual heroism</li>
-          </ul>
-          <p>
-            The liars and grifters who thrived under Pisces ambiguity may struggle with Aries energy, which I read as burning too hot for sustained deception. <strong className="text-cream">Neptune in Aries idealizes the warrior, the pioneer, the individual who acts</strong> rather than the mystic who transcends.
-          </p>
-
-          {/* Uranus Section */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
-            Uranus in Gemini: The Information Revolution Continues
-          </h2>
-          <p>
-            Uranus enters Gemini in July 2025, but 2026 is when its effects become more pronounced in the collective experience. This transit hasn't occurred since the 1940s, and I interpret it as likely to revolutionize how we think, communicate, and process information.
-          </p>
-          <p className="text-cream"><strong>The 2025 vs 2026 difference with Uranus in Gemini:</strong></p>
-          <p>
-            In 2025, Uranus in Gemini is new and disruptive, causing chaos in communication systems. By 2026, we appear to be adapting, innovating, and weaponizing these changes.
-          </p>
-          <p>I anticipate potential breakthroughs in:</p>
-          <ul className="list-disc pl-6 space-y-2 text-cream/70">
-            <li>Neural technology and brain-computer interfaces</li>
-            <li>Educational delivery systems</li>
-            <li>Media and information distribution</li>
-            <li>AI integration in daily communication</li>
-          </ul>
-          <p>
-            Information may become simultaneously more democratized and more weaponized. Uranus disrupts, and in an air sign like Gemini, that disruption targets the realm of ideas, data, and connection itself.
-          </p>
-
-          {/* Jupiter Section */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
-            Jupiter in Cancer: The Emotional Counterbalance
-          </h2>
-          <p>
-            Jupiter has been in Cancer since June 2025 and continues through June 2026, which I read as a significant counterbalance to the aggressive Aries energy dominating the year. Jupiter in Cancer tends to be generous, protective, and deeply concerned with emotional security and home.
-          </p>
-          <p className="text-cream">
-            <strong>This transit appears to bring softness to the otherwise aggressive Aries energy dominating the year.</strong>
-          </p>
-          <p>Here's how I interpret this practically: 2026 may reward those who:</p>
-          <ul className="list-disc pl-6 space-y-2 text-cream/70">
-            <li>Build communities and support networks</li>
-            <li>Invest in family (chosen or blood)</li>
-            <li>Create safe spaces for vulnerability</li>
-            <li>Prioritize emotional intelligence</li>
-          </ul>
-          <p>
-            The rugged individualism suggested by Saturn and Neptune in Aries needs Jupiter in Cancer as a counterbalance. We appear to be learning that revolution without compassion risks becoming just violence.
-          </p>
-          <p>
-            <strong className="text-cream">Jupiter expands whatever it touches</strong>, and in the nurturing sign of Cancer, that expansion favors emotional intelligence and care-based systems.
-          </p>
-
-          {/* Pluto Section */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
-            Pluto in Aquarius: The Revolutionary Undertow
-          </h2>
-          <p>
-            Pluto remains firmly in Aquarius throughout 2026, continuing the transformation it began. But here's the crucial shift I'm observing: in 2025, Pluto in Aquarius was working against Neptune and Saturn still in Pisces.
-          </p>
-          <p className="text-cream"><strong>The collective appeared to be pulled in opposite directions:</strong></p>
-          <ul className="list-disc pl-6 space-y-2 text-cream/70">
-            <li>Toward radical future thinking (Pluto in Aquarius)</li>
-            <li>Toward nostalgic dissolution (Pisces placements)</li>
-          </ul>
-          <p>
-            In 2026, Pluto in Aquarius finally gets backup from the Aries transits. Now the outer planets align in forward-thinking, action-oriented signs. I interpret this as a dropping of resistance.
-          </p>
-          <p>
-            The future may stop being something we fear and become something we aggressively pursue. Pluto transforms through destruction and renewal, and in the fixed air sign of Aquarius, that transformation targets collective structures, technological systems, and our relationship to power itself.
-          </p>
-
-          {/* Personal Meaning Section */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
-            What This May Mean for You Personally
-          </h2>
-          <p className="text-lg text-cream">
-            Where 2025 asked you to let go, 2026 appears to demand you step up.
-          </p>
-          <p>
-            This doesn't look like a year for waiting, planning, or researching. The cosmic weather of 2026 seems to favor the bold, the honest, and the slightly reckless. If you've been sitting on an idea, relationship, or life change, you may feel physically uncomfortable staying still.
-          </p>
-          <p>
-            I interpret this discomfort as the Aries energy manifesting in our physical bodies, demanding movement and expression.
-          </p>
-
-          <h3 className="font-display text-xl text-gold mt-8 mb-3">
-            The Shadow Side to Watch
-          </h3>
-          <p>Potential manifestations of difficult 2026 energy:</p>
-          <ul className="list-disc pl-6 space-y-2 text-cream/70">
-            <li>Impulsiveness and hasty decisions</li>
-            <li>Increased aggression and conflict</li>
-            <li>Burnout from unsustainable pace</li>
-            <li>Lack of patience with process</li>
-          </ul>
-          <p>
-            <strong className="text-cream">That's where Jupiter in Cancer becomes your secret weapon:</strong> build rest and emotional connection into your revolution. The balance between doing (Aries) and being (Cancer) may be the central challenge of the year.
-          </p>
-
-          {/* Key Takeaways */}
-          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
-            Key Takeaways: 2026 vs 2025
-          </h2>
-          <p><strong className="text-cream">2025's Theme:</strong> Dissolution, grief, letting go, confusion about direction</p>
-          <p><strong className="text-cream">2026's Theme:</strong> Action, initiation, building, aggressive forward movement</p>
-          <p>
-            <strong className="text-cream">The Core Difference:</strong> The shift from mutable water energy (Pisces) to cardinal fire energy (Aries) across multiple outer planets creates a year that demands participation rather than observation.
-          </p>
-
-          {/* FAQ Section */}
+          {/* How to Work With 2026 */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-6">
-            Frequently Asked Questions
+            How to Work With 2026
           </h2>
 
-          <h3 className="font-display text-xl text-gold mt-8 mb-3">
-            What is the most important astrological event in 2026?
-          </h3>
+          <div className="space-y-6">
+            <div className="p-4 border-l-4 border-gold/50 bg-cream/5 rounded-r-lg">
+              <h3 className="text-gold font-medium mb-2">First half of the year (January – May)</h3>
+              <p className="text-cream/70">
+                Eclipse season in February-March stirs things up. Hold major decisions loosely. Gather information. Let insights land.
+              </p>
+            </div>
+
+            <div className="p-4 border-l-4 border-gold bg-gold/10 rounded-r-lg">
+              <h3 className="text-gold font-medium mb-2">Middle of the year (June – October)</h3>
+              <p className="text-cream/80">
+                Jupiter exalted in Cancer. <strong className="text-cream">This is the window.</strong> Launch, commit, expand. The energy supports growth that lasts.
+              </p>
+            </div>
+
+            <div className="p-4 border-l-4 border-gold/50 bg-cream/5 rounded-r-lg">
+              <h3 className="text-gold font-medium mb-2">End of the year (November – December)</h3>
+              <p className="text-cream/70">
+                The nodal shift in December changes the karmic weather. Themes of ambition (Capricorn) and emotional security (Cancer) become central. Begin releasing what no longer fits.
+              </p>
+            </div>
+
+            <div className="p-4 border border-cream/20 rounded-lg">
+              <h3 className="text-cream font-medium mb-2">Throughout the year</h3>
+              <p className="text-cream/70">
+                Saturn in Pisces asks for patience with uncertainty. Don't force clarity where there isn't any yet. Trust the slow work.
+              </p>
+            </div>
+          </div>
+
+          {/* Your Personal 2026 */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
+            Your Personal 2026
+          </h2>
+
           <p>
-            The most significant shift is Saturn leaving Pisces for Aries in May 2026, combined with Neptune making the same move in March. This double transition from water to fire changes the entire energetic landscape from passive to active.
+            These collective transits set the stage, but your experience depends on your birth chart — specifically, which houses these signs occupy and what dasha (planetary period) you're running.
           </p>
 
-          <h3 className="font-display text-xl text-gold mt-8 mb-3">
-            How is 2026 different from 2025 astrologically?
-          </h3>
           <p>
-            While 2025 introduced us to Aries energy through brief previews (Saturn and Neptune both dipped into Aries before retrograding back to Pisces), 2026 is when these planets settle permanently in Aries. The difference is between getting a taste of something and fully committing to it. Additionally, Jupiter's presence in Cancer through June 2026 (having entered in June 2025) provides emotional grounding that wasn't available during 2025's more scattered energy.
+            Jupiter exalted in Cancer landing in your 10th house during Jupiter dasha is life-changing. The same transit in your 6th house during Saturn dasha is useful but quieter.
           </p>
 
-          <h3 className="font-display text-xl text-gold mt-8 mb-3">
-            Will 2026 be a good year?
-          </h3>
+          <div className="flex flex-col sm:flex-row gap-4 my-8">
+            <Link
+              to="/get-birth-chart"
+              className="flex-1 p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors text-center"
+            >
+              <p className="text-gold font-medium">Find your Moon sign and current dasha →</p>
+            </Link>
+            <Link
+              to="/vedic/input"
+              className="flex-1 p-4 border border-gold/30 bg-gold/10 rounded-lg hover:bg-gold/20 transition-colors text-center"
+            >
+              <p className="text-gold font-medium">Get your personalized 2026 Cosmic Brief →</p>
+            </Link>
+          </div>
+
+          {/* The Big Picture */}
+          <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
+            The Big Picture
+          </h2>
+
           <p>
-            "Good" depends on your relationship with change and action. 2026 appears to favor those ready to take risks, start new ventures, and embrace discomfort. It may be challenging for those who prefer stability, careful planning, or waiting for perfect conditions.
+            Astrology doesn't predict a fixed future. It maps weather patterns — cosmic weather that influences but doesn't determine.
           </p>
 
-          <h3 className="font-display text-xl text-gold mt-8 mb-3">
-            What sign will be most affected in 2026?
-          </h3>
           <p>
-            Cardinal signs (Aries, Cancer, Libra, Capricorn) will feel these transits most intensely, as Saturn and Neptune in Aries will aspect their Sun signs directly. However, everyone will experience the shift in collective energy.
+            2026's weather is unusually dynamic. The concentration of major transits creates conditions for significant shifts — personally and collectively. Growth is available for those ready to meet it. Release is necessary for those holding on too tight.
+          </p>
+
+          <p className="text-cream text-lg font-medium">
+            The planets are moving. The question is whether you'll move with them.
           </p>
         </div>
 
-        {/* Navigation Links */}
+        {/* Related Posts */}
         <div className="mt-16 pt-12 border-t border-cream/10">
-          <p className="text-cream/60 mb-6 text-sm">Continue reading:</p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link 
-              to="/2026-astrology-forecast" 
-              className="flex-1 p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors"
+          <h3 className="text-cream font-display text-xl mb-6">Related Posts</h3>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link
+              to="/blog/career-astrology-2026"
+              className="p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors"
             >
-              <p className="text-gold text-sm mb-1">Main Article</p>
-              <p className="text-cream">The Astrological Shift: 2026 Overview</p>
+              <p className="text-gold text-sm mb-1">Cosmic Weather</p>
+              <p className="text-cream">Career Transits in 2026: A Guide by Moon Sign</p>
+            </Link>
+            <Link
+              to="/blog/what-is-nakshatra"
+              className="p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors"
+            >
+              <p className="text-gold text-sm mb-1">Learn</p>
+              <p className="text-cream">Nakshatra: Your True Cosmic DNA</p>
             </Link>
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="mt-12 pt-12 border-t border-cream/10 text-center">
-          <p className="text-cream/60 mb-6">
-            Discover how these transits affect your personal chart
-          </p>
-          <Link to="/input">
-            <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-8 py-6 text-lg">
-              Get Your 2026 Forecast
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+        {/* Go Deeper CTA */}
+        <div className="mt-12 p-8 bg-gold/5 rounded-lg border border-gold/20">
+          <h3 className="text-gold font-display text-xl mb-6 text-center">✦ Go Deeper</h3>
+          <div className="grid sm:grid-cols-3 gap-4 text-center">
+            <Link to="/get-birth-chart" className="p-4 hover:bg-gold/10 rounded-lg transition-colors">
+              <p className="text-cream font-medium mb-1">Get Your Birth Chart</p>
+              <p className="text-cream/60 text-sm">See where Cancer, Capricorn, and Aquarius fall in your chart.</p>
+            </Link>
+            <Link to="/vedic/input" className="p-4 hover:bg-gold/10 rounded-lg transition-colors">
+              <p className="text-cream font-medium mb-1">2026 Cosmic Brief</p>
+              <p className="text-cream/60 text-sm">Your personalized year ahead, combining these transits with your individual timing.</p>
+            </Link>
+            <Link to="/weekly-horoscope" className="p-4 hover:bg-gold/10 rounded-lg transition-colors">
+              <p className="text-cream font-medium mb-1">Weekly Horoscope</p>
+              <p className="text-cream/60 text-sm">Track how these transits unfold week by week.</p>
+            </Link>
+          </div>
+        </div>
+
+        {/* Back to Journal */}
+        <div className="mt-12 pt-8 border-t border-cream/10">
+          <Link to="/blog" className="text-gold hover:underline inline-flex items-center gap-2">
+            ← Back to Journal
           </Link>
         </div>
+
+        {/* Footer tagline */}
+        <p className="text-cream/40 text-sm text-center mt-12 italic">
+          Cosmic Brief is Vedic astrology for the modern seeker. No guilt. No fate. Just ancient wisdom, translated.
+        </p>
       </div>
     </div>
   );

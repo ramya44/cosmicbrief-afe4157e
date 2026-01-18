@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StarField } from '@/components/StarField';
-import { ArrowLeft, Loader2, Mail, Lock, LogIn, UserPlus, KeyRound } from 'lucide-react';
+import { Loader2, Mail, Lock, LogIn, UserPlus, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'reset';
@@ -219,21 +219,6 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen bg-celestial relative overflow-hidden">
       <StarField />
-
-      {/* Header */}
-      <header className="relative z-10 border-b border-border/30 bg-midnight/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-cream-muted hover:text-cream"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </div>
-      </header>
 
       {/* Main Content */}
       <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-12">

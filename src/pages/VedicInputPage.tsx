@@ -11,7 +11,7 @@ import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { getDeviceId } from '@/lib/deviceId';
 import { validateBirthForm, isFormValid, MIN_DATE } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2, User } from 'lucide-react';
+import { Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 const FORM_STORAGE_KEY = 'vedic_input_form_data';
@@ -379,19 +379,6 @@ const VedicInputPage = () => {
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
       <StarField />
-
-      {/* Back button */}
-      <div className="absolute top-6 left-6 z-20">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/')}
-          className="text-cream-muted hover:text-cream font-[Inter]"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-      </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
         <div className="w-full max-w-md">

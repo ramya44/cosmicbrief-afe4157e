@@ -1,27 +1,9 @@
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { ArrowLeft } from 'lucide-react';
 
 const TermsPage = () => {
-  const navigate = useNavigate();
-
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">
       <StarField />
-
-      {/* Back button */}
-      <div className="absolute top-6 left-6 z-20">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate(-1)}
-          className="text-cream-muted hover:text-cream"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-      </div>
 
       <div className="relative z-10 flex flex-col items-center min-h-screen px-4 py-20">
         <div className="w-full max-w-2xl">

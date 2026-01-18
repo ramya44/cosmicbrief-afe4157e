@@ -25,8 +25,11 @@ import HowToReadChartPage from "./pages/HowToReadChartPage";
 import VedicVsWesternPage from "./pages/VedicVsWesternPage";
 import BirthChartInputPage from "./pages/BirthChartInputPage";
 import BirthChartPage from "./pages/BirthChartPage";
+import BlogCategoryPage from "./pages/BlogCategoryPage";
+import WhatIsNakshatraPage from "./pages/WhatIsNakshatraPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
+import { Navigation } from "./components/Navigation";
 
 const queryClient = new QueryClient();
 
@@ -60,14 +63,18 @@ const App = () => (
       <Sonner />
       <HashRouter>
         <ScrollToTop />
+        <Navigation />
+        <div className="pt-14 md:pt-16 pb-16 md:pb-0">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/2026-astrology-forecast" element={<AstrologyForecast2026Page />} />
-          <Route path="/2026-astrology-forecast/why-2026-is-a-turning-point" element={<WhyTurningPointPage />} />
-          <Route path="/2026-astrology-forecast/politics-and-global-events" element={<PoliticsGlobalEventsPage />} />
-          <Route path="/2026-astrology-forecast/career" element={<CareerAstrology2026Page />} />
+          <Route path="/blog" element={<AstrologyForecast2026Page />} />
+          <Route path="/blog/category/:categorySlug" element={<BlogCategoryPage />} />
+          <Route path="/blog/why-2026-is-a-turning-point" element={<WhyTurningPointPage />} />
+          <Route path="/blog/politics-and-global-events" element={<PoliticsGlobalEventsPage />} />
+          <Route path="/blog/career-astrology-2026" element={<CareerAstrology2026Page />} />
+          <Route path="/blog/what-is-nakshatra" element={<WhatIsNakshatraPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="/vedic/payment-success" element={<VedicPaymentSuccessPage />} />
@@ -84,6 +91,7 @@ const App = () => (
           <Route path="/birth-chart" element={<BirthChartPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </div>
       </HashRouter>
     </TooltipProvider>
   </QueryClientProvider>

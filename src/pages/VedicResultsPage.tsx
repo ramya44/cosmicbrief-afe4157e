@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { ArrowLeft, Sparkles, Lock, ChevronRight, User, Share2, Check, Download } from 'lucide-react';
+import { Sparkles, Lock, ChevronRight, User, Share2, Check, Download } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
@@ -555,7 +555,7 @@ const VedicResultsPage = () => {
             style={{ animationDelay: '150ms' }}
           >
             <h2 className="text-2xl font-bold text-gold mb-6 font-display text-center">Your Birth Chart</h2>
-            <BirthChartWheel chartData={birthChartData} />
+            <BirthChartWheel chartData={birthChartData} hideDetailCards />
           </section>
         );
       }
@@ -742,17 +742,7 @@ const VedicResultsPage = () => {
       <StarField />
 
       <header className="relative z-20 border-b border-border/30 bg-midnight/80 backdrop-blur-md sticky top-0">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/vedic/input')}
-            className="text-cream-muted hover:text-cream font-sans"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          
+        <div className="container mx-auto px-4 py-4 flex items-center justify-end">
           <div className="flex items-center gap-2">
             {/* Profile Icon with Astrology Details Popover */}
             <Popover>

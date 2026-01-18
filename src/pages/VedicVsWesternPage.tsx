@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 const VedicVsWesternPage = () => {
   return (
@@ -67,16 +67,6 @@ const VedicVsWesternPage = () => {
 
       <div className="relative min-h-screen bg-celestial">
         <StarField />
-
-        {/* Header */}
-        <header className="relative z-20 border-b border-border/30 bg-midnight/80 backdrop-blur-md sticky top-0">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2 font-sans">
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Link>
-          </div>
-        </header>
 
         <main className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
           <article className="prose prose-invert prose-lg max-w-none text-lg">

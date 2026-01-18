@@ -5,7 +5,7 @@ import { getDeviceId } from '@/lib/deviceId';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { SaveProfileDialog } from '@/components/SaveProfileDialog';
-import { ArrowLeft, Loader2, Save } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 
 interface KundliData {
   id: string;
@@ -170,15 +170,6 @@ const VedicProfilePage = () => {
       {/* Header */}
       <header className="relative z-10 border-b border-border/30 bg-midnight/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="text-cream-muted hover:text-cream font-sans"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
           <h1 className="font-display text-xl text-gold">{kundli.name ? `${kundli.name}'s Profile` : 'Vedic Profile'}</h1>
           {/* Show Save button only if profile is not already saved */}
           {!kundli.user_id ? (

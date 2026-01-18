@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { getDeviceId } from '@/lib/deviceId';
 import { validateBirthForm, isFormValid, MIN_DATE } from '@/lib/validation';
-import { Calendar, Clock, ArrowLeft, User, Mail, Check, Loader2 } from 'lucide-react';
+import { Calendar, Clock, User, Mail, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type FlowState = 'input' | 'submitting' | 'confirmed';
@@ -146,30 +146,17 @@ const WeeklyHoroscopePage = () => {
     return (
       <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
         <StarField />
-        
-        {/* Back button */}
-        <div className="absolute top-6 left-6 z-20">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate('/')}
-            className="text-cream-muted hover:text-cream font-[Inter]"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </div>
-        
+
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
           <div className="w-full max-w-md text-center animate-fade-up">
             <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-8">
               <Check className="w-10 h-10 text-green-400" />
             </div>
-            
+
             <h1 className="font-display text-3xl md:text-4xl text-cream mb-4">
               You're All Set!
             </h1>
-            
+
             <p className="text-cream-muted text-lg mb-8">
               Starting this Sunday, you'll receive your personalized weekly horoscope in your inbox at <span className="text-gold">{formData.email}</span>
             </p>
@@ -180,12 +167,11 @@ const WeeklyHoroscopePage = () => {
               </p>
             </div>
 
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate('/')}
               className="font-[Inter]"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Button>
           </div>
@@ -197,19 +183,6 @@ const WeeklyHoroscopePage = () => {
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
       <StarField />
-
-      {/* Back button */}
-      <div className="absolute top-6 left-6 z-20">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/')}
-          className="text-cream-muted hover:text-cream font-[Inter]"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-      </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
         <div className="w-full max-w-md">

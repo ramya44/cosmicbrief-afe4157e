@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { Heart, ArrowLeft } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 const CompatibilityPage = () => {
   const navigate = useNavigate();
@@ -9,20 +9,7 @@ const CompatibilityPage = () => {
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">
       <StarField />
-      
-      {/* Back button - top left */}
-      <div className="absolute top-6 left-6 z-20">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => navigate('/')}
-          className="text-cream-muted hover:text-cream font-[Inter]"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-      </div>
-      
+
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-16">
         <div className="text-center max-w-2xl mx-auto">
           <div className="flex justify-center mb-8">
@@ -46,12 +33,11 @@ const CompatibilityPage = () => {
             </p>
           </div>
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => navigate('/')}
             className="font-[Inter]"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to 2026 Forecast
           </Button>
         </div>
