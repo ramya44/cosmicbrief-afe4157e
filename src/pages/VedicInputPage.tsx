@@ -441,7 +441,7 @@ const VedicInputPage = () => {
           variant="ghost" 
           size="sm" 
           onClick={() => navigate('/')}
-          className="text-cream-muted hover:text-cream"
+          className="text-cream-muted hover:text-cream font-[Inter]"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back

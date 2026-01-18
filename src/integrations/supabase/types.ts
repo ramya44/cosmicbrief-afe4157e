@@ -676,6 +676,44 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_horoscope_subscribers: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean
+          kundli_id: string | null
+          name: string | null
+          subscribed_at: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean
+          kundli_id?: string | null
+          name?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean
+          kundli_id?: string | null
+          name?: string | null
+          subscribed_at?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_horoscope_subscribers_kundli_id_fkey"
+            columns: ["kundli_id"]
+            isOneToOne: false
+            referencedRelation: "user_kundli_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zodiac_signs: {
         Row: {
           end_day: number
