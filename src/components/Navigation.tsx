@@ -29,6 +29,7 @@ const secondaryNavItems = [
 // All nav items for desktop
 const allNavItems = [
   { label: '2026 Forecast', path: '/' },
+  { label: 'Birth Chart', path: '/get-birth-chart' },
   { label: 'Weekly Horoscope', path: '/weekly-horoscope' },
   { label: 'Compatibility', path: '/compatibility' },
   { label: 'What is Vedic Astrology', path: '/vedic-astrology-explained' },

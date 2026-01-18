@@ -158,7 +158,7 @@ const WeeklyHoroscopePage = () => {
             </h1>
 
             <p className="text-cream-muted text-lg mb-8">
-              Starting this Sunday, you'll receive your personalized weekly horoscope in your inbox at <span className="text-gold">{formData.email}</span>
+              Starting this Monday, you'll receive your personalized weekly horoscope in your inbox at <span className="text-gold">{formData.email}</span>
             </p>
 
             <div className="p-6 rounded-xl bg-midnight/50 border border-gold/20 mb-8">
@@ -195,7 +195,7 @@ const WeeklyHoroscopePage = () => {
               Weekly Horoscope
             </h1>
             <p className="text-cream-muted">
-              Get personalized weekly cosmic guidance delivered every Sunday
+              Get personalized weekly cosmic guidance delivered every Monday
             </p>
           </div>
 
