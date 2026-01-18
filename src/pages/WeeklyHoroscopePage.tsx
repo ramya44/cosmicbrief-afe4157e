@@ -263,7 +263,7 @@ const WeeklyHoroscopePage = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5 overflow-visible">
+          <form onSubmit={handleSubmit} className="space-y-5 overflow-visible pb-8">
             {/* Name */}
             <div className="space-y-2 animate-fade-up" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
               <Label htmlFor="name" className="text-cream flex items-center gap-2">
@@ -281,28 +281,8 @@ const WeeklyHoroscopePage = () => {
               />
             </div>
 
-            {/* Email */}
-            <div className="space-y-2 animate-fade-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-              <Label htmlFor="email" className="text-cream flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gold" />
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
-                disabled={flowState === 'submitting'}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
             {/* Date of Birth */}
-            <div className="space-y-2 animate-fade-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+            <div className="space-y-2 animate-fade-up" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
               <Label htmlFor="birthDate" className="text-cream flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-gold" />
                 Date of Birth
@@ -323,7 +303,7 @@ const WeeklyHoroscopePage = () => {
             </div>
 
             {/* Time of Birth */}
-            <div className="space-y-2 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+            <div className="space-y-2 animate-fade-up" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
               <Label htmlFor="birthTime" className="text-cream flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gold" />
                 Time of Birth
@@ -342,7 +322,7 @@ const WeeklyHoroscopePage = () => {
             </div>
 
             {/* Place of Birth */}
-            <div className="space-y-2 animate-fade-up" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+            <div className="space-y-2 animate-fade-up relative z-30" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
               <Label htmlFor="birthPlace" className="text-cream flex items-center gap-2">
                 Place of Birth
               </Label>
@@ -363,8 +343,28 @@ const WeeklyHoroscopePage = () => {
               )}
             </div>
 
+            {/* Email - Last field */}
+            <div className="space-y-2 animate-fade-up" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+              <Label htmlFor="email" className="text-cream flex items-center gap-2">
+                <Mail className="w-4 h-4 text-gold" />
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
+                disabled={flowState === 'submitting'}
+              />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email}</p>
+              )}
+            </div>
+
             {/* Submit Button */}
-            <div className="pt-4 animate-fade-up" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
+            <div className="pt-4 animate-fade-up relative z-10" style={{ animationDelay: '300ms', animationFillMode: 'both' }}>
               <Button
                 type="submit"
                 variant="hero"
