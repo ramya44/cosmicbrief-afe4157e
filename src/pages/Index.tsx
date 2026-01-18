@@ -44,7 +44,7 @@ const Index = () => {
           variant="ghost"
           size="sm"
           onClick={() => navigate('/auth')}
-          className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0"
+          className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0 font-[Inter]"
         >
           <LogIn className="w-4 h-4 mr-2" />
           Log In
