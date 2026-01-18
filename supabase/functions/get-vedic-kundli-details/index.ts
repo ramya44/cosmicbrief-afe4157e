@@ -1,14 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createLogger } from "../_shared/lib/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function logStep(step: string, details?: Record<string, unknown>) {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[get-vedic-kundli-details] ${step}${detailsStr}`);
-}
+const logStep = createLogger("GET-VEDIC-KUNDLI-DETAILS");
 
 interface RequestBody {
   kundli_id: string;
@@ -46,7 +44,7 @@ Deno.serve(async (req) => {
     const { data, error } = await supabase
       .from("user_kundli_details")
       .select(
-        "id, birth_date, birth_time, birth_place, moon_sign, sun_sign, nakshatra, ascendant_sign, animal_sign, name, user_id, free_vedic_forecast, paid_vedic_forecast, forecast_generated_at, email, device_id, shareable_link"
+        "id, birth_date, birth_time, birth_place, moon_sign, moon_sign_id, moon_sign_lord, sun_sign, sun_sign_id, sun_sign_lord, nakshatra, nakshatra_id, nakshatra_pada, nakshatra_lord, ascendant_sign, ascendant_sign_id, ascendant_sign_lord, animal_sign, deity, name, user_id, free_vedic_forecast, paid_vedic_forecast, forecast_generated_at, email, device_id, shareable_link, planetary_positions"
       )
       .eq("id", kundli_id)
       .maybeSingle();

@@ -27,6 +27,22 @@ interface ZodiacLookup {
   [key: string]: string;
 }
 
+// Zodiac symbols for signs
+const ZODIAC_SYMBOLS: { [key: string]: string } = {
+  'Mesha': '♈', 'Aries': '♈',
+  'Vrishabha': '♉', 'Taurus': '♉',
+  'Mithuna': '♊', 'Gemini': '♊',
+  'Karka': '♋', 'Cancer': '♋',
+  'Simha': '♌', 'Leo': '♌',
+  'Kanya': '♍', 'Virgo': '♍',
+  'Tula': '♎', 'Libra': '♎',
+  'Vrishchika': '♏', 'Scorpio': '♏',
+  'Dhanu': '♐', 'Sagittarius': '♐',
+  'Makara': '♑', 'Capricorn': '♑',
+  'Kumbha': '♒', 'Aquarius': '♒',
+  'Meena': '♓', 'Pisces': '♓',
+};
+
 const VedicProfilePage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -68,7 +84,6 @@ const VedicProfilePage = () => {
         });
 
         if (fnError || !kundliData) {
-          console.error('Failed to fetch kundli:', fnError);
           setLoading(false);
           return;
         }
@@ -109,8 +124,8 @@ const VedicProfilePage = () => {
             setAnimalData(animal);
           }
         }
-      } catch (e) {
-        console.error('Error fetching profile data:', e);
+      } catch {
+        // Ignore fetch errors
       } finally {
         setLoading(false);
       }
@@ -119,10 +134,14 @@ const VedicProfilePage = () => {
     fetchData();
   }, [kundliId]);
 
-  const formatWithTranslation = (sanskritName: string | null) => {
+  const getWesternName = (sanskritName: string | null) => {
     if (!sanskritName) return null;
-    const western = zodiacLookup[sanskritName];
-    return western ? `${sanskritName} (${western})` : sanskritName;
+    return zodiacLookup[sanskritName] || sanskritName;
+  };
+
+  const getZodiacSymbol = (signName: string | null) => {
+    if (!signName) return null;
+    return ZODIAC_SYMBOLS[signName] || null;
   };
 
   if (loading) {
@@ -155,7 +174,7 @@ const VedicProfilePage = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate(-1)}
-            className="text-cream-muted hover:text-cream"
+            className="text-cream-muted hover:text-cream font-sans"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -195,16 +214,27 @@ const VedicProfilePage = () => {
               }}
             >
               {/* Front of Card - Animal Image */}
-              <div 
-                className="absolute inset-0 rounded-2xl overflow-hidden border border-gold/40"
+              <div
+                className="absolute inset-0 rounded-2xl overflow-hidden border border-gold/40 bg-midnight/80"
                 style={{ backfaceVisibility: 'hidden' }}
               >
-                {animalData && (
+                {animalData?.image_url ? (
                   <img
                     src={animalData.image_url}
                     alt={kundli.animal_sign || 'Animal'}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Hide image on error and show fallback
+                      (e.target as HTMLImageElement).style.display = 'none';
+                    }}
                   />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    <span className="text-6xl text-gold/60 mb-4">✧</span>
+                    <p className="text-cream-muted text-center px-4">
+                      {kundli.animal_sign || 'Your Cosmic Profile'}
+                    </p>
+                  </div>
                 )}
                 <p className="absolute bottom-4 left-0 right-0 text-cream-muted text-sm text-center animate-pulse">Tap to reveal</p>
               </div>
@@ -228,25 +258,37 @@ const VedicProfilePage = () => {
                   {kundli.nakshatra && (
                     <div className="flex justify-between items-center py-2 border-b border-border/20">
                       <span className="text-cream-muted text-sm">Nakshatra</span>
-                      <span className="text-cream font-medium">{kundli.nakshatra}</span>
+                      <span className="text-cream font-medium flex items-center gap-2">
+                        <span className="text-gold/40 text-lg" style={{ fontFamily: 'serif', fontVariantEmoji: 'text' }}>✧</span>
+                        {kundli.nakshatra}
+                      </span>
                     </div>
                   )}
                   {kundli.moon_sign && (
                     <div className="flex justify-between items-center py-2 border-b border-border/20">
                       <span className="text-cream-muted text-sm">Moon</span>
-                      <span className="text-cream font-medium">{formatWithTranslation(kundli.moon_sign)}</span>
+                      <span className="text-cream font-medium flex items-center gap-2">
+                        <span className="text-gold/40 text-lg" style={{ fontFamily: 'serif', fontVariantEmoji: 'text' }}>{getZodiacSymbol(kundli.moon_sign)}</span>
+                        {getWesternName(kundli.moon_sign)}
+                      </span>
                     </div>
                   )}
                   {kundli.sun_sign && (
                     <div className="flex justify-between items-center py-2 border-b border-border/20">
                       <span className="text-cream-muted text-sm">Sun</span>
-                      <span className="text-cream font-medium">{formatWithTranslation(kundli.sun_sign)}</span>
+                      <span className="text-cream font-medium flex items-center gap-2">
+                        <span className="text-gold/40 text-lg" style={{ fontFamily: 'serif', fontVariantEmoji: 'text' }}>{getZodiacSymbol(kundli.sun_sign)}</span>
+                        {getWesternName(kundli.sun_sign)}
+                      </span>
                     </div>
                   )}
                   {kundli.ascendant_sign && (
                     <div className="flex justify-between items-center py-2">
                       <span className="text-cream-muted text-sm">Ascendant</span>
-                      <span className="text-cream font-medium">{formatWithTranslation(kundli.ascendant_sign)}</span>
+                      <span className="text-cream font-medium flex items-center gap-2">
+                        <span className="text-gold/40 text-lg" style={{ fontFamily: 'serif', fontVariantEmoji: 'text' }}>{getZodiacSymbol(kundli.ascendant_sign)}</span>
+                        {getWesternName(kundli.ascendant_sign)}
+                      </span>
                     </div>
                   )}
                 </div>

@@ -86,9 +86,9 @@ const WhyTurningPointPage = () => {
       
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
         {/* Back link */}
-        <Link 
-          to="/2026-astrology-forecast" 
-          className="inline-flex items-center gap-2 text-cream/60 hover:text-cream transition-colors mb-12"
+        <Link
+          to="/2026-astrology-forecast"
+          className="inline-flex items-center gap-2 text-cream/60 hover:text-cream transition-colors mb-12 font-sans"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to 2026 Forecast

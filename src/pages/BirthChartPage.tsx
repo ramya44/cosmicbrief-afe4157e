@@ -212,10 +212,8 @@ const BirthChartPage = () => {
     if (storedData) {
       try {
         const parsed = JSON.parse(storedData);
-        console.log('Loaded chart data:', parsed);
         setChartData(parsed);
-      } catch (e) {
-        console.error('Failed to parse chart data:', e);
+      } catch {
         navigate('/get-birth-chart');
       }
     } else {
@@ -239,11 +237,8 @@ const BirthChartPage = () => {
     if (navigator.share && navigator.canShare?.(shareData)) {
       try {
         await navigator.share(shareData);
-      } catch (err) {
-        // User cancelled or error
-        if ((err as Error).name !== 'AbortError') {
-          console.error('Share failed:', err);
-        }
+      } catch {
+        // User cancelled or share failed - ignore
       }
     } else {
       // Fallback: copy link to clipboard
@@ -308,7 +303,7 @@ const BirthChartPage = () => {
         {/* Header */}
         <header className="relative z-20 border-b border-border/30 bg-midnight/80 backdrop-blur-md sticky top-0">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/get-birth-chart" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2">
+            <Link to="/get-birth-chart" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2 font-sans">
               <ArrowLeft className="w-4 h-4" />
               Back
             </Link>

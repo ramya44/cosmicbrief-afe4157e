@@ -62,7 +62,6 @@ export const PlaceAutocomplete = ({
       });
 
       if (error) {
-        console.error('Geocode function error:', error);
         setSuggestions([]);
         setIsOpen(false);
         return;
@@ -71,8 +70,7 @@ export const PlaceAutocomplete = ({
       const results = Array.isArray(data?.results) ? data.results : [];
       setSuggestions(results);
       setIsOpen(results.length > 0);
-    } catch (error) {
-      console.error('Error fetching places:', error);
+    } catch {
       setSuggestions([]);
       setIsOpen(false);
     } finally {

@@ -121,7 +121,6 @@ export const SaveProfileDialog = ({
         );
 
         if (updateError || updateResult?.error) {
-          console.error('Failed to link profile:', updateError || updateResult?.error);
           throw new Error('Failed to save profile. Please try again.');
         }
 
@@ -130,7 +129,6 @@ export const SaveProfileDialog = ({
         onOpenChange(false);
       }
     } catch (error: any) {
-      console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');
     } finally {
       setIsLoading(false);
@@ -165,7 +163,6 @@ export const SaveProfileDialog = ({
         );
 
         if (updateError || updateResult?.error) {
-          console.error('Failed to link profile:', updateError || updateResult?.error);
           throw new Error('Failed to save profile. Please try again.');
         }
 
@@ -174,7 +171,6 @@ export const SaveProfileDialog = ({
         onOpenChange(false);
       }
     } catch (error: any) {
-      console.error('Login error:', error);
       toast.error(error.message || 'Failed to log in');
     } finally {
       setIsLoading(false);

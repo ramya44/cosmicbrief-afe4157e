@@ -3,15 +3,14 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { buildVedicPaidEmailHtml } from "../_shared/lib/email-templates.ts";
 import { generateForecastPdf } from "../_shared/lib/pdf-generator.ts";
+import { createLogger } from "../_shared/lib/logger.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function logStep(step: string, details?: Record<string, unknown>) {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[generate-paid-vedic-forecast] ${step}${detailsStr}`);
-}
+const logStep = createLogger("GENERATE-PAID-VEDIC-FORECAST");
 
 const PAID_SYSTEM_PROMPT = `You are an expert astrologer who writes comprehensive, personalized forecasts in accessible, modern language. Your writing style is:
 
@@ -699,7 +698,7 @@ Deno.serve(async (req) => {
           }
 
           const emailOptions: any = {
-            from: "Cosmic Brief <noreply@cosmicbrief.com>",
+            from: "Cosmic Brief <noreply@send.notifications.cosmicbrief.com>",
             to: [customerEmail],
             subject: "Your Complete Vedic Cosmic Brief is Ready! ✨",
             html: emailHtml,

@@ -21,8 +21,6 @@ function calculateFallback(
   birthTime: string,
   lon: number
 ): string {
-  console.warn('Using longitude-based offset calculation (fallback)');
-  
   // Calculate offset based on longitude (15° per hour)
   const offsetHours = lon / 15;
   const offsetSeconds = Math.round(offsetHours * 3600);
@@ -53,7 +51,6 @@ export async function convertBirthTimeToUtc(
   // For dates before Unix epoch (1970), use longitude-based fallback
   // TimeZoneDB API requires positive timestamps
   if (timestampMs < 0) {
-    console.log('Pre-1970 date detected, using longitude-based fallback');
     return calculateFallback(birthDate, birthTime, lon);
   }
   
@@ -65,33 +62,15 @@ export async function convertBirthTimeToUtc(
     });
 
     if (error || !data || data.error) {
-      console.error('Timezone lookup failed:', error || data?.error);
       return calculateFallback(birthDate, birthTime, lon);
     }
 
     const gmtOffsetSeconds = data.gmtOffset;
     const offsetString = formatOffsetString(gmtOffsetSeconds);
-    
-    console.log('Timezone lookup result:', {
-      zoneName: data.zoneName,
-      abbreviation: data.abbreviation,
-      gmtOffset: gmtOffsetSeconds,
-      offsetString,
-      dst: data.dst
-    });
 
     // Format as local time with timezone offset (ISO 8601)
-    const formattedDateTime = `${birthDate}T${birthTime}:00${offsetString}`;
-    
-    console.log('Formatted birth datetime:', {
-      input: `${birthDate} ${birthTime}`,
-      localOffset: offsetString,
-      output: formattedDateTime
-    });
-    
-    return formattedDateTime;
-  } catch (error) {
-    console.error('Error formatting birth time:', error);
+    return `${birthDate}T${birthTime}:00${offsetString}`;
+  } catch {
     return calculateFallback(birthDate, birthTime, lon);
   }
 }

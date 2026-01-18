@@ -24,8 +24,7 @@ export const ShareButton = ({ forecastId, guestToken }: ShareButtonProps) => {
       setCopied(true);
       toast.success('Link copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+    } catch {
       toast.error('Failed to copy link');
     }
   };

@@ -8,6 +8,7 @@ import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplet
 import { supabase } from '@/integrations/supabase/client';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { getDeviceId } from '@/lib/deviceId';
+import { validateBirthForm, isFormValid, MIN_DATE } from '@/lib/validation';
 import { Calendar, Clock, ArrowLeft, User, Mail, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,49 +29,14 @@ const WeeklyHoroscopePage = () => {
   const [flowState, setFlowState] = useState<FlowState>('input');
 
   const today = new Date().toISOString().split('T')[0];
-  const minDate = '1900-01-01';
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.birthDate) {
-      newErrors.birthDate = 'Please enter your birth date';
-    } else {
-      const selectedDate = new Date(formData.birthDate);
-      const min = new Date(minDate);
-      const max = new Date(today);
-      
-      const todayDate = new Date();
-      let age = todayDate.getFullYear() - selectedDate.getFullYear();
-      const monthDiff = todayDate.getMonth() - selectedDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && todayDate.getDate() < selectedDate.getDate())) {
-        age--;
-      }
-      
-      if (selectedDate < min) {
-        newErrors.birthDate = 'Date cannot be before 1900';
-      } else if (selectedDate > max) {
-        newErrors.birthDate = 'Date cannot be in the future';
-      } else if (age < 18) {
-        newErrors.birthDate = 'You must be at least 18 years old';
-      }
-    }
-    if (!formData.birthTime) {
-      newErrors.birthTime = 'Please enter your birth time';
-    }
-    if (!formData.birthPlace.trim()) {
-      newErrors.birthPlace = 'Please enter your birth place';
-    } else if (!placeCoords) {
-      newErrors.birthPlace = 'Please select a location from the dropdown';
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = 'Please enter your email address';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    
+    const newErrors = validateBirthForm(formData, {
+      requireAge18: true,
+      hasPlaceCoords: !!placeCoords,
+    });
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isFormValid(newErrors);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,8 +58,8 @@ const WeeklyHoroscopePage = () => {
           placeCoords.lat,
           placeCoords.lon
         );
-      } catch (error) {
-        console.error('[WeeklyHoroscope] Error converting to UTC:', error);
+      } catch {
+        // Continue with local time if UTC conversion fails
       }
 
       const datetimeForApi = birthDateTimeUtc || `${formData.birthDate}T${formData.birthTime}:00`;
@@ -154,7 +120,6 @@ const WeeklyHoroscopePage = () => {
           // Unique violation - already subscribed
           toast.info('You\'re already subscribed to weekly horoscopes!');
         } else {
-          console.error('[WeeklyHoroscope] Subscribe error:', subscribeError);
           throw new Error('Failed to subscribe');
         }
       }
@@ -162,7 +127,6 @@ const WeeklyHoroscopePage = () => {
       setFlowState('confirmed');
       
     } catch (error) {
-      console.error('[WeeklyHoroscope] Error:', error);
       toast.error(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
       setFlowState('input');
     }
@@ -290,7 +254,7 @@ const WeeklyHoroscopePage = () => {
               <Input
                 id="birthDate"
                 type="date"
-                min={minDate}
+                min={MIN_DATE}
                 max={today}
                 value={formData.birthDate}
                 onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}

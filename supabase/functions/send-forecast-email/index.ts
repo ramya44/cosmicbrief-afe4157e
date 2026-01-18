@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createLogger } from "../_shared/lib/logger.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const logStep = createLogger("SEND-FORECAST-EMAIL");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -41,11 +43,6 @@ function checkRateLimit(ip: string): boolean {
   record.count++;
   return true;
 }
-
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[SEND-FORECAST-EMAIL] ${step}${detailsStr}`);
-};
 
 interface ForecastEmailRequest {
   customerEmail: string;

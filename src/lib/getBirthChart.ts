@@ -26,8 +26,6 @@ export const getBirthChart = async (
   longitude: number,
   ayanamsa: number = 1
 ): Promise<BirthChartResult | null> => {
-  console.log('Calling get-birth-chart edge function...', { birthDateTimeUtc, latitude, longitude });
-
   try {
     const { data, error } = await supabase.functions.invoke('get-birth-chart', {
       body: {
@@ -39,14 +37,11 @@ export const getBirthChart = async (
     });
 
     if (error) {
-      console.error('Error calling get-birth-chart function:', error);
       return null;
     }
 
-    console.log('Birth chart data received:', data);
     return data as BirthChartResult;
-  } catch (err) {
-    console.error('Exception calling get-birth-chart:', err);
+  } catch {
     return null;
   }
 };

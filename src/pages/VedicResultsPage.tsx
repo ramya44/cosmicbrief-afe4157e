@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
@@ -8,20 +8,49 @@ import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
 import { ForecastTableOfContents } from '@/components/ForecastTableOfContents';
+import { BirthChartWheel } from '@/components/BirthChartWheel';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+
+interface PlanetPosition {
+  id: number;
+  name: string;
+  sign: string;
+  sign_id: number;
+  sign_lord: string;
+  degree: number;
+  full_degree: number;
+  is_retrograde: boolean;
+  nakshatra?: string;
+  nakshatra_id?: number;
+  nakshatra_pada?: number;
+  nakshatra_lord?: string;
+}
+
 interface KundliDetails {
   id: string;
   birth_date: string;
   birth_time: string;
   birth_place: string;
   moon_sign: string | null;
+  moon_sign_id?: number | null;
+  moon_sign_lord?: string | null;
   sun_sign: string | null;
+  sun_sign_id?: number | null;
+  sun_sign_lord?: string | null;
   nakshatra: string | null;
+  nakshatra_id?: number | null;
+  nakshatra_pada?: number | null;
+  nakshatra_lord?: string | null;
   ascendant_sign: string | null;
+  ascendant_sign_id?: number | null;
+  ascendant_sign_lord?: string | null;
+  animal_sign?: string | null;
+  deity?: string | null;
+  planetary_positions?: PlanetPosition[] | null;
   free_vedic_forecast: string | null;
   paid_vedic_forecast: string | null;
   forecast_generated_at: string | null;
@@ -57,19 +86,37 @@ interface ForecastJson {
   sections: ForecastSection[];
 }
 
+interface LocationState {
+  kundliData?: KundliDetails & { is_owner?: boolean };
+  skipLoading?: boolean;
+}
+
+interface ZodiacLookup {
+  [key: string]: string;
+}
+
 const VedicResultsPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const kundliId = searchParams.get('id');
   const isPaidView = searchParams.get('paid') === 'true';
+  const locationState = location.state as LocationState | null;
 
-  const [kundli, setKundli] = useState<KundliDetails | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [kundli, setKundli] = useState<KundliDetails | null>(locationState?.kundliData || null);
+  const [loading, setLoading] = useState(!locationState?.skipLoading);
   const [error, setError] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isInlineCTAVisible, setIsInlineCTAVisible] = useState(false);
-  const [isOwner, setIsOwner] = useState(false);
+  const [isOwner, setIsOwner] = useState(locationState?.kundliData?.is_owner || false);
+  const [zodiacLookup, setZodiacLookup] = useState<ZodiacLookup>({});
   const inlineCTARef = useRef<HTMLDivElement>(null);
+
+  // Helper to get Western zodiac name
+  const getWesternName = (sanskritName: string | null) => {
+    if (!sanskritName) return null;
+    return zodiacLookup[sanskritName] || sanskritName;
+  };
 
   // Parse JSON forecast helper - defined early for use in useMemo
   const parseJsonForecast = (text: string): ForecastJson | null => {
@@ -90,18 +137,13 @@ const VedicResultsPage = () => {
         
         // Validate structure
         if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
-          console.log('[VedicResultsPage] Successfully parsed JSON with', parsed.sections.length, 'sections');
           return parsed as ForecastJson;
-        } else {
-          console.log('[VedicResultsPage] Parsed JSON but missing sections:', Object.keys(parsed || {}));
-          return null;
         }
+        return null;
       }
-      
-      console.log('[VedicResultsPage] Not JSON format, first 50 chars:', cleaned.substring(0, 50));
+
       return null;
-    } catch (e) {
-      console.error('[VedicResultsPage] JSON parse error:', e);
+    } catch {
       return null;
     }
   };
@@ -159,6 +201,11 @@ const VedicResultsPage = () => {
   }, []);
 
   useEffect(() => {
+    // If we already have data from navigation state, skip fetching
+    if (locationState?.skipLoading && locationState?.kundliData) {
+      return;
+    }
+
     const fetchKundli = async () => {
       if (!kundliId) {
         setError('No kundli ID provided');
@@ -178,13 +225,13 @@ const VedicResultsPage = () => {
         const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
           body: { kundli_id: kundliId, shared: true },
         });
-        
+
         if (sharedResult.error || !sharedResult.data) {
           setError('Forecast not found');
           setLoading(false);
           return;
         }
-        
+
         data = sharedResult.data;
       }
 
@@ -194,28 +241,55 @@ const VedicResultsPage = () => {
     };
 
     fetchKundli();
-  }, [kundliId]);
+  }, [kundliId, locationState]);
+
+  // Fetch zodiac lookup for Western names
+  useEffect(() => {
+    const fetchZodiacLookup = async () => {
+      const { data: zodiacData } = await supabase
+        .from('vedic_zodiac_signs')
+        .select('sanskrit_name, western_name');
+
+      if (zodiacData) {
+        const lookup: ZodiacLookup = {};
+        zodiacData.forEach((z) => {
+          lookup[z.sanskrit_name] = z.western_name;
+        });
+        setZodiacLookup(lookup);
+      }
+    };
+
+    fetchZodiacLookup();
+  }, []);
 
   const handleUpgrade = async () => {
     if (!kundli) return;
-    
+
     setIsUpgrading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-vedic-payment', {
-        body: { 
+        body: {
           kundli_id: kundli.id,
-          email: kundli.email 
         },
       });
 
-      if (error || !data?.url) {
-        toast.error('Failed to start checkout');
+      if (error) {
+        console.error('Checkout error:', error);
+        toast.error(error.message || 'Failed to start checkout');
+        setIsUpgrading(false);
+        return;
+      }
+
+      if (!data?.url) {
+        console.error('No checkout URL in response:', data);
+        toast.error(data?.error || 'Failed to start checkout');
         setIsUpgrading(false);
         return;
       }
 
       window.location.href = data.url;
     } catch (err) {
+      console.error('Checkout exception:', err);
       toast.error('An error occurred');
       setIsUpgrading(false);
     }
@@ -409,44 +483,85 @@ const VedicResultsPage = () => {
     };
   };
 
+  // Check if we have enough data for the birth chart
+  const hasBirthChartData = kundli &&
+    kundli.planetary_positions &&
+    kundli.planetary_positions.length > 0 &&
+    kundli.ascendant_sign &&
+    kundli.ascendant_sign_id &&
+    kundli.nakshatra;
+
+  const birthChartData = hasBirthChartData ? {
+    nakshatra: kundli.nakshatra!,
+    nakshatra_id: kundli.nakshatra_id || 1,
+    nakshatra_pada: kundli.nakshatra_pada || 1,
+    nakshatra_lord: kundli.nakshatra_lord || '',
+    moon_sign: kundli.moon_sign || '',
+    moon_sign_id: kundli.moon_sign_id || 1,
+    moon_sign_lord: kundli.moon_sign_lord || '',
+    sun_sign: kundli.sun_sign || '',
+    sun_sign_id: kundli.sun_sign_id || 1,
+    sun_sign_lord: kundli.sun_sign_lord || '',
+    ascendant_sign: kundli.ascendant_sign!,
+    ascendant_sign_id: kundli.ascendant_sign_id!,
+    ascendant_sign_lord: kundli.ascendant_sign_lord || '',
+    planetary_positions: kundli.planetary_positions!,
+    deity: kundli.deity || undefined,
+    animal_sign: kundli.animal_sign || undefined,
+  } : null;
+
   const renderJsonForecast = (forecast: ForecastJson, isPaid: boolean) => {
     if (!forecast?.sections || !Array.isArray(forecast.sections)) {
-      console.error('[VedicResultsPage] Invalid forecast structure:', forecast);
       return <p className="text-cream-muted">Unable to render forecast</p>;
     }
 
-    return (
-      <div className="space-y-10">
-        {forecast.sections.map((section, sIdx) => {
-          if (!section?.heading) return null;
-          
-          // Check if this is the upgrade section in free forecast
-          const isUpgradeSection = section.heading.toLowerCase().includes('want to know') || 
-                                   section.heading.toLowerCase().includes('specifics');
-          
-          if (isUpgradeSection && !isPaid) {
-            return null; // We'll render our own CTA instead
-          }
+    const elements: React.ReactNode[] = [];
 
-          const sectionId = generateSectionId(section.heading, sIdx);
+    forecast.sections.forEach((section, sIdx) => {
+      if (!section?.heading) return;
 
-          return (
-            <section 
-              key={sIdx} 
-              id={sectionId}
-              className="animate-fade-up scroll-mt-32" 
-              style={{ animationDelay: `${sIdx * 100}ms` }}
-            >
-              <h2 className="text-2xl font-bold text-gold mb-6 font-display">{section.heading}</h2>
-              
-              <div className="space-y-4">
-                {section.content?.map((item, iIdx) => renderContentItem(item, iIdx))}
-              </div>
-            </section>
-          );
-        })}
-      </div>
-    );
+      // Check if this is the upgrade section in free forecast
+      const isUpgradeSection = section.heading.toLowerCase().includes('want to know') ||
+                               section.heading.toLowerCase().includes('specifics');
+
+      if (isUpgradeSection && !isPaid) {
+        return; // We'll render our own CTA instead
+      }
+
+      const sectionId = generateSectionId(section.heading, sIdx);
+
+      elements.push(
+        <section
+          key={sIdx}
+          id={sectionId}
+          className="animate-fade-up scroll-mt-32"
+          style={{ animationDelay: `${sIdx * 100}ms` }}
+        >
+          <h2 className="text-2xl font-bold text-gold mb-6 font-display">{section.heading}</h2>
+
+          <div className="space-y-4">
+            {section.content?.map((item, iIdx) => renderContentItem(item, iIdx))}
+          </div>
+        </section>
+      );
+
+      // Add birth chart after the first section (Your Natural Orientation) - only for free forecast
+      if (sIdx === 0 && birthChartData && !isPaid) {
+        elements.push(
+          <section
+            key="birth-chart"
+            id="birth-chart"
+            className="animate-fade-up scroll-mt-32 py-8"
+            style={{ animationDelay: '150ms' }}
+          >
+            <h2 className="text-2xl font-bold text-gold mb-6 font-display text-center">Your Birth Chart</h2>
+            <BirthChartWheel chartData={birthChartData} />
+          </section>
+        );
+      }
+    });
+
+    return <div className="space-y-10">{elements}</div>;
   };
 
   const renderContentItem = (item: ContentItem, key: number) => {
@@ -604,13 +719,9 @@ const VedicResultsPage = () => {
     return elements;
   };
 
-  if (loading) {
-    return (
-      <div className="relative min-h-screen bg-celestial flex items-center justify-center">
-        <StarField />
-        <LoadingSpinner />
-      </div>
-    );
+  // Show loading while fetching data or waiting for forecast
+  if (loading || (kundli && !kundli.free_vedic_forecast && !kundli.paid_vedic_forecast)) {
+    return <LoadingSpinner />;
   }
 
   if (error || !kundli) {
@@ -636,7 +747,7 @@ const VedicResultsPage = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate('/vedic/input')}
-            className="text-cream-muted hover:text-cream"
+            className="text-cream-muted hover:text-cream font-sans"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -663,19 +774,19 @@ const VedicResultsPage = () => {
                   {kundli.ascendant_sign && (
                     <div className="flex justify-between">
                       <span className="text-cream-muted">Ascendant</span>
-                      <span className="text-cream font-medium">{kundli.ascendant_sign}</span>
+                      <span className="text-cream font-medium">{getWesternName(kundli.ascendant_sign)}</span>
                     </div>
                   )}
                   {kundli.moon_sign && (
                     <div className="flex justify-between">
                       <span className="text-cream-muted">Moon Sign</span>
-                      <span className="text-cream font-medium">{kundli.moon_sign}</span>
+                      <span className="text-cream font-medium">{getWesternName(kundli.moon_sign)}</span>
                     </div>
                   )}
                   {kundli.sun_sign && (
                     <div className="flex justify-between">
                       <span className="text-cream-muted">Sun Sign</span>
-                      <span className="text-cream font-medium">{kundli.sun_sign}</span>
+                      <span className="text-cream font-medium">{getWesternName(kundli.sun_sign)}</span>
                     </div>
                   )}
                   {kundli.nakshatra && (
@@ -704,11 +815,8 @@ const VedicResultsPage = () => {
       <main className="relative z-10 container mx-auto px-4 py-12">
         {/* Title Section */}
         <div className="text-center mb-12 animate-fade-up">
-          {kundli.name && (
-            <p className="text-cream text-lg mb-1 font-sans">{kundli.name}</p>
-          )}
           <p className="text-gold text-sm uppercase tracking-widest mb-2 font-sans">
-            Your Personalized
+            {kundli.name ? `${kundli.name}'s Personalized` : 'Your Personalized'}
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
             {isPaidView && hasPaidForecast ? 'Detailed 2026 Cosmic Brief' : '2026 Cosmic Brief'}
@@ -740,7 +848,7 @@ const VedicResultsPage = () => {
                 onViewChange={handleViewChange}
               />
             )}
-            
+
             <div className="bg-midnight/40 md:border md:border-border/30 rounded-none md:rounded-2xl p-4 md:p-10 backdrop-blur-sm -mx-4 md:mx-0">
               {parsedForecast ? (
                 renderJsonForecast(parsedForecast, isPaidView && hasPaidForecast)
@@ -836,12 +944,7 @@ const VedicResultsPage = () => {
               </div>
             )}
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <LoadingSpinner />
-            <p className="text-cream-muted mt-4">Generating your forecast...</p>
-          </div>
-        )}
+        ) : null}
       </main>
 
     </div>

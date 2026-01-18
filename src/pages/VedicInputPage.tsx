@@ -9,6 +9,7 @@ import { VedicLoadingScreen } from '@/components/VedicLoadingScreen';
 import { useForecastStore } from '@/store/forecastStore';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { getDeviceId } from '@/lib/deviceId';
+import { validateBirthForm, isFormValid, MIN_DATE } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
@@ -68,8 +69,8 @@ const VedicInputPage = () => {
           }
         }
       }
-    } catch (e) {
-      console.error('[VedicInputPage] Error loading saved form data:', e);
+    } catch {
+      // Ignore localStorage errors
     }
   }, []);
 
@@ -82,70 +83,30 @@ const VedicInputPage = () => {
         deviceId: getDeviceId(),
       };
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave));
-    } catch (e) {
-      console.error('[VedicInputPage] Error saving form data:', e);
+    } catch {
+      // Ignore localStorage errors
     }
   }, [formData, placeCoords]);
 
   const today = new Date().toISOString().split('T')[0];
-  const minDate = '1900-01-01';
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.birthDate) {
-      newErrors.birthDate = 'Please enter your birth date';
-    } else {
-      const selectedDate = new Date(formData.birthDate);
-      const min = new Date(minDate);
-      const max = new Date(today);
-      
-      // Calculate age
-      const todayDate = new Date();
-      let age = todayDate.getFullYear() - selectedDate.getFullYear();
-      const monthDiff = todayDate.getMonth() - selectedDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && todayDate.getDate() < selectedDate.getDate())) {
-        age--;
-      }
-      
-      if (selectedDate < min) {
-        newErrors.birthDate = 'Date cannot be before 1900';
-      } else if (selectedDate > max) {
-        newErrors.birthDate = 'Date cannot be in the future';
-      } else if (age < 18) {
-        newErrors.birthDate = 'You must be at least 18 years old to use this service';
-      }
-    }
-    if (!formData.birthTime) {
-      newErrors.birthTime = 'Please enter your birth time';
-    }
-    if (!formData.birthPlace.trim()) {
-      newErrors.birthPlace = 'Please enter your birth place';
-    } else if (!placeCoords) {
-      newErrors.birthPlace = 'Please select a location from the dropdown to confirm coordinates';
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = 'Please enter your email address';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    
+    const newErrors = validateBirthForm(formData, {
+      requireAge18: true,
+      hasPlaceCoords: !!placeCoords,
+    });
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isFormValid(newErrors);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    console.log('[VedicInputPage] Form submitted');
-    
+
     if (!validateForm() || !placeCoords) {
-      console.log('[VedicInputPage] Validation failed or no coords', { placeCoords });
       return;
     }
 
     setIsSubmitting(true);
-    console.log('[VedicInputPage] Starting API calls...');
 
     try {
       // Reset paid state for new forecast entry
@@ -161,14 +122,12 @@ const VedicInputPage = () => {
           placeCoords.lat,
           placeCoords.lon
         );
-        console.log('[VedicInputPage] UTC conversion result:', birthDateTimeUtc);
-      } catch (error) {
-        console.error('[VedicInputPage] Error converting to UTC:', error);
+      } catch {
+        // Continue with local time if UTC conversion fails
       }
 
       // Use the UTC datetime or construct a local one
       const datetimeForApi = birthDateTimeUtc || `${formData.birthDate}T${formData.birthTime}:00`;
-      console.log('[VedicInputPage] Calling get-kundli-data with:', { datetimeForApi, lat: placeCoords.lat, lon: placeCoords.lon });
       
       // Call get-kundli-data edge function (uses birth-details + planet-position APIs)
       const { data: kundliData, error: kundliError } = await supabase.functions.invoke(
@@ -183,8 +142,6 @@ const VedicInputPage = () => {
         }
       );
 
-      console.log('[VedicInputPage] Kundli API response:', { kundliData, kundliError });
-      
       if (kundliError) {
         throw new Error(kundliError.message || 'Failed to fetch Kundli data');
       }
@@ -193,8 +150,6 @@ const VedicInputPage = () => {
         throw new Error(kundliData.error);
       }
 
-      console.log('[VedicInputPage] Calling save-kundli-details...');
-      
       // Save to database via save-kundli-details edge function
       const deviceId = getDeviceId();
 
@@ -215,8 +170,6 @@ const VedicInputPage = () => {
         }
       );
 
-      console.log('[VedicInputPage] Save result:', { saveResult, saveError });
-      
       if (saveError) {
         throw new Error(saveError.message || 'Failed to save Kundli details');
       }
@@ -240,8 +193,6 @@ const VedicInputPage = () => {
       setIsSubmitting(false);
       setFlowState('name-prompt');
 
-      console.log('[VedicInputPage] Generating free Vedic forecast in background...');
-
       // Start generating forecast in background
       forecastPromiseRef.current = supabase.functions.invoke(
         'generate-free-vedic-forecast',
@@ -251,12 +202,9 @@ const VedicInputPage = () => {
           },
         }
       ).then((result) => {
-        console.log('[VedicInputPage] Forecast ready:', result);
         setForecastReady(true);
-        
-        if (result.error) {
-          console.error('[VedicInputPage] Forecast generation error:', result.error);
-        } else if (result.data?.high_demand) {
+
+        if (result.data?.high_demand) {
           toast.warning("We're experiencing high demand. Please try again in a minute.", {
             duration: 6000,
           });
@@ -268,7 +216,6 @@ const VedicInputPage = () => {
       });
 
     } catch (error) {
-      console.error('[VedicInputPage] Error submitting Vedic form:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate Kundli. Please try again.');
       setFlowState('input');
     } finally {
@@ -278,42 +225,40 @@ const VedicInputPage = () => {
 
   const handleNameSubmit = async () => {
     if (!kundliId || isNavigating) return;
-    
+
     setIsNavigating(true);
-    
-    // Save name if provided via secure edge function
+
+    // Save name if provided via secure edge function (don't await - fire and forget)
     if (userName.trim()) {
-      try {
-        const { data: updateResult, error: updateError } = await supabase.functions.invoke(
-          'update-kundli-details',
-          {
-            body: {
-              type: 'update_name',
-              kundli_id: kundliId,
-              name: userName.trim(),
-              device_id: getDeviceId(),
-            },
-          }
-        );
-        
-        if (updateError || updateResult?.error) {
-          console.error('[VedicInputPage] Error saving name:', updateError || updateResult?.error);
-        } else {
-          console.log('[VedicInputPage] Name saved:', userName);
+      supabase.functions.invoke(
+        'update-kundli-details',
+        {
+          body: {
+            type: 'update_name',
+            kundli_id: kundliId,
+            name: userName.trim(),
+            device_id: getDeviceId(),
+          },
         }
-      } catch (e) {
-        console.error('[VedicInputPage] Error saving name:', e);
-      }
+      ).catch(() => {
+        // Name save errors are non-critical
+      });
     }
-    
-    // Show loading screen
+
+    // If forecast is already ready, go directly to results
+    if (forecastReady) {
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      navigate(`/vedic/results?id=${kundliId}`);
+      return;
+    }
+
+    // Otherwise show loading screen while waiting
     setFlowState('generating');
-    
-    // Wait for forecast to complete if not ready
+
     if (forecastPromiseRef.current) {
       await forecastPromiseRef.current;
     }
-    
+
     // Navigate to results
     localStorage.removeItem(FORM_STORAGE_KEY);
     navigate(`/vedic/results?id=${kundliId}`);
@@ -474,7 +419,7 @@ const VedicInputPage = () => {
               <Input
                 id="birthDate"
                 type="date"
-                min={minDate}
+                min={MIN_DATE}
                 max={today}
                 value={formData.birthDate}
                 onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}

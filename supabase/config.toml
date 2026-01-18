@@ -1,21 +1,6 @@
-project_id = "kfqnrdnwnmzawajybytr"
-
-[functions.generate-forecast]
-verify_jwt = false
-
-[functions.generate-paid-forecast]
-verify_jwt = false
-
-[functions.get-forecast]
-verify_jwt = false
-
-[functions.create-payment]
-verify_jwt = false
+project_id = "tgjjgshoviowjnoeksar"
 
 [functions.verify-payment]
-verify_jwt = false
-
-[functions.update-free-forecast-email]
 verify_jwt = false
 
 [functions.send-forecast-email]
@@ -64,7 +49,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.get-vedic-kundli-details]
-verify_jwt = false
-
-[functions.link-forecast-to-user]
 verify_jwt = false

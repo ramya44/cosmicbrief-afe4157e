@@ -71,7 +71,7 @@ const VedicVsWesternPage = () => {
         {/* Header */}
         <header className="relative z-20 border-b border-border/30 bg-midnight/80 backdrop-blur-md sticky top-0">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2">
+            <Link to="/" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2 font-sans">
               <ArrowLeft className="w-4 h-4" />
               Back
             </Link>

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createLogger } from "../_shared/lib/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,10 +11,7 @@ const corsHeaders = {
 
 const VEDIC_PRICE_ID = "price_1SosMtCxgYskbggmpRArQdNq";
 
-const logStep = (step: string, details?: Record<string, unknown>) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[create-vedic-payment] ${step}${detailsStr}`);
-};
+const logStep = createLogger("CREATE-VEDIC-PAYMENT");
 
 // Input validation schema
 const PaymentRequestSchema = z.object({

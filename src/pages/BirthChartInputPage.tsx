@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useForecastStore } from '@/store/forecastStore';
 import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
 import { getDeviceId } from '@/lib/deviceId';
+import { validateBirthForm, isFormValid, MIN_DATE } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Sparkles, Calendar, Clock, MapPin, Check, X, Loader2, User, Mail } from 'lucide-react';
 import { toast } from 'sonner';
@@ -61,8 +62,8 @@ const BirthChartInputPage = () => {
           }
         }
       }
-    } catch (e) {
-      console.error('[BirthChartInputPage] Error loading saved form data:', e);
+    } catch {
+      // Ignore localStorage errors
     }
   }, []);
 
@@ -75,51 +76,20 @@ const BirthChartInputPage = () => {
         deviceId: getDeviceId(),
       };
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave));
-    } catch (e) {
-      console.error('[BirthChartInputPage] Error saving form data:', e);
+    } catch {
+      // Ignore localStorage errors
     }
   }, [formData, placeCoords]);
 
   const today = new Date().toISOString().split('T')[0];
-  const minDate = '1900-01-01';
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    // Email is required
-    if (!formData.email.trim()) {
-      newErrors.email = 'Please enter your email address';
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email.trim())) {
-        newErrors.email = 'Please enter a valid email address';
-      }
-    }
-    
-    if (!formData.birthDate) {
-      newErrors.birthDate = 'Please enter your birth date';
-    } else {
-      const selectedDate = new Date(formData.birthDate);
-      const min = new Date(minDate);
-      const max = new Date(today);
-      
-      if (selectedDate < min) {
-        newErrors.birthDate = 'Date cannot be before 1900';
-      } else if (selectedDate > max) {
-        newErrors.birthDate = 'Date cannot be in the future';
-      }
-    }
-    if (!formData.birthTime) {
-      newErrors.birthTime = 'Please enter your birth time';
-    }
-    if (!formData.birthPlace.trim()) {
-      newErrors.birthPlace = 'Please enter your birth place';
-    } else if (!placeCoords) {
-      newErrors.birthPlace = 'Please select a location from the dropdown to confirm coordinates';
-    }
-    
+    const newErrors = validateBirthForm(formData, {
+      requireAge18: false,
+      hasPlaceCoords: !!placeCoords,
+    });
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isFormValid(newErrors);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -141,8 +111,8 @@ const BirthChartInputPage = () => {
           placeCoords.lat,
           placeCoords.lon
         );
-      } catch (error) {
-        console.error('[BirthChartInputPage] Error converting to UTC:', error);
+      } catch {
+        // Continue with local time if UTC conversion fails
       }
 
       const datetimeForApi = birthDateTimeUtc || `${formData.birthDate}T${formData.birthTime}:00`;
@@ -191,12 +161,9 @@ const BirthChartInputPage = () => {
 
         if (!saveError && saveResult?.id) {
           kundliId = saveResult.id;
-          console.log('[BirthChartInputPage] Saved birth chart with ID:', kundliId);
-        } else {
-          console.warn('[BirthChartInputPage] Could not save birth chart:', saveError?.message || saveResult?.error);
         }
-      } catch (saveErr) {
-        console.warn('[BirthChartInputPage] Error saving birth chart (non-blocking):', saveErr);
+        // Continue even if save fails - DB save is optional for viewing chart
+      } catch {
         // Continue anyway - saving to DB is optional for viewing the chart
       }
 
@@ -224,7 +191,6 @@ const BirthChartInputPage = () => {
       navigate('/birth-chart');
 
     } catch (error) {
-      console.error('[BirthChartInputPage] Error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to generate birth chart. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -258,11 +224,11 @@ const BirthChartInputPage = () => {
 
         {/* Back button */}
         <div className="absolute top-6 left-6 z-20">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => navigate(-1)}
-            className="text-cream-muted hover:text-cream"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="text-cream-muted hover:text-cream font-sans"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -340,7 +306,7 @@ const BirthChartInputPage = () => {
                 <Input
                   id="birthDate"
                   type="date"
-                  min={minDate}
+                  min={MIN_DATE}
                   max={today}
                   value={formData.birthDate}
                   onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}

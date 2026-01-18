@@ -1,7 +1,6 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { StarField } from '@/components/StarField';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -35,7 +34,6 @@ const VedicPaymentSuccessPage = () => {
         clearInterval(progressInterval);
 
         if (error) {
-          console.error('Generation error:', error);
           setStatus('error');
           toast.error('Failed to generate your forecast');
           return;
@@ -52,18 +50,28 @@ const VedicPaymentSuccessPage = () => {
           setProgress(100);
           setStatus('success');
           toast.success('Your complete forecast is ready!');
-          
-          // Navigate to results with paid flag
+
+          // Fetch the full kundli data before navigating to avoid loading screen
+          const deviceId = (await import('@/lib/deviceId')).getDeviceId();
+          const { data: kundliData } = await supabase.functions.invoke('get-vedic-kundli-details', {
+            body: { kundli_id: kundliId, device_id: deviceId },
+          });
+
+          // Navigate to results with paid flag and pass full data via state
           setTimeout(() => {
-            navigate(`/vedic/results?id=${kundliId}&paid=true`);
-          }, 1500);
+            navigate(`/vedic/results?id=${kundliId}&paid=true`, {
+              state: {
+                kundliData: kundliData ? { ...kundliData, paid_vedic_forecast: data.forecast } : null,
+                skipLoading: !!kundliData
+              }
+            });
+          }, 1000);
         } else {
           setStatus('error');
           toast.error('Failed to generate forecast');
         }
-      } catch (err) {
+      } catch {
         clearInterval(progressInterval);
-        console.error('Error:', err);
         setStatus('error');
         toast.error('An error occurred');
       }
@@ -97,8 +105,15 @@ const VedicPaymentSuccessPage = () => {
       <div className="relative z-10 text-center px-4">
         {status === 'generating' && (
           <>
-            <LoadingSpinner />
-            <h1 className="font-display text-3xl md:text-4xl text-cream mt-8 mb-4">
+            <div className="relative w-20 h-20 mb-8 mx-auto">
+              {/* Outer ring */}
+              <div className="absolute inset-0 rounded-full border-2 border-gold/20"></div>
+              {/* Spinning ring */}
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-gold animate-spin"></div>
+              {/* Inner glow */}
+              <div className="absolute inset-4 rounded-full bg-gold/10 animate-pulse"></div>
+            </div>
+            <h1 className="font-display text-3xl md:text-4xl text-cream mb-4">
               Generating Your Detailed 2026 Cosmic Brief
             </h1>
             <p className="text-cream-muted text-lg mb-8 animate-fade-up">

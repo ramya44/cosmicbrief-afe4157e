@@ -26,16 +26,14 @@ import {
   type DashaJson,
   type PratyantardashaInfo,
 } from "../_shared/lib/dasha-helpers.ts";
+import { createLogger } from "../_shared/lib/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-function logStep(step: string, details?: Record<string, unknown>) {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[debug-llm-payload] ${step}${detailsStr}`);
-}
+const logStep = createLogger("DEBUG-LLM-PAYLOAD");
 
 // System prompts (same as the actual functions)
 const FREE_SYSTEM_PROMPT = `You are an expert Vedic astrologer who writes personalized forecasts in accessible, engaging language. Your writing style is:

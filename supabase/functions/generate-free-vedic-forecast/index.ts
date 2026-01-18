@@ -30,11 +30,9 @@ import {
   getAscendantLordPosition,
   toWesternSign,
 } from "../_shared/lib/planetary-positions.ts";
+import { createLogger } from "../_shared/lib/logger.ts";
 
-function logStep(step: string, details?: Record<string, unknown>) {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[generate-free-vedic-forecast] ${step}${detailsStr}`);
-}
+const logStep = createLogger("GENERATE-FREE-VEDIC-FORECAST");
 
 // Input validation schema
 const ForecastRequestSchema = z.object({
@@ -735,7 +733,7 @@ Deno.serve(async (req) => {
           const emailHtml = buildVedicFreeEmailHtml(kundliData.name, resultsUrl);
 
           const emailResponse = await resend.emails.send({
-            from: "Cosmic Brief <noreply@cosmicbrief.com>",
+            from: "Cosmic Brief <noreply@send.notifications.cosmicbrief.com>",
             to: [customerEmail],
             subject: "Your Free Vedic Forecast is Ready! ✨",
             html: emailHtml,

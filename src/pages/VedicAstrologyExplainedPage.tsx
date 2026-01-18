@@ -79,7 +79,7 @@ const VedicAstrologyExplainedPage = () => {
         {/* Header */}
         <header className="relative z-20 border-b border-border/30 bg-midnight/80 backdrop-blur-md sticky top-0">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link to="/" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2">
+            <Link to="/" className="text-cream-muted hover:text-cream transition-colors flex items-center gap-2 font-sans">
               <ArrowLeft className="w-4 h-4" />
               Back
             </Link>
@@ -463,6 +463,12 @@ const VedicAstrologyExplainedPage = () => {
               <strong className="text-cream">Bottom line:</strong> They're complementary, not competing. Use Western for psychological insight, Vedic for strategic timing.
             </p>
 
+            <p className="text-cream-muted leading-relaxed mt-4">
+              <Link to="/vedic-vs-western-astrology" className="text-gold hover:underline">
+                Read our detailed comparison of Vedic vs Western Astrology →
+              </Link>
+            </p>
+
             {/* Why Vedic Astrology is Gaining Popularity */}
             <h2 className="text-3xl font-semibold text-gold mt-12 mb-6">
               Why Vedic Astrology is Gaining Popularity
@@ -527,9 +533,15 @@ const VedicAstrologyExplainedPage = () => {
               
               <div className="bg-gold/10 border border-gold/30 rounded-xl p-6">
                 <h3 className="text-xl font-semibold text-gold mt-0 mb-3">Step 5: Get a Forecast</h3>
-                <p className="text-cream-muted m-0">
-                  Instead of studying for years, let professionals interpret your chart and periods for you—especially if you're making major decisions.
+                <p className="text-cream-muted mb-4">
+                  Instead of studying for years, let us interpret your chart and periods for you—especially if you're making major decisions.
                 </p>
+                <Link to="/vedic/input">
+                  <Button className="bg-gold hover:bg-gold-light text-midnight font-semibold">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Get Your 2026 Forecast
+                  </Button>
+                </Link>
               </div>
             </div>
 

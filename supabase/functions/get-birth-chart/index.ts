@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createLogger } from "../_shared/lib/logger.ts";
 
 const PROKERALA_CLIENT_ID = Deno.env.get("PROKERALA_CLIENT_ID");
 const PROKERALA_CLIENT_SECRET = Deno.env.get("PROKERALA_CLIENT_SECRET");
@@ -11,11 +12,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Consistent logging helper
-const logStep = (step: string, details?: Record<string, unknown>) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[GET-BIRTH-CHART] ${step}${detailsStr}`);
-};
+const logStep = createLogger("GET-BIRTH-CHART");
 
 // Input validation schema
 const InputSchema = z.object({

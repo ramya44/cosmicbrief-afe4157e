@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createLogger } from "../_shared/lib/logger.ts";
+
+const logStep = createLogger("NOTIFY-SUPPORT");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,11 +42,6 @@ function checkRateLimit(ip: string): boolean {
   record.count++;
   return true;
 }
-
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[NOTIFY-SUPPORT] ${step}${detailsStr}`);
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

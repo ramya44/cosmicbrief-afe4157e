@@ -27,8 +27,8 @@ export const AnimalBadge = ({ animalSign, inline = false }: AnimalBadgeProps) =>
         if (!error && data) {
           setAnimalData(data);
         }
-      } catch (e) {
-        console.error('Failed to fetch animal data:', e);
+      } catch {
+        // Ignore fetch errors
       } finally {
         setLoading(false);
       }
