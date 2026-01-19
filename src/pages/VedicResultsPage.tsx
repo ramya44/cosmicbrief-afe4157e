@@ -894,7 +894,7 @@ const VedicResultsPage = () => {
                   ) : (
                     <span className="flex items-center justify-center">
                       <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span>Unlock Full Cosmic Brief — $59</span>
+                      <span>Unlock Full Cosmic Brief — $19</span>
                     </span>
                   )}
                 </Button>
