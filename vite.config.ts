@@ -15,4 +15,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  test: {
+    // Exclude Deno edge function tests (they use https: imports)
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/supabase/functions/**/*.test.ts',
+    ],
+  },
 }));

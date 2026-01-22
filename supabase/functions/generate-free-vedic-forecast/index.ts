@@ -733,7 +733,7 @@ Deno.serve(async (req) => {
           const emailHtml = buildVedicFreeEmailHtml(kundliData.name, resultsUrl);
 
           const emailResponse = await resend.emails.send({
-            from: "Cosmic Brief <noreply@send.notifications.cosmicbrief.com>",
+            from: "Cosmic Brief <noreply@notifications.cosmicbrief.com>",
             to: [customerEmail],
             subject: "Your Free Vedic Forecast is Ready! ✨",
             html: emailHtml,

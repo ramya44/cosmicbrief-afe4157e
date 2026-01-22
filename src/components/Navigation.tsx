@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogIn, Menu, Calendar, Circle, BookOpen, ChevronDown } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { LogIn, LogOut, Menu, Calendar, Circle, BookOpen, ChevronDown } from 'lucide-react';
+import { FEATURE_FLAGS } from '@/config/feature-flags';
 
 // Primary nav items shown in bottom bar on mobile
 const primaryNavItems = [
@@ -13,6 +15,7 @@ const primaryNavItems = [
 
 // Blog articles
 const blogArticles = [
+  { label: 'Planetary Periods (Dashas) Explained', path: '/blog/planetary-periods-dashas', date: 'Jan 21, 2025' },
   { label: 'Nakshatra: Your True Cosmic DNA', path: '/blog/what-is-nakshatra', date: 'Jan 18, 2025' },
   { label: 'Why 2026 Is a Turning Point', path: '/blog/why-2026-is-a-turning-point', date: 'Jan 1, 2025' },
   { label: 'Career Transits in 2026', path: '/blog/career-astrology-2026', date: 'Jan 18, 2025' },
@@ -22,7 +25,7 @@ const blogArticles = [
 // Secondary nav items shown in hamburger menu on mobile
 const secondaryNavItems = [
   { label: 'Weekly Horoscope', path: '/weekly-horoscope' },
-  { label: 'Compatibility', path: '/compatibility' },
+  ...(FEATURE_FLAGS.LIFE_ARC_ENABLED ? [{ label: 'Life Arc', path: '/life-arc' }] : []),
   { label: 'What is Vedic Astrology', path: '/vedic-astrology-explained' },
 ];
 
@@ -31,13 +34,14 @@ const allNavItems = [
   { label: '2026 Forecast', path: '/' },
   { label: 'Birth Chart', path: '/get-birth-chart' },
   { label: 'Weekly Horoscope', path: '/weekly-horoscope' },
-  { label: 'Compatibility', path: '/compatibility' },
+  ...(FEATURE_FLAGS.LIFE_ARC_ENABLED ? [{ label: 'Life Arc', path: '/life-arc' }] : []),
   { label: 'What is Vedic Astrology', path: '/vedic-astrology-explained' },
 ];
 
 export const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [blogDropdownOpen, setBlogDropdownOpen] = useState(false);
 
@@ -45,6 +49,12 @@ export const Navigation = () => {
     navigate(path);
     setMenuOpen(false);
     setBlogDropdownOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    setMenuOpen(false);
+    navigate('/');
   };
 
   const isBlogActive = location.pathname.startsWith('/blog');
@@ -112,15 +122,27 @@ export const Navigation = () => {
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/auth')}
-          className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0 font-[Inter]"
-        >
-          <LogIn className="w-4 h-4 mr-2" />
-          Login
-        </Button>
+        {isAuthenticated ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0 font-[Inter]"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/auth')}
+            className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0 font-[Inter]"
+          >
+            <LogIn className="w-4 h-4 mr-2" />
+            Login
+          </Button>
+        )}
       </nav>
 
       {/* Mobile Top Bar - hamburger menu only */}
@@ -186,13 +208,23 @@ export const Navigation = () => {
 
               <div className="border-t border-gold/20 my-4" />
 
-              <button
-                onClick={() => handleNavigation('/auth')}
-                className="flex items-center px-4 py-3 text-base font-sans text-cream-muted hover:text-cream hover:bg-gold/5 rounded-md transition-colors"
-              >
-                <LogIn className="w-4 h-4 mr-3" />
-                Login
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center px-4 py-3 text-base font-sans text-cream-muted hover:text-cream hover:bg-gold/5 rounded-md transition-colors"
+                >
+                  <LogOut className="w-4 h-4 mr-3" />
+                  Logout
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleNavigation('/auth')}
+                  className="flex items-center px-4 py-3 text-base font-sans text-cream-muted hover:text-cream hover:bg-gold/5 rounded-md transition-colors"
+                >
+                  <LogIn className="w-4 h-4 mr-3" />
+                  Login
+                </button>
+              )}
             </div>
           </SheetContent>
         </Sheet>

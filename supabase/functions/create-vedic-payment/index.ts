@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const VEDIC_PRICE_ID = "price_1SosMtCxgYskbggmpRArQdNq";
+const VEDIC_PRICE_ID = "price_1SrB51CxgYskbggmuf3HalJ3";
 
 const logStep = createLogger("CREATE-VEDIC-PAYMENT");
 

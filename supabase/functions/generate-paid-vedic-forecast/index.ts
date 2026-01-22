@@ -698,7 +698,7 @@ Deno.serve(async (req) => {
           }
 
           const emailOptions: any = {
-            from: "Cosmic Brief <noreply@send.notifications.cosmicbrief.com>",
+            from: "Cosmic Brief <noreply@notifications.cosmicbrief.com>",
             to: [customerEmail],
             subject: "Your Complete Vedic Cosmic Brief is Ready! ✨",
             html: emailHtml,

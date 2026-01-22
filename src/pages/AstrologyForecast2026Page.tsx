@@ -20,6 +20,14 @@ const AstrologyForecast2026Page = () => {
   // Latest articles
   const latestArticles = [
     {
+      title: "Planetary Periods (Dashas) Explained",
+      category: "Learn",
+      excerpt: "The Vedic timing system that shapes your life in 6-20 year chapters. Learn which period you're in and what it means.",
+      link: "/blog/planetary-periods-dashas",
+      author: "Maya G.",
+      date: "Jan 21, 2025"
+    },
+    {
       title: "Nakshatra: Your True Cosmic DNA",
       category: "Learn",
       excerpt: "The 27 lunar mansions are the heart of Vedic astrology. Here's why they matter more than your zodiac sign.",
@@ -65,6 +73,12 @@ const AstrologyForecast2026Page = () => {
       title: "Nakshatra: Your True Cosmic DNA",
       description: "The 27 lunar mansions are the heart of Vedic astrology. Here's why they matter more than your zodiac sign.",
       link: "/blog/what-is-nakshatra",
+      available: true
+    },
+    {
+      title: "Planetary Periods (Dashas) Explained",
+      description: "The timing system that shapes your life in 6-20 year chapters. Your personal cosmic calendar.",
+      link: "/blog/planetary-periods-dashas",
       available: true
     },
     {

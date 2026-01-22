@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
-
-const PROKERALA_CLIENT_ID = Deno.env.get("PROKERALA_CLIENT_ID");
-const PROKERALA_CLIENT_SECRET = Deno.env.get("PROKERALA_CLIENT_SECRET");
-const PROKERALA_TOKEN_URL = "https://api.prokerala.com/token";
-const PROKERALA_API_BASE = "https://api.prokerala.com/v2";
+import { calculateBirthChart } from "../_shared/lib/vedic-calculator.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,47 +18,45 @@ const InputSchema = z.object({
   ayanamsa: z.number().optional().default(1), // 1 = Lahiri (most common for Vedic)
 });
 
-// Token cache
-let cachedToken: { accessToken: string; expiresAt: number } | null = null;
-
-// Get access token from Prokerala OAuth2
-async function getAccessToken(): Promise<string> {
-  // Check if we have a valid cached token
-  if (cachedToken && Date.now() < cachedToken.expiresAt - 60000) {
-    return cachedToken.accessToken;
-  }
-
-  logStep("Fetching new Prokerala access token");
-
-  const response = await fetch(PROKERALA_TOKEN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: PROKERALA_CLIENT_ID!,
-      client_secret: PROKERALA_CLIENT_SECRET!,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    logStep("Token request failed", { status: response.status, error: errorText });
-    throw new Error(`Failed to get access token: ${response.status}`);
-  }
-
-  const data = await response.json();
-  
-  // Cache the token (expires_in is in seconds)
-  cachedToken = {
-    accessToken: data.access_token,
-    expiresAt: Date.now() + (data.expires_in * 1000),
-  };
-
-  logStep("Access token obtained", { expiresIn: data.expires_in });
-  return data.access_token;
-}
+// Additional nakshatra details
+const NAKSHATRA_DETAILS: Record<string, {
+  gender: string;
+  ganam: string;
+  symbol: string;
+  nadi: string;
+  color: string;
+  direction: string;
+  syllables: string;
+  birthstone: string;
+}> = {
+  "Ashwini": { gender: "Male", ganam: "Deva", symbol: "Horse's Head", nadi: "Vata", color: "Red", direction: "South", syllables: "Chu, Che, Cho, La", birthstone: "Cat's Eye" },
+  "Bharani": { gender: "Female", ganam: "Manushya", symbol: "Yoni", nadi: "Pitta", color: "Red", direction: "West", syllables: "Li, Lu, Le, Lo", birthstone: "Diamond" },
+  "Krittika": { gender: "Female", ganam: "Rakshasa", symbol: "Razor", nadi: "Kapha", color: "White", direction: "North", syllables: "A, I, U, E", birthstone: "Ruby" },
+  "Rohini": { gender: "Female", ganam: "Manushya", symbol: "Cart", nadi: "Kapha", color: "White", direction: "East", syllables: "O, Va, Vi, Vu", birthstone: "Pearl" },
+  "Mrigashira": { gender: "Neutral", ganam: "Deva", symbol: "Deer's Head", nadi: "Pitta", color: "Silver", direction: "South", syllables: "Ve, Vo, Ka, Ki", birthstone: "Coral" },
+  "Ardra": { gender: "Female", ganam: "Manushya", symbol: "Teardrop", nadi: "Vata", color: "Green", direction: "West", syllables: "Ku, Gha, Ng, Chha", birthstone: "Hessonite" },
+  "Punarvasu": { gender: "Male", ganam: "Deva", symbol: "Bow", nadi: "Vata", color: "Lead", direction: "North", syllables: "Ke, Ko, Ha, Hi", birthstone: "Yellow Sapphire" },
+  "Pushya": { gender: "Male", ganam: "Deva", symbol: "Flower", nadi: "Pitta", color: "Red", direction: "East", syllables: "Hu, He, Ho, Da", birthstone: "Blue Sapphire" },
+  "Ashlesha": { gender: "Female", ganam: "Rakshasa", symbol: "Serpent", nadi: "Kapha", color: "Red", direction: "South", syllables: "Di, Du, De, Do", birthstone: "Emerald" },
+  "Magha": { gender: "Female", ganam: "Rakshasa", symbol: "Throne", nadi: "Kapha", color: "Cream", direction: "West", syllables: "Ma, Mi, Mu, Me", birthstone: "Cat's Eye" },
+  "Purva Phalguni": { gender: "Female", ganam: "Manushya", symbol: "Hammock", nadi: "Pitta", color: "Light Brown", direction: "North", syllables: "Mo, Ta, Ti, Tu", birthstone: "Diamond" },
+  "Uttara Phalguni": { gender: "Female", ganam: "Manushya", symbol: "Bed", nadi: "Vata", color: "Bright Blue", direction: "East", syllables: "Te, To, Pa, Pi", birthstone: "Ruby" },
+  "Hasta": { gender: "Male", ganam: "Deva", symbol: "Hand", nadi: "Vata", color: "Deep Green", direction: "South", syllables: "Pu, Sha, Na, Tha", birthstone: "Pearl" },
+  "Chitra": { gender: "Female", ganam: "Rakshasa", symbol: "Pearl", nadi: "Pitta", color: "Black", direction: "West", syllables: "Pe, Po, Ra, Ri", birthstone: "Coral" },
+  "Swati": { gender: "Female", ganam: "Deva", symbol: "Coral", nadi: "Kapha", color: "Black", direction: "North", syllables: "Ru, Re, Ro, Ta", birthstone: "Hessonite" },
+  "Vishakha": { gender: "Female", ganam: "Rakshasa", symbol: "Arch", nadi: "Kapha", color: "Golden", direction: "East", syllables: "Ti, Tu, Te, To", birthstone: "Yellow Sapphire" },
+  "Anuradha": { gender: "Male", ganam: "Deva", symbol: "Lotus", nadi: "Pitta", color: "Reddish Brown", direction: "South", syllables: "Na, Ni, Nu, Ne", birthstone: "Blue Sapphire" },
+  "Jyeshtha": { gender: "Female", ganam: "Rakshasa", symbol: "Earring", nadi: "Vata", color: "Cream", direction: "West", syllables: "No, Ya, Yi, Yu", birthstone: "Emerald" },
+  "Mula": { gender: "Neutral", ganam: "Rakshasa", symbol: "Roots", nadi: "Vata", color: "Brown", direction: "North", syllables: "Ye, Yo, Bha, Bhi", birthstone: "Cat's Eye" },
+  "Purva Ashadha": { gender: "Female", ganam: "Manushya", symbol: "Fan", nadi: "Pitta", color: "Black", direction: "East", syllables: "Bhu, Dha, Pha, Da", birthstone: "Diamond" },
+  "Uttara Ashadha": { gender: "Female", ganam: "Manushya", symbol: "Tusk", nadi: "Kapha", color: "Copper", direction: "South", syllables: "Be, Bo, Ja, Ji", birthstone: "Ruby" },
+  "Shravana": { gender: "Male", ganam: "Deva", symbol: "Ear", nadi: "Kapha", color: "Light Blue", direction: "West", syllables: "Ju, Je, Jo, Gha", birthstone: "Pearl" },
+  "Dhanishta": { gender: "Female", ganam: "Rakshasa", symbol: "Drum", nadi: "Pitta", color: "Silver", direction: "North", syllables: "Ga, Gi, Gu, Ge", birthstone: "Coral" },
+  "Shatabhisha": { gender: "Neutral", ganam: "Rakshasa", symbol: "Circle", nadi: "Vata", color: "Blue-Green", direction: "East", syllables: "Go, Sa, Si, Su", birthstone: "Hessonite" },
+  "Purva Bhadrapada": { gender: "Male", ganam: "Manushya", symbol: "Sword", nadi: "Vata", color: "Silver", direction: "South", syllables: "Se, So, Da, Di", birthstone: "Yellow Sapphire" },
+  "Uttara Bhadrapada": { gender: "Male", ganam: "Manushya", symbol: "Twins", nadi: "Pitta", color: "Purple", direction: "West", syllables: "Du, Tha, Jha, Da", birthstone: "Blue Sapphire" },
+  "Revati": { gender: "Female", ganam: "Deva", symbol: "Fish", nadi: "Kapha", color: "Brown", direction: "North", syllables: "De, Do, Cha, Chi", birthstone: "Emerald" },
+};
 
 // Birth chart response interface
 interface BirthChartResult {
@@ -77,7 +71,7 @@ interface BirthChartResult {
   nakshatraPada: number;
   nakshatraLord: string;
   nakshatraGender: string;
-  // Additional info from birth-details
+  // Additional info
   deity: string;
   ganam: string;
   birthSymbol: string;
@@ -89,87 +83,12 @@ interface BirthChartResult {
   birthStone: string;
 }
 
-// Call Prokerala birth-details API to get moon sign, sun sign, nakshatra, and additional info
-async function getBirthDetails(
-  accessToken: string,
-  datetime: string,
-  latitude: number,
-  longitude: number,
-  ayanamsa: number
-): Promise<BirthChartResult> {
-  const coordinates = `${latitude},${longitude}`;
-  const url = new URL(`${PROKERALA_API_BASE}/astrology/birth-details`);
-  url.searchParams.set("datetime", datetime);
-  url.searchParams.set("coordinates", coordinates);
-  url.searchParams.set("ayanamsa", ayanamsa.toString());
-  url.searchParams.set("la", "en");
-
-  logStep("Calling birth-details API", { url: url.toString() });
-
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Accept": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    logStep("Birth details API failed", { status: response.status, error: errorText });
-    throw new Error(`Birth details API failed: ${response.status}`);
-  }
-
-  const data = await response.json();
-  logStep("Birth details received", { status: data.status });
-
-  // Extract all available data from the response
-  const chandraRasi = data.data.chandra_rasi;
-  const sooryaRasi = data.data.soorya_rasi;
-  const nakshatra = data.data.nakshatra;
-  const additionalInfo = data.data.additional_info || {};
-  const zodiac = data.data.zodiac;
-
-  return {
-    moonSign: chandraRasi.name,
-    moonSignId: chandraRasi.id,
-    moonSignLord: chandraRasi.lord?.vedic_name || chandraRasi.lord?.name || "",
-    sunSign: sooryaRasi.name,
-    sunSignId: sooryaRasi.id,
-    sunSignLord: sooryaRasi.lord?.vedic_name || sooryaRasi.lord?.name || "",
-    nakshatra: nakshatra.name,
-    nakshatraId: nakshatra.id,
-    nakshatraPada: nakshatra.pada,
-    nakshatraLord: nakshatra.lord?.vedic_name || nakshatra.lord?.name || "",
-    nakshatraGender: additionalInfo.gender || "",
-    // Additional info
-    deity: additionalInfo.deity || "",
-    ganam: additionalInfo.ganam || "",
-    birthSymbol: additionalInfo.symbol || "",
-    animalSign: additionalInfo.animal_sign || "",
-    nadi: additionalInfo.nadi || "",
-    luckyColor: additionalInfo.color || "",
-    bestDirection: additionalInfo.best_direction || "",
-    syllables: additionalInfo.syllables || "",
-    birthStone: additionalInfo.birth_stone || "",
-  };
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Check for required credentials
-    if (!PROKERALA_CLIENT_ID || !PROKERALA_CLIENT_SECRET) {
-      logStep("Missing Prokerala credentials");
-      return new Response(
-        JSON.stringify({ error: "Service configuration error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Parse and validate input
     const rawInput = await req.json();
     const parseResult = InputSchema.safeParse(rawInput);
@@ -182,15 +101,48 @@ serve(async (req) => {
       );
     }
 
-    const { datetime, latitude, longitude, ayanamsa } = parseResult.data;
+    const { datetime, latitude, longitude } = parseResult.data;
 
-    logStep("Processing birth chart request", { datetime, latitude, longitude, ayanamsa });
+    logStep("Processing birth chart request", { datetime, latitude, longitude });
 
-    // Get access token
-    const accessToken = await getAccessToken();
+    // Calculate birth chart using internal calculator
+    const chart = calculateBirthChart(datetime, latitude, longitude);
 
-    // Call birth-details API
-    const birthDetails = await getBirthDetails(accessToken, datetime, latitude, longitude, ayanamsa);
+    // Get additional nakshatra details
+    const nakshatraDetails = NAKSHATRA_DETAILS[chart.moonNakshatra.name] || {
+      gender: "",
+      ganam: "",
+      symbol: "",
+      nadi: "",
+      color: "",
+      direction: "",
+      syllables: "",
+      birthstone: "",
+    };
+
+    const birthDetails: BirthChartResult = {
+      moonSign: chart.moonSign.vedic,
+      moonSignId: chart.moonSign.index + 1,
+      moonSignLord: chart.moonSign.lord,
+      sunSign: chart.sunSign.vedic,
+      sunSignId: chart.sunSign.index + 1,
+      sunSignLord: chart.sunSign.lord,
+      nakshatra: chart.moonNakshatra.name,
+      nakshatraId: chart.moonNakshatra.index + 1,
+      nakshatraPada: chart.moonNakshatra.pada,
+      nakshatraLord: chart.moonNakshatra.lord,
+      nakshatraGender: nakshatraDetails.gender,
+      // Additional info
+      deity: chart.moonNakshatra.deity,
+      ganam: nakshatraDetails.ganam,
+      birthSymbol: nakshatraDetails.symbol,
+      animalSign: chart.moonNakshatra.animal,
+      nadi: nakshatraDetails.nadi,
+      luckyColor: nakshatraDetails.color,
+      bestDirection: nakshatraDetails.direction,
+      syllables: nakshatraDetails.syllables,
+      birthStone: nakshatraDetails.birthstone,
+    };
 
     logStep("Birth chart computed successfully", {
       moonSign: birthDetails.moonSign,

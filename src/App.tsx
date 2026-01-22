@@ -20,16 +20,18 @@ import AuthPage from "./pages/AuthPage";
 import ContactPage from "./pages/ContactPage";
 import BackgroundPage from "./pages/BackgroundPage";
 import WeeklyHoroscopePage from "./pages/WeeklyHoroscopePage";
-import CompatibilityPage from "./pages/CompatibilityPage";
+import LifeArcPage from "./pages/LifeArcPage";
 import HowToReadChartPage from "./pages/HowToReadChartPage";
 import VedicVsWesternPage from "./pages/VedicVsWesternPage";
 import BirthChartInputPage from "./pages/BirthChartInputPage";
 import BirthChartPage from "./pages/BirthChartPage";
 import BlogCategoryPage from "./pages/BlogCategoryPage";
 import WhatIsNakshatraPage from "./pages/WhatIsNakshatraPage";
+import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { Navigation } from "./components/Navigation";
+import { FEATURE_FLAGS } from "./config/feature-flags";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +77,7 @@ const App = () => (
           <Route path="/blog/politics-and-global-events" element={<PoliticsGlobalEventsPage />} />
           <Route path="/blog/career-astrology-2026" element={<CareerAstrology2026Page />} />
           <Route path="/blog/what-is-nakshatra" element={<WhatIsNakshatraPage />} />
+          <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="/vedic/payment-success" element={<VedicPaymentSuccessPage />} />
@@ -84,7 +87,9 @@ const App = () => (
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/background" element={<BackgroundPage />} />
           <Route path="/weekly-horoscope" element={<WeeklyHoroscopePage />} />
-          <Route path="/compatibility" element={<CompatibilityPage />} />
+          {FEATURE_FLAGS.LIFE_ARC_ENABLED && (
+            <Route path="/life-arc" element={<LifeArcPage />} />
+          )}
           <Route path="/how-to-read-vedic-chart" element={<HowToReadChartPage />} />
           <Route path="/vedic-vs-western-astrology" element={<VedicVsWesternPage />} />
           <Route path="/get-birth-chart" element={<BirthChartInputPage />} />

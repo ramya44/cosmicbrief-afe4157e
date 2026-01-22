@@ -1,154 +1,62 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { StarField } from '@/components/StarField';
-import { PlaceAutocomplete, PlaceSelection } from '@/components/PlaceAutocomplete';
+import { BirthDetailsForm, BirthFormData } from '@/components/BirthDetailsForm';
 import { VedicLoadingScreen } from '@/components/VedicLoadingScreen';
 import { useForecastStore } from '@/store/forecastStore';
-import { convertBirthTimeToUtc } from '@/lib/convertBirthTimeToUtc';
+import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
 import { getDeviceId } from '@/lib/deviceId';
-import { validateBirthForm, isFormValid, MIN_DATE } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
-import { Sparkles, Calendar, Clock, MapPin, Check, X, Mail, Loader2, User } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Sparkles, Calendar, Clock, MapPin, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 const FORM_STORAGE_KEY = 'vedic_input_form_data';
-
-interface SavedFormData {
-  birthDate: string;
-  birthTime: string;
-  birthPlace: string;
-  email: string;
-  placeCoords: { lat: number; lon: number } | null;
-  deviceId: string;
-}
 
 type FlowState = 'input' | 'name-prompt' | 'generating';
 
 const VedicInputPage = () => {
   const navigate = useNavigate();
   const { setBirthData, setIsPaid, setStrategicForecast } = useForecastStore();
-  
-  const [formData, setFormData] = useState({
-    birthDate: '',
-    birthTime: '',
-    birthPlace: '',
-    email: '',
-  });
-  const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { calculate, isCalculating } = useVedicChart();
+  const { isAuthenticated, hasKundli, kundli, isLoading: authLoading } = useAuth();
+
   const [flowState, setFlowState] = useState<FlowState>('input');
-  
+
   // Name prompt state
   const [userName, setUserName] = useState('');
   const [kundliId, setKundliId] = useState<string | null>(null);
   const [forecastReady, setForecastReady] = useState(false);
   const forecastPromiseRef = useRef<Promise<any> | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [submittedFormData, setSubmittedFormData] = useState<BirthFormData | null>(null);
 
-  // Load saved form data on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(FORM_STORAGE_KEY);
-      if (saved) {
-        const parsed: SavedFormData = JSON.parse(saved);
-        const currentDeviceId = getDeviceId();
-        // Only restore if same device
-        if (parsed.deviceId === currentDeviceId) {
-          setFormData({
-            birthDate: parsed.birthDate || '',
-            birthTime: parsed.birthTime || '',
-            birthPlace: parsed.birthPlace || '',
-            email: parsed.email || '',
-          });
-          if (parsed.placeCoords) {
-            setPlaceCoords(parsed.placeCoords);
-          }
-        }
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, []);
+  // Quick generate state for logged-in users
+  const [isQuickGenerating, setIsQuickGenerating] = useState(false);
 
-  // Save form data on changes
-  useEffect(() => {
-    try {
-      const dataToSave: SavedFormData = {
-        ...formData,
-        placeCoords,
-        deviceId: getDeviceId(),
-      };
-      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave));
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, [formData, placeCoords]);
-
-  const today = new Date().toISOString().split('T')[0];
-
-  const validateForm = () => {
-    const newErrors = validateBirthForm(formData, {
-      requireAge18: true,
-      hasPlaceCoords: !!placeCoords,
-    });
-    setErrors(newErrors);
-    return isFormValid(newErrors);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm() || !placeCoords) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
+  const handleSubmit = async (data: BirthFormData) => {
     try {
       // Reset paid state for new forecast entry
       setIsPaid(false);
       setStrategicForecast(null);
-      
-      // Convert birth time to UTC
-      let birthDateTimeUtc: string | undefined;
-      try {
-        birthDateTimeUtc = await convertBirthTimeToUtc(
-          formData.birthDate,
-          formData.birthTime,
-          placeCoords.lat,
-          placeCoords.lon
-        );
-      } catch {
-        // Continue with local time if UTC conversion fails
-      }
 
-      // Use the UTC datetime or construct a local one
-      const datetimeForApi = birthDateTimeUtc || `${formData.birthDate}T${formData.birthTime}:00`;
-      
-      // Call get-kundli-data edge function (uses birth-details + planet-position APIs)
-      const { data: kundliData, error: kundliError } = await supabase.functions.invoke(
-        'get-kundli-data',
-        {
-          body: {
-            datetime: datetimeForApi,
-            latitude: placeCoords.lat,
-            longitude: placeCoords.lon,
-            ayanamsa: 1, // Lahiri
-          },
-        }
-      );
+      // Get UTC datetime
+      const birthDateTimeUtc = await getBirthDateTimeUtc({
+        birthDate: data.birthDate,
+        birthTime: data.birthTime,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      });
 
-      if (kundliError) {
-        throw new Error(kundliError.message || 'Failed to fetch Kundli data');
-      }
-
-      if (kundliData?.error) {
-        throw new Error(kundliData.error);
-      }
+      // Calculate kundli data
+      const kundliData = await calculate({
+        birthDate: data.birthDate,
+        birthTime: data.birthTime,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      });
 
       // Save to database via save-kundli-details edge function
       const deviceId = getDeviceId();
@@ -157,13 +65,13 @@ const VedicInputPage = () => {
         'save-kundli-details',
         {
           body: {
-            birth_date: formData.birthDate,
-            birth_time: formData.birthTime,
-            birth_place: formData.birthPlace,
+            birth_date: data.birthDate,
+            birth_time: data.birthTime,
+            birth_place: data.birthPlace,
             birth_time_utc: birthDateTimeUtc,
-            latitude: placeCoords.lat,
-            longitude: placeCoords.lon,
-            email: formData.email,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            email: data.email,
             device_id: deviceId,
             kundli_data: kundliData,
           },
@@ -180,46 +88,42 @@ const VedicInputPage = () => {
 
       // Store birth data in store
       const fullBirthData = {
-        ...formData,
-        lat: placeCoords.lat,
-        lon: placeCoords.lon,
+        ...data,
+        lat: data.latitude,
+        lon: data.longitude,
         birthDateTimeUtc,
       };
-      
+
       setBirthData(fullBirthData);
       setKundliId(saveResult.id);
+      setSubmittedFormData(data);
 
       // Show the name prompt screen
-      setIsSubmitting(false);
       setFlowState('name-prompt');
 
       // Start generating forecast in background
-      forecastPromiseRef.current = supabase.functions.invoke(
-        'generate-free-vedic-forecast',
-        {
+      forecastPromiseRef.current = supabase.functions
+        .invoke('generate-free-vedic-forecast', {
           body: {
             kundli_id: saveResult.id,
           },
-        }
-      ).then((result) => {
-        setForecastReady(true);
+        })
+        .then((result) => {
+          setForecastReady(true);
 
-        if (result.data?.high_demand) {
-          toast.warning("We're experiencing high demand. Please try again in a minute.", {
-            duration: 6000,
-          });
-        } else if (result.data?.manual_generation) {
-          toast.info('Your Cosmic Brief is being prepared. You\'ll receive it via email shortly.');
-        }
-        
-        return result;
-      });
+          if (result.data?.high_demand) {
+            toast.warning("We're experiencing high demand. Please try again in a minute.", {
+              duration: 6000,
+            });
+          } else if (result.data?.manual_generation) {
+            toast.info("Your Cosmic Brief is being prepared. You'll receive it via email shortly.");
+          }
 
+          return result;
+        });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to generate Kundli. Please try again.');
       setFlowState('input');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -230,19 +134,18 @@ const VedicInputPage = () => {
 
     // Save name if provided via secure edge function (don't await - fire and forget)
     if (userName.trim()) {
-      supabase.functions.invoke(
-        'update-kundli-details',
-        {
+      supabase.functions
+        .invoke('update-kundli-details', {
           body: {
             type: 'update_name',
             kundli_id: kundliId,
             name: userName.trim(),
             device_id: getDeviceId(),
           },
-        }
-      ).catch(() => {
-        // Name save errors are non-critical
-      });
+        })
+        .catch(() => {
+          // Name save errors are non-critical
+        });
     }
 
     // If forecast is already ready, go directly to results
@@ -266,40 +169,68 @@ const VedicInputPage = () => {
 
   const handleSkipName = async () => {
     if (!kundliId || isNavigating) return;
-    
+
     setIsNavigating(true);
-    
+
     // If forecast is ready, go directly to results
     if (forecastReady) {
       localStorage.removeItem(FORM_STORAGE_KEY);
       navigate(`/vedic/results?id=${kundliId}`);
       return;
     }
-    
+
     // Otherwise show loading screen while waiting
     setFlowState('generating');
-    
+
     if (forecastPromiseRef.current) {
       await forecastPromiseRef.current;
     }
-    
+
     localStorage.removeItem(FORM_STORAGE_KEY);
     navigate(`/vedic/results?id=${kundliId}`);
   };
 
-  const handlePlaceSelect = (place: PlaceSelection) => {
-    setPlaceCoords({ lat: place.lat, lon: place.lon });
-  };
+  // Quick generate for logged-in users with existing kundli
+  const handleQuickGenerate = async () => {
+    if (!kundli?.id) return;
 
-  const handlePlaceChange = (value: string) => {
-    setFormData({ ...formData, birthPlace: value });
-    // Clear coordinates when user types (they need to re-select)
-    setPlaceCoords(null);
-  };
+    setIsQuickGenerating(true);
 
-  const clearSelectedPlace = () => {
-    setFormData({ ...formData, birthPlace: '' });
-    setPlaceCoords(null);
+    try {
+      // Reset paid state for new forecast entry
+      setIsPaid(false);
+      setStrategicForecast(null);
+
+      // Show loading screen
+      setFlowState('generating');
+
+      // Generate forecast using existing kundli
+      const { data, error } = await supabase.functions.invoke('generate-free-vedic-forecast', {
+        body: {
+          kundli_id: kundli.id,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to generate forecast');
+      }
+
+      if (data?.high_demand) {
+        toast.warning("We're experiencing high demand. Please try again in a minute.", {
+          duration: 6000,
+        });
+      } else if (data?.manual_generation) {
+        toast.info("Your Cosmic Brief is being prepared. You'll receive it via email shortly.");
+      }
+
+      // Navigate to results
+      navigate(`/vedic/results?id=${kundli.id}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to generate forecast. Please try again.');
+      setFlowState('input');
+    } finally {
+      setIsQuickGenerating(false);
+    }
   };
 
   // Show name prompt screen
@@ -307,21 +238,17 @@ const VedicInputPage = () => {
     return (
       <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
         <StarField />
-        
+
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
           <div className="w-full max-w-md animate-fade-up">
             <div className="text-center mb-10">
               <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-6">
                 <User className="w-8 h-8 text-gold" />
               </div>
-              <h1 className="font-display text-3xl md:text-4xl text-cream mb-3">
-                What can we call you?
-              </h1>
-              <p className="text-cream-muted">
-                This is optional, but helps personalize your experience
-              </p>
+              <h1 className="font-display text-3xl md:text-4xl text-cream mb-3">What can we call you?</h1>
+              <p className="text-cream-muted">This is optional, but helps personalize your experience</p>
             </div>
-            
+
             <div className="space-y-6">
               <Input
                 type="text"
@@ -336,14 +263,8 @@ const VedicInputPage = () => {
                   }
                 }}
               />
-              
-              <Button 
-                variant="hero" 
-                size="lg" 
-                className="w-full group"
-                onClick={handleNameSubmit}
-                disabled={isNavigating}
-              >
+
+              <Button variant="hero" size="lg" className="w-full group" onClick={handleNameSubmit} disabled={isNavigating}>
                 {isNavigating ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
@@ -356,7 +277,7 @@ const VedicInputPage = () => {
                   </>
                 )}
               </Button>
-              
+
               <button
                 onClick={handleSkipName}
                 disabled={isNavigating}
@@ -376,149 +297,86 @@ const VedicInputPage = () => {
     return <VedicLoadingScreen />;
   }
 
-  return (
-    <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
-      <StarField />
+  // Show loading while checking auth for logged-in users
+  if (authLoading) {
+    return (
+      <div className="relative min-h-screen bg-celestial flex items-center justify-center">
+        <StarField />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-gold animate-spin mx-auto mb-4" />
+          <p className="text-cream-muted">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
-        <div className="w-full max-w-md">
-          {/* Header */}
-          <div className="text-center mb-10 animate-fade-up">
-            <h1 className="font-display text-3xl md:text-4xl text-cream mb-3">
-              Your Birth Details
-            </h1>
-            <p className="text-cream-muted">
-              Enter the moment you arrived into the world
-            </p>
-          </div>
+  // Simplified view for logged-in users with existing kundli
+  if (isAuthenticated && hasKundli && kundli) {
+    const formatDate = (dateStr: string) => {
+      try {
+        return new Date(dateStr).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      } catch {
+        return dateStr;
+      }
+    };
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6 overflow-visible">
-            {/* Date of Birth */}
-            <div 
-              className="space-y-2 animate-fade-up"
+    return (
+      <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
+        <StarField />
+
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
+          <div className="w-full max-w-md">
+            {/* Header */}
+            <div className="text-center mb-10 animate-fade-up">
+              <h1 className="font-display text-3xl md:text-4xl text-cream mb-3">Your 2026 Forecast</h1>
+              <p className="text-cream-muted">Generate your personalized Vedic astrology brief</p>
+            </div>
+
+            {/* Birth Details Display */}
+            <div
+              className="bg-secondary/30 border border-gold/20 rounded-lg p-6 mb-8 animate-fade-up"
               style={{ animationDelay: '100ms', animationFillMode: 'both' }}
             >
-              <Label htmlFor="birthDate" className="text-cream flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gold" />
-                Date of Birth
-              </Label>
-              <Input
-                id="birthDate"
-                type="date"
-                min={MIN_DATE}
-                max={today}
-                value={formData.birthDate}
-                onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20 text-left"
-                disabled={isSubmitting}
-              />
-              {errors.birthDate && (
-                <p className="text-sm text-destructive">{errors.birthDate}</p>
-              )}
-            </div>
-
-            {/* Time of Birth */}
-            <div 
-              className="space-y-2 animate-fade-up"
-              style={{ animationDelay: '150ms', animationFillMode: 'both' }}
-            >
-              <Label htmlFor="birthTime" className="text-cream flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gold" />
-                Time of Birth
-              </Label>
-              <Input
-                id="birthTime"
-                type="time"
-                value={formData.birthTime}
-                onChange={(e) => setFormData({ ...formData, birthTime: e.target.value })}
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20 text-left"
-                disabled={isSubmitting}
-              />
-              {errors.birthTime && (
-                <p className="text-sm text-destructive">{errors.birthTime}</p>
-              )}
-            </div>
-
-            {/* Place of Birth */}
-            <div 
-              className="space-y-2 animate-fade-up relative z-50"
-              style={{ animationDelay: '200ms', animationFillMode: 'both' }}
-            >
-              <Label htmlFor="birthPlace" className="text-cream flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-gold" />
-                Place of Birth
-              </Label>
-              {placeCoords ? (
-                // Show confirmed location
-                <div className="flex items-center gap-2 p-3 bg-secondary/50 border border-gold/30 rounded-md">
-                  <Check className="w-4 h-4 text-gold flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-cream truncate">{formData.birthPlace}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {placeCoords.lat.toFixed(4)}°, {placeCoords.lon.toFixed(4)}°
-                    </p>
+              <h2 className="text-gold text-sm font-medium mb-4 flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Your Birth Details
+              </h2>
+              <div className="space-y-3 text-sm">
+                {kundli.name && (
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-cream">{kundli.name}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={clearSelectedPlace}
-                    className="p-1 hover:bg-accent/50 rounded transition-colors"
-                    aria-label="Clear location"
-                    disabled={isSubmitting}
-                  >
-                    <X className="w-4 h-4 text-muted-foreground hover:text-cream" />
-                  </button>
+                )}
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-cream">{formatDate(kundli.birth_date)}</span>
                 </div>
-              ) : (
-                <PlaceAutocomplete
-                  value={formData.birthPlace}
-                  onChange={handlePlaceChange}
-                  onPlaceSelect={handlePlaceSelect}
-                  placeholder="Start typing a city..."
-                  className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
-                />
-              )}
-              {errors.birthPlace && (
-                <p className="text-sm text-destructive">{errors.birthPlace}</p>
-              )}
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-cream">{kundli.birth_time}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-cream">{kundli.birth_place}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Email Address */}
-            <div 
-              className="space-y-2 animate-fade-up"
-              style={{ animationDelay: '250ms', animationFillMode: 'both' }}
-            >
-              <Label htmlFor="email" className="text-cream flex items-center gap-2">
-                <Mail className="w-4 h-4 text-gold" />
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="your@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20"
-                disabled={isSubmitting}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <div 
-              className="pt-4 animate-fade-up"
-              style={{ animationDelay: '250ms', animationFillMode: 'both' }}
-            >
-              <Button 
-                type="submit" 
-                variant="hero" 
-                size="lg" 
+            {/* Generate Button */}
+            <div className="animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+              <Button
+                variant="hero"
+                size="lg"
                 className="w-full group"
-                disabled={isSubmitting}
+                onClick={handleQuickGenerate}
+                disabled={isQuickGenerating}
               >
-                {isSubmitting ? (
+                {isQuickGenerating ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                     Generating Brief...
@@ -531,23 +389,66 @@ const VedicInputPage = () => {
                 )}
               </Button>
             </div>
-          </form>
 
-          <p 
+            <p
+              className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
+              style={{ animationDelay: '300ms', animationFillMode: 'both' }}
+            >
+              <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">
+                What is Vedic Astrology?
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
+      <StarField />
+
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-10 animate-fade-up">
+            <h1 className="font-display text-3xl md:text-4xl text-cream mb-3">Your Birth Details</h1>
+            <p className="text-cream-muted">Enter the moment you arrived into the world</p>
+          </div>
+
+          {/* Form */}
+          <BirthDetailsForm
+            showName={false}
+            showEmail
+            requireAge18
+            storageKey={isAuthenticated ? undefined : FORM_STORAGE_KEY}
+            onSubmit={handleSubmit}
+            isSubmitting={isCalculating}
+            submitButtonText="Generate my 2026 Brief"
+            submitButtonIcon={<Sparkles className="w-5 h-5 ml-1 transition-transform group-hover:rotate-12" />}
+          />
+
+          <p
             className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
             style={{ animationDelay: '300ms', animationFillMode: 'both' }}
           >
             Your information is used only to generate your personalized forecast. We never sell information, ever.
           </p>
-          <p 
+          <p
             className="text-center text-xs text-muted-foreground mt-3 animate-fade-up"
             style={{ animationDelay: '350ms', animationFillMode: 'both' }}
           >
-            <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology?</a>
+            <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">
+              What is Vedic Astrology?
+            </a>
             {' · '}
-            <a href="/#/privacy" className="text-gold hover:underline">Privacy Policy</a>
+            <a href="/#/privacy" className="text-gold hover:underline">
+              Privacy Policy
+            </a>
             {' · '}
-            <a href="/#/terms" className="text-gold hover:underline">Terms of Service</a>
+            <a href="/#/terms" className="text-gold hover:underline">
+              Terms of Service
+            </a>
           </p>
         </div>
       </div>

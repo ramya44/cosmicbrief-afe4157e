@@ -53,6 +53,13 @@ const postsByCategory: Record<string, Array<{
 }>> = {
   learn: [
     {
+      title: "Planetary Periods (Dashas) Explained",
+      excerpt: "The Vedic timing system that shapes your life in 6-20 year chapters. Learn which period you're in and what it means.",
+      link: "/blog/planetary-periods-dashas",
+      author: "Maya G.",
+      date: "Jan 21, 2025",
+    },
+    {
       title: "Nakshatra: Your True Cosmic DNA",
       excerpt: "The 27 lunar mansions are the heart of Vedic astrology. Here's why they matter more than your zodiac sign.",
       link: "/blog/what-is-nakshatra",

@@ -113,7 +113,7 @@ export const PlaceAutocomplete = ({
         className={className}
         autoComplete="off"
       />
-      
+
       {isLoading && (
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           <div className="w-4 h-4 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
@@ -133,6 +133,9 @@ export const PlaceAutocomplete = ({
               <span className="line-clamp-2">{place.display_name}</span>
             </button>
           ))}
+          <div className="px-3 py-1.5 text-[10px] text-cream-muted/50 border-t border-border/30">
+            Powered by OpenStreetMap
+          </div>
         </div>
       )}
     </div>

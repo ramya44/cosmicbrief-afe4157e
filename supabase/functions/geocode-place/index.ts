@@ -5,37 +5,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Rate limiting: 20 requests per minute per IP (more lenient for autocomplete)
-const rateLimiter = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT_MAX = 20;
-const RATE_LIMIT_WINDOW_MS = 60000;
+// Rate limiting: 1 request per second per IP (Nominatim requirement)
+const rateLimiter = new Map<string, number>();
+const RATE_LIMIT_MS = 1000;
 
 function getClientIP(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
-         req.headers.get("x-real-ip") || 
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+         req.headers.get("x-real-ip") ||
          "unknown";
 }
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
-  const record = rateLimiter.get(ip);
-  
+  const lastRequest = rateLimiter.get(ip);
+
+  // Clean up old entries periodically
   if (rateLimiter.size > 10000) {
+    const cutoff = now - 60000;
     for (const [key, value] of rateLimiter.entries()) {
-      if (now > value.resetAt) rateLimiter.delete(key);
+      if (value < cutoff) rateLimiter.delete(key);
     }
   }
-  
-  if (!record || now > record.resetAt) {
-    rateLimiter.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-  
-  if (record.count >= RATE_LIMIT_MAX) {
+
+  if (lastRequest && now - lastRequest < RATE_LIMIT_MS) {
     return false;
   }
-  
-  record.count++;
+
+  rateLimiter.set(ip, now);
   return true;
 }
 
@@ -56,7 +52,7 @@ serve(async (req) => {
   if (!checkRateLimit(clientIP)) {
     console.warn(`Rate limit exceeded for IP: ${clientIP}`);
     return new Response(
-      JSON.stringify({ error: "Too many requests. Please try again later." }),
+      JSON.stringify({ error: "Too many requests. Please wait a moment." }),
       { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -70,24 +66,19 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    
-    // Add maximum length check
-    const sanitizedQuery = query.trim().slice(0, 200);
 
-    const url = new URL("https://nominatim.openstreetmap.org/search");
-    url.searchParams.set("format", "json");
-    url.searchParams.set("q", sanitizedQuery);
-    url.searchParams.set("limit", "10"); // Fetch more to allow for deduplication
-    url.searchParams.set("addressdetails", "1");
-    url.searchParams.set("featureType", "settlement"); // Only cities, towns, villages
+    // Sanitize and encode the query
+    const sanitizedQuery = encodeURIComponent(query.trim().slice(0, 200));
 
-    const resp = await fetch(url.toString(), {
+    // Nominatim API - free geocoding service from OpenStreetMap
+    // featuretype=settlement filters to cities, towns, villages only (no airports, landmarks, etc.)
+    const url = `https://nominatim.openstreetmap.org/search?q=${sanitizedQuery}&format=json&limit=5&addressdetails=0&featuretype=settlement`;
+
+    const resp = await fetch(url, {
       method: "GET",
       headers: {
-        // Nominatim usage policy expects a valid User-Agent from server-side requests.
-        // (Browsers cannot reliably set this header, which is why we proxy.)
-        "User-Agent": "AstroForecastApp/1.0 (Lovable Cloud)",
-        "Accept-Language": "en",
+        "User-Agent": "CosmicBrief/1.0 (astrology app)",
+        "Accept": "application/json",
       },
     });
 
@@ -102,22 +93,14 @@ serve(async (req) => {
 
     const data = (await resp.json()) as NominatimResult[];
 
-    const mapped = Array.isArray(data)
+    const results = Array.isArray(data)
       ? data.map((r) => ({
-          place_id: r.place_id,
+          place_id: String(r.place_id),
           display_name: r.display_name,
           lat: r.lat,
           lon: r.lon,
         }))
       : [];
-
-    // Deduplicate by display_name
-    const seen = new Set<string>();
-    const results = mapped.filter((r) => {
-      if (seen.has(r.display_name)) return false;
-      seen.add(r.display_name);
-      return true;
-    }).slice(0, 5); // Return max 5 results
 
     return new Response(JSON.stringify({ results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
