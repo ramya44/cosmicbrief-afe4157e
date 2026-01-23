@@ -14,6 +14,49 @@ export interface BirthData {
   birthDateTimeUtc?: string;
 }
 
+export interface PlanetPosition {
+  id: number;
+  name: string;
+  sign: string;
+  sign_id: number;
+  sign_lord: string;
+  degree: number;
+  full_degree: number;
+  is_retrograde: boolean;
+  nakshatra?: string;
+  nakshatra_id?: number;
+  nakshatra_pada?: number;
+  nakshatra_lord?: string;
+}
+
+export interface KundliData {
+  nakshatra: string;
+  nakshatra_id: number;
+  nakshatra_pada: number;
+  nakshatra_lord: string;
+  nakshatra_gender?: string;
+  deity?: string;
+  ganam?: string;
+  birth_symbol?: string;
+  animal_sign?: string;
+  nadi?: string;
+  lucky_color?: string;
+  best_direction?: string;
+  syllables?: string;
+  birth_stone?: string;
+  moon_sign: string;
+  moon_sign_id: number;
+  moon_sign_lord: string;
+  sun_sign: string;
+  sun_sign_id: number;
+  sun_sign_lord: string;
+  zodiac_sign?: string;
+  ascendant_sign: string;
+  ascendant_sign_id: number;
+  ascendant_sign_lord: string;
+  planetary_positions: PlanetPosition[];
+}
+
 export interface MonthEntry {
   month: string;
   why: string;
@@ -85,6 +128,9 @@ export interface ForecastState {
   freeGuestToken: string | null;
   paidGuestToken: string | null;
   paidForecastId: string | null;
+  // Session kundli data for cross-page sharing
+  kundliId: string | null;
+  kundliData: KundliData | null;
   setBirthData: (data: BirthData) => void;
   setFreeForecast: (forecast: FreeForecast) => void;
   setForecast: (free: FreeForecast, paid: PaidForecast) => void;
@@ -97,6 +143,9 @@ export interface ForecastState {
   setFreeGuestToken: (token: string | null) => void;
   setPaidGuestToken: (token: string | null) => void;
   setPaidForecastId: (id: string | null) => void;
+  setKundliId: (id: string | null) => void;
+  setKundliData: (data: KundliData | null) => void;
+  clearSession: () => void;
   reset: () => void;
 }
 
@@ -115,6 +164,8 @@ export const useForecastStore = create<ForecastState>()(
       freeGuestToken: null,
       paidGuestToken: null,
       paidForecastId: null,
+      kundliId: null,
+      kundliData: null,
       setBirthData: (data) => set({ birthData: data }),
       setFreeForecast: (forecast) => set({ freeForecast: forecast }),
       setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
@@ -127,12 +178,19 @@ export const useForecastStore = create<ForecastState>()(
       setFreeGuestToken: (token) => set({ freeGuestToken: token }),
       setPaidGuestToken: (token) => set({ paidGuestToken: token }),
       setPaidForecastId: (id) => set({ paidForecastId: id }),
-      reset: () => set({ 
-        birthData: null, 
-        freeForecast: null, 
-        paidForecast: null, 
+      setKundliId: (id) => set({ kundliId: id }),
+      setKundliData: (data) => set({ kundliData: data }),
+      clearSession: () => set({
+        kundliId: null,
+        kundliData: null,
+        birthData: null,
+      }),
+      reset: () => set({
+        birthData: null,
+        freeForecast: null,
+        paidForecast: null,
         strategicForecast: null,
-        isPaid: false, 
+        isPaid: false,
         isLoading: false,
         isStrategicLoading: false,
         stripeSessionId: null,
@@ -140,11 +198,13 @@ export const useForecastStore = create<ForecastState>()(
         freeGuestToken: null,
         paidGuestToken: null,
         paidForecastId: null,
+        kundliId: null,
+        kundliData: null,
       }),
     }),
     {
       name: 'forecast-storage',
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         birthData: state.birthData,
         freeForecast: state.freeForecast,
         isPaid: state.isPaid,
@@ -154,6 +214,8 @@ export const useForecastStore = create<ForecastState>()(
         freeGuestToken: state.freeGuestToken,
         paidGuestToken: state.paidGuestToken,
         paidForecastId: state.paidForecastId,
+        kundliId: state.kundliId,
+        kundliData: state.kundliData,
       }),
     }
   )

@@ -19,7 +19,7 @@ type FlowState = 'input' | 'name-prompt' | 'generating';
 
 const VedicInputPage = () => {
   const navigate = useNavigate();
-  const { setBirthData, setIsPaid, setStrategicForecast } = useForecastStore();
+  const { setBirthData, setIsPaid, setStrategicForecast, setKundliId, setKundliData } = useForecastStore();
   const { calculate, isCalculating } = useVedicChart();
   const { isAuthenticated, hasKundli, kundli, isLoading: authLoading } = useAuth();
 
@@ -27,7 +27,7 @@ const VedicInputPage = () => {
 
   // Name prompt state
   const [userName, setUserName] = useState('');
-  const [kundliId, setKundliId] = useState<string | null>(null);
+  const [localKundliId, setLocalKundliId] = useState<string | null>(null);
   const [forecastReady, setForecastReady] = useState(false);
   const forecastPromiseRef = useRef<Promise<any> | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -95,7 +95,11 @@ const VedicInputPage = () => {
       };
 
       setBirthData(fullBirthData);
+      // Save kundli ID and data to store for cross-page sharing
       setKundliId(saveResult.id);
+      setKundliData(kundliData);
+      // Set local state for this page's flow
+      setLocalKundliId(saveResult.id);
       setSubmittedFormData(data);
 
       // Show the name prompt screen
@@ -128,7 +132,7 @@ const VedicInputPage = () => {
   };
 
   const handleNameSubmit = async () => {
-    if (!kundliId || isNavigating) return;
+    if (!localKundliId || isNavigating) return;
 
     setIsNavigating(true);
 
@@ -138,7 +142,7 @@ const VedicInputPage = () => {
         .invoke('update-kundli-details', {
           body: {
             type: 'update_name',
-            kundli_id: kundliId,
+            kundli_id: localKundliId,
             name: userName.trim(),
             device_id: getDeviceId(),
           },
@@ -151,7 +155,7 @@ const VedicInputPage = () => {
     // If forecast is already ready, go directly to results
     if (forecastReady) {
       localStorage.removeItem(FORM_STORAGE_KEY);
-      navigate(`/vedic/results?id=${kundliId}`);
+      navigate(`/vedic/results?id=${localKundliId}`);
       return;
     }
 
@@ -164,18 +168,18 @@ const VedicInputPage = () => {
 
     // Navigate to results
     localStorage.removeItem(FORM_STORAGE_KEY);
-    navigate(`/vedic/results?id=${kundliId}`);
+    navigate(`/vedic/results?id=${localKundliId}`);
   };
 
   const handleSkipName = async () => {
-    if (!kundliId || isNavigating) return;
+    if (!localKundliId || isNavigating) return;
 
     setIsNavigating(true);
 
     // If forecast is ready, go directly to results
     if (forecastReady) {
       localStorage.removeItem(FORM_STORAGE_KEY);
-      navigate(`/vedic/results?id=${kundliId}`);
+      navigate(`/vedic/results?id=${localKundliId}`);
       return;
     }
 
@@ -187,7 +191,7 @@ const VedicInputPage = () => {
     }
 
     localStorage.removeItem(FORM_STORAGE_KEY);
-    navigate(`/vedic/results?id=${kundliId}`);
+    navigate(`/vedic/results?id=${localKundliId}`);
   };
 
   // Quick generate for logged-in users with existing kundli

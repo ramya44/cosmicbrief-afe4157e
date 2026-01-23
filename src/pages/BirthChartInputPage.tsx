@@ -6,6 +6,8 @@ import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
 import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSessionKundli } from '@/hooks/useSessionKundli';
+import { useForecastStore } from '@/store/forecastStore';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
@@ -15,14 +17,27 @@ const FORM_STORAGE_KEY = 'birth_chart_form_data';
 const BirthChartInputPage = () => {
   const navigate = useNavigate();
   const { calculate, isCalculating } = useVedicChart();
-  const { isAuthenticated, hasKundli, kundli, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, hasKundli: authHasKundli, kundli, isLoading: authLoading } = useAuth();
+  const { hasKundli: sessionHasKundli, kundliId: sessionKundliId } = useSessionKundli();
+  const { setKundliId, setKundliData, setBirthData } = useForecastStore();
 
-  // Redirect logged-in users with existing kundli to their birth chart
+  // Redirect users with existing kundli to their birth chart
+  // Priority: authenticated user's kundli > session kundli from store
   useEffect(() => {
-    if (!authLoading && isAuthenticated && hasKundli && kundli?.id) {
+    if (authLoading) return;
+
+    // First check authenticated user's kundli
+    if (isAuthenticated && authHasKundli && kundli?.id) {
       navigate(`/birth-chart?id=${kundli.id}`, { replace: true });
+      return;
     }
-  }, [authLoading, isAuthenticated, hasKundli, kundli, navigate]);
+
+    // Then check session kundli from store (for anonymous users)
+    if (!isAuthenticated && sessionHasKundli && sessionKundliId) {
+      navigate(`/birth-chart?id=${sessionKundliId}`, { replace: true });
+      return;
+    }
+  }, [authLoading, isAuthenticated, authHasKundli, kundli, sessionHasKundli, sessionKundliId, navigate]);
 
   const handleSubmit = async (data: BirthFormData) => {
     try {
@@ -65,6 +80,19 @@ const BirthChartInputPage = () => {
 
         if (!saveError && saveResult?.id) {
           kundliId = saveResult.id;
+          // Save to Zustand store for cross-page sharing
+          setKundliId(saveResult.id);
+          setKundliData(kundliData);
+          setBirthData({
+            birthDate: data.birthDate,
+            birthTime: data.birthTime,
+            birthPlace: data.birthPlace,
+            name: data.name,
+            email: data.email,
+            lat: data.latitude,
+            lon: data.longitude,
+            birthDateTimeUtc,
+          });
         }
         // Continue even if save fails - DB save is optional for viewing chart
       } catch {
@@ -98,8 +126,9 @@ const BirthChartInputPage = () => {
     }
   };
 
-  // Show loading while checking auth for logged-in users
-  if (authLoading || (isAuthenticated && hasKundli)) {
+  // Show loading while checking auth or if we have existing kundli data
+  const hasExistingKundli = (isAuthenticated && authHasKundli) || (!isAuthenticated && sessionHasKundli);
+  if (authLoading || hasExistingKundli) {
     return (
       <div className="relative min-h-screen bg-celestial flex items-center justify-center">
         <StarField />

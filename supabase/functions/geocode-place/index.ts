@@ -5,41 +5,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Rate limiting: 1 request per second per IP (Nominatim requirement)
-const rateLimiter = new Map<string, number>();
-const RATE_LIMIT_MS = 1000;
+type MapboxFeature = {
+  id: string;
+  place_name: string;
+  center: [number, number]; // [lon, lat]
+  relevance: number;
+  place_type: string[];
+};
 
-function getClientIP(req: Request): string {
-  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-         req.headers.get("x-real-ip") ||
-         "unknown";
-}
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const lastRequest = rateLimiter.get(ip);
-
-  // Clean up old entries periodically
-  if (rateLimiter.size > 10000) {
-    const cutoff = now - 60000;
-    for (const [key, value] of rateLimiter.entries()) {
-      if (value < cutoff) rateLimiter.delete(key);
-    }
-  }
-
-  if (lastRequest && now - lastRequest < RATE_LIMIT_MS) {
-    return false;
-  }
-
-  rateLimiter.set(ip, now);
-  return true;
-}
-
-type NominatimResult = {
-  place_id: number;
-  display_name: string;
-  lat: string;
-  lon: string;
+type MapboxResponse = {
+  features: MapboxFeature[];
 };
 
 serve(async (req) => {
@@ -47,13 +22,12 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Rate limiting check
-  const clientIP = getClientIP(req);
-  if (!checkRateLimit(clientIP)) {
-    console.warn(`Rate limit exceeded for IP: ${clientIP}`);
+  const MAPBOX_ACCESS_TOKEN = Deno.env.get("MAPBOX_ACCESS_TOKEN");
+  if (!MAPBOX_ACCESS_TOKEN) {
+    console.error("MAPBOX_ACCESS_TOKEN not configured");
     return new Response(
-      JSON.stringify({ error: "Too many requests. Please wait a moment." }),
-      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Geocoding service not configured" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -70,35 +44,41 @@ serve(async (req) => {
     // Sanitize and encode the query
     const sanitizedQuery = encodeURIComponent(query.trim().slice(0, 200));
 
-    // Nominatim API - free geocoding service from OpenStreetMap
-    // featuretype=settlement filters to cities, towns, villages only (no airports, landmarks, etc.)
-    const url = `https://nominatim.openstreetmap.org/search?q=${sanitizedQuery}&format=json&limit=5&addressdetails=0&featuretype=settlement`;
+    // Mapbox Geocoding API
+    // types=place filters to cities, towns, villages (no streets, addresses, POIs)
+    // autocomplete=true enables partial matching for better autocomplete UX
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${sanitizedQuery}.json?` +
+      `access_token=${MAPBOX_ACCESS_TOKEN}` +
+      `&types=place` +
+      `&limit=5` +
+      `&autocomplete=true`;
 
     const resp = await fetch(url, {
       method: "GET",
       headers: {
-        "User-Agent": "CosmicBrief/1.0 (astrology app)",
         "Accept": "application/json",
       },
     });
 
     if (!resp.ok) {
       const text = await resp.text().catch(() => "");
-      console.error("Nominatim error:", resp.status, text);
+      console.error("Mapbox error:", resp.status, text);
       return new Response(JSON.stringify({ results: [] }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = (await resp.json()) as NominatimResult[];
+    const data = (await resp.json()) as MapboxResponse;
 
-    const results = Array.isArray(data)
-      ? data.map((r) => ({
-          place_id: String(r.place_id),
-          display_name: r.display_name,
-          lat: r.lat,
-          lon: r.lon,
+    // Map Mapbox response to our Place interface
+    // Mapbox center is [lon, lat], we need to return lat/lon separately
+    const results = Array.isArray(data?.features)
+      ? data.features.map((f) => ({
+          place_id: f.id,
+          display_name: f.place_name,
+          lat: String(f.center[1]), // latitude is second element
+          lon: String(f.center[0]), // longitude is first element
         }))
       : [];
 

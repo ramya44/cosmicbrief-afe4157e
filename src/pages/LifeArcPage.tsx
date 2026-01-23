@@ -5,6 +5,10 @@ import { StarField } from '@/components/StarField';
 import { BirthDetailsForm, BirthFormData } from '@/components/BirthDetailsForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSessionKundli } from '@/hooks/useSessionKundli';
+import { useForecastStore } from '@/store/forecastStore';
+import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
+import { getDeviceId } from '@/lib/deviceId';
 import {
   Loader2,
   Sparkles,
@@ -211,17 +215,90 @@ const WindowSection = ({
 
 const LifeArcPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, hasKundli, kundli, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, hasKundli: authHasKundli, kundli, isLoading: authLoading } = useAuth();
+  const { hasKundli: sessionHasKundli, birthData: sessionBirthData } = useSessionKundli();
+  const { setKundliId, setKundliData, setBirthData } = useForecastStore();
+  const { calculate } = useVedicChart();
 
   const [flowState, setFlowState] = useState<FlowState>('input');
   const [report, setReport] = useState<LifeArcReport | null>(null);
   const [activeTab, setActiveTab] = useState<'past' | 'future'>('future');
   const [isQuickGenerating, setIsQuickGenerating] = useState(false);
 
+  // Determine if we have usable kundli data (either from auth or session)
+  const hasUsableKundli = (isAuthenticated && authHasKundli && kundli) ||
+    (!isAuthenticated && sessionHasKundli && sessionBirthData);
+
+  // Get the effective birth data
+  const effectiveBirthDate = isAuthenticated && authHasKundli && kundli
+    ? kundli.birth_date
+    : sessionBirthData?.birthDate;
+  const effectiveBirthTime = isAuthenticated && authHasKundli && kundli
+    ? kundli.birth_time
+    : sessionBirthData?.birthTime;
+  const effectiveBirthPlace = isAuthenticated && authHasKundli && kundli
+    ? kundli.birth_place
+    : sessionBirthData?.birthPlace;
+  const effectiveLatitude = isAuthenticated && authHasKundli && kundli
+    ? kundli.latitude
+    : sessionBirthData?.lat;
+  const effectiveLongitude = isAuthenticated && authHasKundli && kundli
+    ? kundli.longitude
+    : sessionBirthData?.lon;
+
   const handleSubmit = async (data: BirthFormData) => {
     setFlowState('loading');
 
     try {
+      // Get UTC datetime
+      const birthDateTimeUtc = await getBirthDateTimeUtc({
+        birthDate: data.birthDate,
+        birthTime: data.birthTime,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      });
+
+      // Calculate kundli data
+      const kundliData = await calculate({
+        birthDate: data.birthDate,
+        birthTime: data.birthTime,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      });
+
+      // Save kundli to database for cross-page sharing
+      const deviceId = getDeviceId();
+      const { data: saveResult } = await supabase.functions.invoke('save-birth-chart', {
+        body: {
+          birth_date: data.birthDate,
+          birth_time: data.birthTime,
+          birth_place: data.birthPlace,
+          birth_time_utc: birthDateTimeUtc,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          email: data.email,
+          name: data.name || null,
+          device_id: deviceId,
+          kundli_data: kundliData,
+        },
+      });
+
+      // Save to Zustand store for cross-page sharing
+      if (saveResult?.id) {
+        setKundliId(saveResult.id);
+        setKundliData(kundliData);
+        setBirthData({
+          birthDate: data.birthDate,
+          birthTime: data.birthTime,
+          birthPlace: data.birthPlace,
+          name: data.name,
+          email: data.email,
+          lat: data.latitude,
+          lon: data.longitude,
+          birthDateTimeUtc,
+        });
+      }
+
       // Call get-life-arc
       const { data: responseData, error } = await supabase.functions.invoke('get-life-arc', {
         body: {
@@ -251,9 +328,10 @@ const LifeArcPage = () => {
     setReport(null);
   };
 
-  // Quick generate for logged-in users with kundli
+  // Quick generate for users with kundli data
   const handleQuickGenerate = async () => {
-    if (!kundli) {
+    if (!hasUsableKundli || !effectiveBirthDate || !effectiveBirthTime ||
+        effectiveLatitude === undefined || effectiveLongitude === undefined) {
       toast.error('Birth chart data not found. Please try again.');
       return;
     }
@@ -264,10 +342,10 @@ const LifeArcPage = () => {
     try {
       const { data, error } = await supabase.functions.invoke('get-life-arc', {
         body: {
-          birth_date: kundli.birth_date,
-          birth_time: kundli.birth_time,
-          latitude: kundli.latitude,
-          longitude: kundli.longitude,
+          birth_date: effectiveBirthDate,
+          birth_time: effectiveBirthTime,
+          latitude: effectiveLatitude,
+          longitude: effectiveLongitude,
           years_ahead: 15,
           report_type: 'life_arc_report',
         },
@@ -504,8 +582,8 @@ const LifeArcPage = () => {
     );
   }
 
-  // Logged-in user with kundli - simplified view
-  if (isAuthenticated && hasKundli && kundli) {
+  // User with kundli data - simplified view
+  if (hasUsableKundli && effectiveBirthDate && effectiveBirthTime && effectiveBirthPlace) {
     return (
       <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
         <StarField />
@@ -527,13 +605,13 @@ const LifeArcPage = () => {
               <p className="text-cream text-sm mb-3">Your birth details:</p>
               <div className="space-y-1 text-cream-muted text-sm">
                 <p>
-                  <span className="text-gold">Date:</span> {kundli.birth_date}
+                  <span className="text-gold">Date:</span> {effectiveBirthDate}
                 </p>
                 <p>
-                  <span className="text-gold">Time:</span> {kundli.birth_time}
+                  <span className="text-gold">Time:</span> {effectiveBirthTime}
                 </p>
                 <p>
-                  <span className="text-gold">Place:</span> {kundli.birth_place}
+                  <span className="text-gold">Place:</span> {effectiveBirthPlace}
                 </p>
               </div>
             </div>

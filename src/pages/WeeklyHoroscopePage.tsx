@@ -7,6 +7,8 @@ import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { useAuth } from '@/hooks/useAuth';
+import { useSessionKundli } from '@/hooks/useSessionKundli';
+import { useForecastStore } from '@/store/forecastStore';
 import { Calendar, Check, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,21 +17,32 @@ type FlowState = 'loading' | 'input' | 'submitting' | 'confirmed' | 'already_sub
 const WeeklyHoroscopePage = () => {
   const navigate = useNavigate();
   const { calculate, isCalculating } = useVedicChart();
-  const { isAuthenticated, hasKundli, kundli, user, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, hasKundli: authHasKundli, kundli, user, isLoading: authLoading } = useAuth();
+  const { hasKundli: sessionHasKundli, kundliId: sessionKundliId, birthData: sessionBirthData } = useSessionKundli();
+  const { setKundliId, setKundliData, setBirthData } = useForecastStore();
 
   const [flowState, setFlowState] = useState<FlowState>('loading');
 
-  // Check subscription status for logged-in users
+  // Determine if we have usable kundli data (either from auth or session)
+  const hasUsableKundli = (isAuthenticated && authHasKundli && kundli) ||
+    (!isAuthenticated && sessionHasKundli && sessionKundliId && sessionBirthData?.email);
+
+  // Get the effective kundli ID and email
+  const effectiveKundliId = isAuthenticated && authHasKundli && kundli?.id ? kundli.id : sessionKundliId;
+  const effectiveEmail = isAuthenticated ? (user?.email || kundli?.email) : sessionBirthData?.email;
+  const effectiveName = isAuthenticated ? kundli?.name : sessionBirthData?.name;
+
+  // Check subscription status for users with kundli
   useEffect(() => {
     const checkSubscription = async () => {
       if (authLoading) return;
 
-      if (isAuthenticated && hasKundli && kundli) {
+      if (hasUsableKundli && effectiveKundliId) {
         // Check if already subscribed
         const { data: existingSub } = await supabase
           .from('weekly_horoscope_subscribers')
           .select('id')
-          .eq('kundli_id', kundli.id)
+          .eq('kundli_id', effectiveKundliId)
           .single();
 
         if (existingSub) {
@@ -43,19 +56,19 @@ const WeeklyHoroscopePage = () => {
     };
 
     checkSubscription();
-  }, [authLoading, isAuthenticated, hasKundli, kundli]);
+  }, [authLoading, hasUsableKundli, effectiveKundliId]);
 
-  // Subscribe using existing kundli (for logged-in users)
+  // Subscribe using existing kundli (for users with kundli data)
   const handleQuickSubscribe = async () => {
-    if (!kundli || !user) return;
+    if (!hasUsableKundli || !effectiveKundliId || !effectiveEmail) return;
 
     setFlowState('submitting');
 
     try {
       const { error: subscribeError } = await supabase.from('weekly_horoscope_subscribers').insert({
-        email: user.email || kundli.email,
-        name: kundli.name || null,
-        kundli_id: kundli.id,
+        email: effectiveEmail,
+        name: effectiveName || null,
+        kundli_id: effectiveKundliId,
       });
 
       if (subscribeError) {
@@ -114,6 +127,22 @@ const WeeklyHoroscopePage = () => {
 
       if (saveError || saveResult?.error) {
         throw new Error(saveError?.message || saveResult?.error || 'Failed to save birth chart');
+      }
+
+      // Save to Zustand store for cross-page sharing
+      if (saveResult?.id) {
+        setKundliId(saveResult.id);
+        setKundliData(kundliData);
+        setBirthData({
+          birthDate: data.birthDate,
+          birthTime: data.birthTime,
+          birthPlace: data.birthPlace,
+          name: data.name,
+          email: data.email,
+          lat: data.latitude,
+          lon: data.longitude,
+          birthDateTimeUtc,
+        });
       }
 
       // Subscribe to weekly horoscope
@@ -188,7 +217,7 @@ const WeeklyHoroscopePage = () => {
 
   // Confirmation screen
   if (flowState === 'confirmed') {
-    const displayEmail = isAuthenticated && user?.email ? user.email : '';
+    const displayEmail = effectiveEmail || '';
     return (
       <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
         <StarField />
@@ -227,8 +256,8 @@ const WeeklyHoroscopePage = () => {
     );
   }
 
-  // Logged-in user with kundli - simple subscribe flow
-  if (isAuthenticated && hasKundli && kundli) {
+  // User with existing kundli - simple subscribe flow
+  if (hasUsableKundli && effectiveEmail) {
     return (
       <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
         <StarField />
@@ -247,7 +276,7 @@ const WeeklyHoroscopePage = () => {
 
             <div className="p-6 rounded-xl bg-midnight/50 border border-gold/20 mb-8">
               <p className="text-cream text-sm mb-2">Your email:</p>
-              <p className="text-gold">{user?.email || kundli.email}</p>
+              <p className="text-gold">{effectiveEmail}</p>
             </div>
 
             <Button

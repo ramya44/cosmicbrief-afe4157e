@@ -82,13 +82,13 @@ export const PlaceAutocomplete = ({
     const newValue = e.target.value;
     onChange(newValue);
 
-    // Debounce API calls
+    // Debounce API calls (150ms - Mapbox is fast)
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
     debounceRef.current = setTimeout(() => {
       fetchSuggestions(newValue);
-    }, 300);
+    }, 150);
   };
 
   const handleSelectPlace = (place: Place) => {
@@ -134,7 +134,7 @@ export const PlaceAutocomplete = ({
             </button>
           ))}
           <div className="px-3 py-1.5 text-[10px] text-cream-muted/50 border-t border-border/30">
-            Powered by OpenStreetMap
+            Powered by Mapbox
           </div>
         </div>
       )}
