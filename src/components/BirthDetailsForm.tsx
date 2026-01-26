@@ -12,6 +12,7 @@ export interface BirthFormData {
   email: string;
   birthDate: string;
   birthTime: string;
+  birthTimeUnknown?: boolean;
   birthPlace: string;
   latitude: number;
   longitude: number;
@@ -49,6 +50,7 @@ interface SavedFormData {
   email: string;
   birthDate: string;
   birthTime: string;
+  birthTimeUnknown: boolean;
   birthPlace: string;
   placeCoords: { lat: number; lon: number } | null;
   deviceId: string;
@@ -72,6 +74,7 @@ export const BirthDetailsForm = ({
     birthTime: initialValues?.birthTime || '',
     birthPlace: initialValues?.birthPlace || '',
   });
+  const [birthTimeUnknown, setBirthTimeUnknown] = useState(false);
   const [placeCoords, setPlaceCoords] = useState<{ lat: number; lon: number } | null>(
     initialValues?.latitude && initialValues?.longitude
       ? { lat: initialValues.latitude, lon: initialValues.longitude }
@@ -98,6 +101,7 @@ export const BirthDetailsForm = ({
             birthTime: parsed.birthTime || '',
             birthPlace: parsed.birthPlace || '',
           });
+          setBirthTimeUnknown(parsed.birthTimeUnknown || false);
           if (parsed.placeCoords) {
             setPlaceCoords(parsed.placeCoords);
           }
@@ -115,6 +119,7 @@ export const BirthDetailsForm = ({
     try {
       const dataToSave: SavedFormData = {
         ...formData,
+        birthTimeUnknown,
         placeCoords,
         deviceId: getDeviceId(),
       };
@@ -122,12 +127,13 @@ export const BirthDetailsForm = ({
     } catch {
       // Ignore localStorage errors
     }
-  }, [formData, placeCoords, storageKey]);
+  }, [formData, birthTimeUnknown, placeCoords, storageKey]);
 
   const validateForm = () => {
     const newErrors = validateBirthForm(formData, {
       requireAge18,
       hasPlaceCoords: !!placeCoords,
+      birthTimeUnknown,
     });
 
     // If email is not shown, don't validate it
@@ -146,10 +152,14 @@ export const BirthDetailsForm = ({
       return;
     }
 
+    // Use noon (12:00) as default when birth time is unknown
+    const effectiveBirthTime = birthTimeUnknown ? '12:00' : formData.birthTime;
+
     const submitData: BirthFormData = {
       email: formData.email.trim(),
       birthDate: formData.birthDate,
-      birthTime: formData.birthTime,
+      birthTime: effectiveBirthTime,
+      birthTimeUnknown,
       birthPlace: formData.birthPlace,
       latitude: placeCoords.lat,
       longitude: placeCoords.lon,
@@ -269,8 +279,25 @@ export const BirthDetailsForm = ({
           value={formData.birthTime}
           onChange={(e) => setFormData({ ...formData, birthTime: e.target.value })}
           className="bg-secondary/50 border-border/50 text-cream placeholder:text-muted-foreground focus:border-gold/50 focus:ring-gold/20 text-left"
-          disabled={isSubmitting}
+          disabled={isSubmitting || birthTimeUnknown}
         />
+        <label className="flex items-center gap-2 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={birthTimeUnknown}
+            onChange={(e) => {
+              setBirthTimeUnknown(e.target.checked);
+              if (e.target.checked) {
+                setFormData({ ...formData, birthTime: '' });
+              }
+            }}
+            className="w-4 h-4 rounded border-border/50 bg-secondary/50 text-gold focus:ring-gold/20 focus:ring-offset-0 cursor-pointer"
+            disabled={isSubmitting}
+          />
+          <span className="text-sm text-cream-muted group-hover:text-cream transition-colors">
+            I don't know my birth time
+          </span>
+        </label>
         {errors.birthTime && <p className="text-sm text-destructive">{errors.birthTime}</p>}
       </div>
 

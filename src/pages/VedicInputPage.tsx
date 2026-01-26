@@ -7,6 +7,7 @@ import { BirthDetailsForm, BirthFormData } from '@/components/BirthDetailsForm';
 import { VedicLoadingScreen } from '@/components/VedicLoadingScreen';
 import { useForecastStore } from '@/store/forecastStore';
 import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
+import { useSessionKundli } from '@/hooks/useSessionKundli';
 import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,7 +22,8 @@ const VedicInputPage = () => {
   const navigate = useNavigate();
   const { setBirthData, setIsPaid, setStrategicForecast, setKundliId, setKundliData } = useForecastStore();
   const { calculate, isCalculating } = useVedicChart();
-  const { isAuthenticated, hasKundli, kundli, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, hasKundli: authHasKundli, kundli, isLoading: authLoading } = useAuth();
+  const { hasKundli: sessionHasKundli, kundliId: sessionKundliId, birthData: sessionBirthData, clearKundli } = useSessionKundli();
 
   const [flowState, setFlowState] = useState<FlowState>('input');
 
@@ -102,9 +104,6 @@ const VedicInputPage = () => {
       setLocalKundliId(saveResult.id);
       setSubmittedFormData(data);
 
-      // Show the name prompt screen
-      setFlowState('name-prompt');
-
       // Start generating forecast in background
       forecastPromiseRef.current = supabase.functions
         .invoke('generate-free-vedic-forecast', {
@@ -125,6 +124,21 @@ const VedicInputPage = () => {
 
           return result;
         });
+
+      // If name is already provided, skip the name prompt
+      if (data.name && data.name.trim()) {
+        // Name already available, go directly to generating/loading screen
+        setFlowState('generating');
+
+        // Wait for forecast and navigate
+        await forecastPromiseRef.current;
+        localStorage.removeItem(FORM_STORAGE_KEY);
+        navigate(`/vedic/results?id=${saveResult.id}`);
+        return;
+      }
+
+      // Show the name prompt screen
+      setFlowState('name-prompt');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to generate Kundli. Please try again.');
       setFlowState('input');
@@ -194,9 +208,11 @@ const VedicInputPage = () => {
     navigate(`/vedic/results?id=${localKundliId}`);
   };
 
-  // Quick generate for logged-in users with existing kundli
+  // Quick generate for users with existing kundli (authenticated or session)
   const handleQuickGenerate = async () => {
-    if (!kundli?.id) return;
+    // Use authenticated kundli ID or session kundli ID
+    const kundliIdToUse = isAuthenticated ? kundli?.id : sessionKundliId;
+    if (!kundliIdToUse) return;
 
     setIsQuickGenerating(true);
 
@@ -211,7 +227,7 @@ const VedicInputPage = () => {
       // Generate forecast using existing kundli
       const { data, error } = await supabase.functions.invoke('generate-free-vedic-forecast', {
         body: {
-          kundli_id: kundli.id,
+          kundli_id: kundliIdToUse,
         },
       });
 
@@ -228,7 +244,7 @@ const VedicInputPage = () => {
       }
 
       // Navigate to results
-      navigate(`/vedic/results?id=${kundli.id}`);
+      navigate(`/vedic/results?id=${kundliIdToUse}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to generate forecast. Please try again.');
       setFlowState('input');
@@ -314,8 +330,25 @@ const VedicInputPage = () => {
     );
   }
 
-  // Simplified view for logged-in users with existing kundli
-  if (isAuthenticated && hasKundli && kundli) {
+  // Determine if we have usable kundli data (either from auth or session)
+  const hasUsableKundli = (isAuthenticated && authHasKundli && kundli) || (!isAuthenticated && sessionHasKundli && sessionKundliId && sessionBirthData);
+
+  // Get the effective kundli data to display
+  const effectiveKundliId = isAuthenticated ? kundli?.id : sessionKundliId;
+  const effectiveBirthData = isAuthenticated && kundli ? {
+    name: kundli.name,
+    birthDate: kundli.birth_date,
+    birthTime: kundli.birth_time,
+    birthPlace: kundli.birth_place,
+  } : sessionBirthData ? {
+    name: sessionBirthData.name,
+    birthDate: sessionBirthData.birthDate,
+    birthTime: sessionBirthData.birthTime,
+    birthPlace: sessionBirthData.birthPlace,
+  } : null;
+
+  // Simplified view for users with existing kundli (authenticated OR session)
+  if (hasUsableKundli && effectiveBirthData && effectiveKundliId) {
     const formatDate = (dateStr: string) => {
       try {
         return new Date(dateStr).toLocaleDateString('en-US', {
@@ -326,6 +359,12 @@ const VedicInputPage = () => {
       } catch {
         return dateStr;
       }
+    };
+
+    const handleEnterNewDetails = () => {
+      clearKundli();
+      // Force re-render with input form
+      window.location.reload();
     };
 
     return (
@@ -350,23 +389,23 @@ const VedicInputPage = () => {
                 Your Birth Details
               </h2>
               <div className="space-y-3 text-sm">
-                {kundli.name && (
+                {effectiveBirthData.name && (
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-cream">{kundli.name}</span>
+                    <span className="text-cream">{effectiveBirthData.name}</span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-cream">{formatDate(kundli.birth_date)}</span>
+                  <span className="text-cream">{formatDate(effectiveBirthData.birthDate)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-cream">{kundli.birth_time}</span>
+                  <span className="text-cream">{effectiveBirthData.birthTime}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-cream">{kundli.birth_place}</span>
+                  <span className="text-cream">{effectiveBirthData.birthPlace}</span>
                 </div>
               </div>
             </div>
@@ -392,6 +431,16 @@ const VedicInputPage = () => {
                   </>
                 )}
               </Button>
+            </div>
+
+            {/* Enter different details link */}
+            <div className="flex justify-center mt-4 animate-fade-up" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+              <button
+                onClick={handleEnterNewDetails}
+                className="text-sm text-cream-muted hover:text-cream transition-colors underline underline-offset-2"
+              >
+                Enter different birth details
+              </button>
             </div>
 
             <p

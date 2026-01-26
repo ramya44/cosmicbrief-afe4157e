@@ -12,6 +12,7 @@ export interface BirthFormData {
 export interface ValidationOptions {
   requireAge18?: boolean;
   hasPlaceCoords: boolean;
+  birthTimeUnknown?: boolean;
 }
 
 export type ValidationErrors = Record<string, string>;
@@ -99,9 +100,12 @@ export function validateBirthForm(
     errors.birthDate = birthDateError;
   }
 
-  const birthTimeError = validateBirthTime(formData.birthTime);
-  if (birthTimeError) {
-    errors.birthTime = birthTimeError;
+  // Skip birth time validation if user doesn't know their birth time
+  if (!options.birthTimeUnknown) {
+    const birthTimeError = validateBirthTime(formData.birthTime);
+    if (birthTimeError) {
+      errors.birthTime = birthTimeError;
+    }
   }
 
   const birthPlaceError = validateBirthPlace(

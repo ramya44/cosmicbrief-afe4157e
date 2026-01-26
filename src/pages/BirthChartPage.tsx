@@ -6,9 +6,14 @@ import { getDeviceId } from '@/lib/deviceId';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { BirthChartWheel } from '@/components/BirthChartWheel';
+import { NorthIndianChart } from '@/components/NorthIndianChart';
+import { SouthIndianChart } from '@/components/SouthIndianChart';
 import { SaveProfileDialog } from '@/components/SaveProfileDialog';
-import { Sparkles, Calendar, Clock, MapPin, Save, Share2 } from 'lucide-react';
+import { useForecastStore } from '@/store/forecastStore';
+import { Sparkles, Calendar, Clock, MapPin, Save, Share2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
+
+type ChartStyle = 'western' | 'north-indian' | 'south-indian';
 
 // Matches the KundliResult from get-kundli-data edge function
 interface PlanetPosition {
@@ -107,103 +112,6 @@ const getSignForHouse = (houseNumber: number, ascendantSignId: number): string =
   return signs[signIndex];
 };
 
-// Abbreviate planet names for chart display
-const abbreviatePlanet = (name: string): string => {
-  const abbr: Record<string, string> = {
-    'Sun': 'Su',
-    'Moon': 'Mo',
-    'Mars': 'Ma',
-    'Mercury': 'Me',
-    'Jupiter': 'Ju',
-    'Venus': 'Ve',
-    'Saturn': 'Sa',
-    'Rahu': 'Ra',
-    'Ketu': 'Ke',
-    'Ascendant': 'As',
-  };
-  return abbr[name] || name.substring(0, 2);
-};
-
-// South Indian style chart component
-const SouthIndianChart = ({ 
-  positions, 
-  ascendantSignId 
-}: { 
-  positions: PlanetPosition[]; 
-  ascendantSignId: number;
-}) => {
-  const houses = groupPlanetsByHouse(positions, ascendantSignId);
-  
-  // South Indian chart layout - fixed sign positions
-  // The chart is a 4x4 grid where corner cells are merged
-  const gridLayout = [
-    [12, 1, 2, 3],
-    [11, null, null, 4],
-    [10, null, null, 5],
-    [9, 8, 7, 6]
-  ];
-
-  return (
-    <div className="w-full max-w-md mx-auto aspect-square">
-      <div className="grid grid-cols-4 gap-0.5 h-full bg-border/30">
-        {gridLayout.flat().map((houseNum, idx) => {
-          if (houseNum === null) {
-            // Center cells - skip (will be handled by merged cells)
-            if (idx === 5) {
-              return (
-                <div 
-                  key={idx} 
-                  className="col-span-2 row-span-2 bg-midnight/80 flex items-center justify-center border border-border/30"
-                >
-                  <div className="text-center">
-                    <p className="text-gold text-xs mb-1">Rashi Chart</p>
-                    <p className="text-cream-muted text-[10px]">Lagna: {getSignForHouse(1, ascendantSignId)}</p>
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          }
-
-          const housePlanets = houses[houseNum] || [];
-          const signName = getSignForHouse(houseNum, ascendantSignId);
-          const isAscendant = houseNum === 1;
-
-          return (
-            <div
-              key={idx}
-              className={`
-                bg-midnight/60 border border-border/30 p-1 flex flex-col
-                ${isAscendant ? 'bg-gold/10 border-gold/40' : ''}
-              `}
-            >
-              <div className="flex justify-between items-start mb-0.5">
-                <span className="text-[9px] text-cream-muted">{houseNum}</span>
-                <span className="text-[8px] text-cream-muted/70">{signName.substring(0, 3)}</span>
-              </div>
-              <div className="flex-1 flex flex-wrap content-start gap-0.5">
-                {housePlanets.map((planet) => (
-                  <span
-                    key={planet.id}
-                    className={`
-                      text-[10px] px-1 rounded
-                      ${planet.is_retrograde ? 'text-amber-400' : 'text-cream'}
-                    `}
-                    title={`${planet.name}${planet.is_retrograde ? ' (R)' : ''}`}
-                  >
-                    {abbreviatePlanet(planet.name)}
-                    {planet.is_retrograde && <sup>R</sup>}
-                  </span>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
 const BirthChartPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -211,6 +119,17 @@ const BirthChartPage = () => {
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [chartStyle, setChartStyle] = useState<ChartStyle>('western');
+  const { clearSession } = useForecastStore();
+
+  const handleNewBirthDetails = () => {
+    // Clear session storage
+    sessionStorage.removeItem('birth_chart_data');
+    // Clear Zustand store
+    clearSession();
+    // Navigate to input page
+    navigate('/get-birth-chart');
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -394,13 +313,61 @@ const BirthChartPage = () => {
             </div>
           </div>
 
-          {/* Beautiful Circular Birth Chart Wheel */}
+          {/* Chart Style Tabs */}
+          <div className="flex justify-center gap-2 mb-8">
+            <button
+              onClick={() => setChartStyle('western')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                chartStyle === 'western'
+                  ? 'bg-gold text-midnight'
+                  : 'bg-secondary/50 text-cream-muted hover:bg-secondary hover:text-cream border border-border/30'
+              }`}
+            >
+              Western
+            </button>
+            <button
+              onClick={() => setChartStyle('north-indian')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                chartStyle === 'north-indian'
+                  ? 'bg-gold text-midnight'
+                  : 'bg-secondary/50 text-cream-muted hover:bg-secondary hover:text-cream border border-border/30'
+              }`}
+            >
+              North Indian
+            </button>
+            <button
+              onClick={() => setChartStyle('south-indian')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                chartStyle === 'south-indian'
+                  ? 'bg-gold text-midnight'
+                  : 'bg-secondary/50 text-cream-muted hover:bg-secondary hover:text-cream border border-border/30'
+              }`}
+            >
+              South Indian
+            </button>
+          </div>
+
+          {/* Birth Chart */}
           <section className="mb-16">
-            <BirthChartWheel chartData={kundliData} />
+            {chartStyle === 'western' && (
+              <BirthChartWheel chartData={kundliData} />
+            )}
+            {chartStyle === 'north-indian' && (
+              <NorthIndianChart
+                positions={planetary_positions}
+                ascendantSignId={ascendant_sign_id}
+              />
+            )}
+            {chartStyle === 'south-indian' && (
+              <SouthIndianChart
+                positions={planetary_positions}
+                ascendantSignId={ascendant_sign_id}
+              />
+            )}
           </section>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
             {chartData.kundliId && (
               <Button
                 onClick={() => setSaveDialogOpen(true)}
@@ -420,6 +387,14 @@ const BirthChartPage = () => {
               <Share2 className="w-5 h-5 mr-2" />
               Share
             </Button>
+          </div>
+          <div className="flex justify-center mb-16">
+            <button
+              onClick={handleNewBirthDetails}
+              className="text-sm text-cream-muted hover:text-cream transition-colors underline underline-offset-2"
+            >
+              Enter different birth details
+            </button>
           </div>
 
 
