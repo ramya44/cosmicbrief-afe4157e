@@ -69,6 +69,20 @@ const postsByCategory: Record<string, Array<{
   ],
   nakshatras: [
     {
+      title: "Mrigashira Nakshatra: The Eternal Seeker",
+      excerpt: "Discover Mrigashira, the cosmic seeker. Learn about its curious nature, quest for knowledge, and restless pursuit of truth.",
+      link: "/blog/mrigashira-nakshatra",
+      author: "Maya G.",
+      date: "Jan 25, 2025",
+    },
+    {
+      title: "Rohini Nakshatra: The Fertile Garden of Creation",
+      excerpt: "Explore Rohini, the most beautiful nakshatra. Discover its creative power, connection to abundance, and why the Moon loves it most.",
+      link: "/blog/rohini-nakshatra",
+      author: "Maya G.",
+      date: "Jan 25, 2025",
+    },
+    {
       title: "Nakshatra: Your True Cosmic DNA",
       excerpt: "Start here — an introduction to the 27 lunar mansions and why your Moon nakshatra matters most.",
       link: "/blog/what-is-nakshatra",

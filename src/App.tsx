@@ -27,6 +27,8 @@ import BirthChartInputPage from "./pages/BirthChartInputPage";
 import BirthChartPage from "./pages/BirthChartPage";
 import BlogCategoryPage from "./pages/BlogCategoryPage";
 import WhatIsNakshatraPage from "./pages/WhatIsNakshatraPage";
+import RohiniNakshatraPage from "./pages/RohiniNakshatraPage";
+import MrigashiraNakshatraPage from "./pages/MrigashiraNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
@@ -77,6 +79,8 @@ const App = () => (
           <Route path="/blog/politics-and-global-events" element={<PoliticsGlobalEventsPage />} />
           <Route path="/blog/career-astrology-2026" element={<CareerAstrology2026Page />} />
           <Route path="/blog/what-is-nakshatra" element={<WhatIsNakshatraPage />} />
+          <Route path="/blog/rohini-nakshatra" element={<RohiniNakshatraPage />} />
+          <Route path="/blog/mrigashira-nakshatra" element={<MrigashiraNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
