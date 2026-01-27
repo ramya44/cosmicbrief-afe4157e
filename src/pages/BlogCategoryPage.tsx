@@ -69,6 +69,20 @@ const postsByCategory: Record<string, Array<{
   ],
   nakshatras: [
     {
+      title: "Bharani Nakshatra: The Cosmic Womb of Transformation",
+      excerpt: "Discover Bharani, the second nakshatra. Learn about its transformative power, connection to life and death, and how it shapes destiny.",
+      link: "/blog/bharani-nakshatra",
+      author: "Maya G.",
+      date: "Jan 26, 2025",
+    },
+    {
+      title: "Ashwini Nakshatra: The Divine Healers",
+      excerpt: "Explore Ashwini, the first nakshatra. Learn about its healing powers, swift energy, and how it shapes personality and destiny.",
+      link: "/blog/ashwini-nakshatra",
+      author: "Maya G.",
+      date: "Jan 26, 2025",
+    },
+    {
       title: "Mrigashira Nakshatra: The Eternal Seeker",
       excerpt: "Discover Mrigashira, the cosmic seeker. Learn about its curious nature, quest for knowledge, and restless pursuit of truth.",
       link: "/blog/mrigashira-nakshatra",

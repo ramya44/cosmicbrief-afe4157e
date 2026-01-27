@@ -29,6 +29,8 @@ import BlogCategoryPage from "./pages/BlogCategoryPage";
 import WhatIsNakshatraPage from "./pages/WhatIsNakshatraPage";
 import RohiniNakshatraPage from "./pages/RohiniNakshatraPage";
 import MrigashiraNakshatraPage from "./pages/MrigashiraNakshatraPage";
+import AshwiniNakshatraPage from "./pages/AshwiniNakshatraPage";
+import BharaniNakshatraPage from "./pages/BharaniNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
@@ -81,6 +83,8 @@ const App = () => (
           <Route path="/blog/what-is-nakshatra" element={<WhatIsNakshatraPage />} />
           <Route path="/blog/rohini-nakshatra" element={<RohiniNakshatraPage />} />
           <Route path="/blog/mrigashira-nakshatra" element={<MrigashiraNakshatraPage />} />
+          <Route path="/blog/ashwini-nakshatra" element={<AshwiniNakshatraPage />} />
+          <Route path="/blog/bharani-nakshatra" element={<BharaniNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
