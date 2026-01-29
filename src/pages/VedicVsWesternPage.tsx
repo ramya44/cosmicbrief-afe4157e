@@ -10,7 +10,7 @@ const VedicVsWesternPage = () => {
       <Helmet>
         <title>Vedic vs Western Astrology: Key Differences Explained (2026 Guide) | Cosmic Brief</title>
         <meta name="description" content="Discover the key differences between Vedic and Western astrology, why your zodiac sign might be different, and which system is right for you." />
-        <link rel="canonical" href="https://cosmicbrief.app/#/vedic-vs-western-astrology" />
+        <link rel="canonical" href="https://cosmicbrief.com/#/vedic-vs-western-astrology" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

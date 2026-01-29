@@ -10,7 +10,7 @@ const HowToReadChartPage = () => {
       <Helmet>
         <title>How to Read Your Vedic Birth Chart: Complete Tutorial (2026) | Cosmic Brief</title>
         <meta name="description" content="Learn to read your Vedic astrology chart step-by-step. Understand houses, planets, signs, and what they mean for your life—explained in plain English." />
-        <link rel="canonical" href="https://cosmicbrief.app/#/how-to-read-vedic-chart" />
+        <link rel="canonical" href="https://cosmicbrief.com/#/how-to-read-vedic-chart" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

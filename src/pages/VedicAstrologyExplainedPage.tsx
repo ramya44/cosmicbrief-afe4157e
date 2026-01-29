@@ -10,7 +10,7 @@ const VedicAstrologyExplainedPage = () => {
       <Helmet>
         <title>What is Vedic Astrology? Complete Beginner's Guide (2026) | Cosmic Brief</title>
         <meta name="description" content="Vedic astrology explained simply. Learn what makes it different, how it works, and why it's gaining popularity as a strategic timing tool for life decisions." />
-        <link rel="canonical" href="https://cosmicbrief.app/#/vedic-astrology-explained" />
+        <link rel="canonical" href="https://cosmicbrief.com/#/vedic-astrology-explained" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",

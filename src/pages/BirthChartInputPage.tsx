@@ -145,7 +145,7 @@ const BirthChartInputPage = () => {
       <Helmet>
         <title>Get Your Free Vedic Birth Chart | Cosmic Brief</title>
         <meta name="description" content="Generate your free Vedic birth chart (Kundali). See your planetary positions, houses, and astrological profile based on ancient Jyotish calculations." />
-        <link rel="canonical" href="https://cosmicbrief.app/#/get-birth-chart" />
+        <link rel="canonical" href="https://cosmicbrief.com/#/get-birth-chart" />
       </Helmet>
 
       <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">

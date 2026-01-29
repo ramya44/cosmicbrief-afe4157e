@@ -26,18 +26,36 @@ const PlanetPositionSchema = z.object({
   nakshatra_lord: z.string().max(50).optional(),
 });
 
+// Support both old format (name/start/end) and new format (planet/start_date/end_date)
 const AntarDashaSchema = z.object({
-  name: z.string().max(50),
-  start: z.string().max(50),
-  end: z.string().max(50),
-});
+  name: z.string().max(50).optional(),
+  planet: z.string().max(50).optional(),
+  start: z.string().max(50).optional(),
+  end: z.string().max(50).optional(),
+  start_date: z.string().max(50).optional(),
+  end_date: z.string().max(50).optional(),
+  maha_dasha_lord: z.string().max(50).optional(),
+}).transform((data) => ({
+  name: data.name || data.planet || '',
+  start: data.start || data.start_date || '',
+  end: data.end || data.end_date || '',
+}));
 
 const MahaDashaSchema = z.object({
-  name: z.string().max(50),
-  start: z.string().max(50),
-  end: z.string().max(50),
+  name: z.string().max(50).optional(),
+  planet: z.string().max(50).optional(),
+  start: z.string().max(50).optional(),
+  end: z.string().max(50).optional(),
+  start_date: z.string().max(50).optional(),
+  end_date: z.string().max(50).optional(),
+  years: z.number().optional(),
   antardasha: z.array(AntarDashaSchema).max(20).optional().default([]),
-});
+}).transform((data) => ({
+  name: data.name || data.planet || '',
+  start: data.start || data.start_date || '',
+  end: data.end || data.end_date || '',
+  antardasha: data.antardasha || [],
+}));
 
 const KundliInputSchema = z.object({
   birth_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format. Use YYYY-MM-DD"),
