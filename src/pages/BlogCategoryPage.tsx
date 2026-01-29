@@ -69,6 +69,20 @@ const postsByCategory: Record<string, Array<{
   ],
   nakshatras: [
     {
+      title: "Ardra Nakshatra: The Tempest of Transformation",
+      excerpt: "Explore Ardra, the stormy star ruled by Rudra. Discover its intense energy, transformative power, and emotional depth.",
+      link: "/blog/ardra-nakshatra",
+      author: "Maya G.",
+      date: "Jan 28, 2025",
+    },
+    {
+      title: "Krittika Nakshatra: The Blazing Flame of Truth",
+      excerpt: "Discover Krittika, the fiery star of purification. Learn about its cutting precision, leadership energy, and connection to Agni.",
+      link: "/blog/krittika-nakshatra",
+      author: "Maya G.",
+      date: "Jan 28, 2025",
+    },
+    {
       title: "Bharani Nakshatra: The Cosmic Womb of Transformation",
       excerpt: "Discover Bharani, the second nakshatra. Learn about its transformative power, connection to life and death, and how it shapes destiny.",
       link: "/blog/bharani-nakshatra",
