@@ -69,6 +69,13 @@ const postsByCategory: Record<string, Array<{
   ],
   nakshatras: [
     {
+      title: "Punarvasu Nakshatra: The Star of Infinite Renewal",
+      excerpt: "Discover Punarvasu, the star of renewal ruled by Jupiter. Learn about its optimistic nature, resilience, and capacity for new beginnings.",
+      link: "/blog/punarvasu-nakshatra",
+      author: "Maya G.",
+      date: "Jan 29, 2025",
+    },
+    {
       title: "Ardra Nakshatra: The Tempest of Transformation",
       excerpt: "Explore Ardra, the stormy star ruled by Rudra. Discover its intense energy, transformative power, and emotional depth.",
       link: "/blog/ardra-nakshatra",
