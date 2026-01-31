@@ -206,8 +206,17 @@ const VedicResultsPage = () => {
   }, []);
 
   useEffect(() => {
+    console.log('[ResultsPage] Effect triggered', {
+      hasLocationState: !!locationState,
+      skipLoading: locationState?.skipLoading,
+      hasKundliData: !!locationState?.kundliData,
+      hasPaidForecastInState: !!locationState?.kundliData?.paid_vedic_forecast,
+      forecastLengthInState: locationState?.kundliData?.paid_vedic_forecast?.length || 0
+    });
+
     // If we already have data from navigation state, skip fetching
     if (locationState?.skipLoading && locationState?.kundliData) {
+      console.log('[ResultsPage] Skipping fetch - using navigation state');
       return;
     }
 
@@ -219,16 +228,32 @@ const VedicResultsPage = () => {
       }
 
       const deviceId = getDeviceId();
+      console.log('[ResultsPage] Fetching kundli', { kundliId, deviceId });
 
       // First try with device_id (owner access)
       let { data, error: fnError } = await supabase.functions.invoke('get-vedic-kundli-details', {
         body: { kundli_id: kundliId, device_id: deviceId },
       });
 
+      console.log('[ResultsPage] Owner access result:', {
+        hasData: !!data,
+        error: fnError?.message,
+        hasPaidForecast: !!data?.paid_vedic_forecast,
+        forecastLength: data?.paid_vedic_forecast?.length || 0
+      });
+
       // If not found with device_id, try as shared link
       if (fnError || !data) {
+        console.log('[ResultsPage] Owner access failed, trying shared access');
         const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
           body: { kundli_id: kundliId, shared: true },
+        });
+
+        console.log('[ResultsPage] Shared access result:', {
+          hasData: !!sharedResult.data,
+          error: sharedResult.error?.message,
+          hasPaidForecast: !!sharedResult.data?.paid_vedic_forecast,
+          forecastLength: sharedResult.data?.paid_vedic_forecast?.length || 0
         });
 
         if (sharedResult.error || !sharedResult.data) {
@@ -239,6 +264,13 @@ const VedicResultsPage = () => {
 
         data = sharedResult.data;
       }
+
+      console.log('[ResultsPage] Setting kundli data', {
+        hasPaidForecast: !!data.paid_vedic_forecast,
+        hasFreeForecast: !!data.free_vedic_forecast,
+        paidForecastLength: data.paid_vedic_forecast?.length || 0,
+        freeForecastLength: data.free_vedic_forecast?.length || 0
+      });
 
       setKundli(data);
       setIsOwner(data.is_owner || false);
@@ -627,6 +659,24 @@ const VedicResultsPage = () => {
         );
       
       case 'transitions_table':
+        // Sort transitions chronologically
+        const sortedTransitions = [...(item.transitions || [])].sort((a, b) => {
+          const parseDate = (dateStr: string) => {
+            const months: Record<string, number> = {
+              'jan': 0, 'feb': 1, 'mar': 2, 'apr': 3, 'may': 4, 'jun': 5,
+              'jul': 6, 'aug': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dec': 11
+            };
+            const match = dateStr.toLowerCase().match(/([a-z]+)\s*(\d+)/);
+            if (match) {
+              const month = months[match[1].substring(0, 3)] ?? 0;
+              const day = parseInt(match[2], 10);
+              return new Date(2026, month, day).getTime();
+            }
+            return 0;
+          };
+          return parseDate(a.date) - parseDate(b.date);
+        });
+
         return (
           <div key={key} className="overflow-hidden rounded-xl border border-border/30">
             <table className="w-full">
@@ -637,7 +687,7 @@ const VedicResultsPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/20">
-                {item.transitions?.map((t, i) => (
+                {sortedTransitions.map((t, i) => (
                   <tr key={i} className="bg-midnight/20">
                     <td className="px-4 py-3 text-cream font-medium whitespace-nowrap text-base">{t.date}</td>
                     <td className="px-4 py-3 text-cream-muted text-base">{renderMarkdownText(t.significance)}</td>

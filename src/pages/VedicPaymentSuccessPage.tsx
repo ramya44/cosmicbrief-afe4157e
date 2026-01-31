@@ -57,15 +57,49 @@ const VedicPaymentSuccessPage = () => {
 
           // Fetch the full kundli data before navigating to avoid loading screen
           const deviceId = (await import('@/lib/deviceId')).getDeviceId();
-          const { data: kundliData } = await supabase.functions.invoke('get-vedic-kundli-details', {
+          console.log('[PaymentSuccess] Fetching kundli with device_id:', deviceId);
+
+          let { data: kundliData, error: ownerError } = await supabase.functions.invoke('get-vedic-kundli-details', {
             body: { kundli_id: kundliId, device_id: deviceId },
           });
 
+          console.log('[PaymentSuccess] Owner access result:', {
+            hasData: !!kundliData,
+            error: ownerError?.message,
+            hasPaidForecast: !!kundliData?.paid_vedic_forecast
+          });
+
+          // If owner access failed (device_id mismatch), fall back to shared access
+          if (!kundliData) {
+            console.log('[PaymentSuccess] Owner access failed, trying shared access');
+            const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
+              body: { kundli_id: kundliId, shared: true },
+            });
+            kundliData = sharedResult.data;
+            console.log('[PaymentSuccess] Shared access result:', {
+              hasData: !!kundliData,
+              hasPaidForecast: !!kundliData?.paid_vedic_forecast
+            });
+          }
+
           // Navigate to results with paid flag and pass full data via state
           setTimeout(() => {
+            // If we have kundliData, merge in the fresh forecast
+            // If not, create a minimal object with just the forecast (page will re-fetch other details)
+            const stateData = kundliData
+              ? { ...kundliData, paid_vedic_forecast: data.forecast }
+              : { id: kundliId, paid_vedic_forecast: data.forecast };
+
+            console.log('[PaymentSuccess] Navigating with state:', {
+              hasKundliData: !!kundliData,
+              skipLoading: !!kundliData,
+              hasPaidForecast: !!stateData.paid_vedic_forecast,
+              forecastLength: stateData.paid_vedic_forecast?.length || 0
+            });
+
             navigate(`/vedic/results?id=${kundliId}&paid=true`, {
               state: {
-                kundliData: kundliData ? { ...kundliData, paid_vedic_forecast: data.forecast } : null,
+                kundliData: stateData,
                 skipLoading: !!kundliData
               }
             });

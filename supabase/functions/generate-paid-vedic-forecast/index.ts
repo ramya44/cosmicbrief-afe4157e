@@ -783,28 +783,36 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
-    logStep("Error", { message: errMessage });
+    const errStack = error instanceof Error ? error.stack : "";
+    logStep("Error", { message: errMessage, stack: errStack });
 
-    // Try to log to alerts table and send email notification
+    // ALWAYS try to send email alert, even if we can't log to DB
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    let body: { kundli_id?: string; session_id?: string } = {};
+    let customerEmail = "Unknown";
+    let customerName = "Unknown";
+
     try {
-      const body = await req
-        .clone()
-        .json()
-        .catch(() => ({}));
+      body = await req.clone().json().catch(() => ({}));
+    } catch {
+      // Body parsing failed
+    }
 
-      const supabaseUrl = Deno.env.get("SUPABASE_URL");
-      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    // Try to get customer details if we have kundli_id
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-      if (body.kundli_id && supabaseUrl && supabaseServiceKey) {
+    if (body.kundli_id && supabaseUrl && supabaseServiceKey) {
+      try {
         const alertSupabase = createClient(supabaseUrl, supabaseServiceKey);
-
-        // Get customer details for the alert
         const { data: kundliData } = await alertSupabase
           .from("user_kundli_details")
           .select("email, name")
           .eq("id", body.kundli_id)
           .single();
+
+        customerEmail = kundliData?.email || "Unknown";
+        customerName = kundliData?.name || "Unknown";
 
         // Log to alerts table
         await alertSupabase.from("vedic_generation_alerts").insert({
@@ -812,30 +820,37 @@ Deno.serve(async (req) => {
           error_message: errMessage,
           error_type: "paid_generation",
         });
-
-        // Send email alert to owner
-        if (resendApiKey) {
-          const resend = new Resend(resendApiKey);
-          resend.emails.send({
-            from: "Cosmic Brief Alerts <noreply@notifications.cosmicbrief.com>",
-            to: ["support@cosmicbrief.com"],
-            subject: "🚨 PAID FORECAST GENERATION FAILED",
-            html: `
-              <h2>Paid Forecast Generation Failed</h2>
-              <p><strong>Kundli ID:</strong> ${body.kundli_id}</p>
-              <p><strong>Session ID:</strong> ${body.session_id || 'N/A'}</p>
-              <p><strong>Customer Email:</strong> ${kundliData?.email || 'N/A'}</p>
-              <p><strong>Customer Name:</strong> ${kundliData?.name || 'N/A'}</p>
-              <p><strong>Error:</strong> ${errMessage}</p>
-              <p><strong>Time:</strong> ${new Date().toISOString()}</p>
-              <hr>
-              <p>The customer paid but forecast generation failed. Manual intervention required.</p>
-            `,
-          }).catch(e => logStep("Failed to send alert email", { error: e }));
-        }
+      } catch (dbError) {
+        logStep("Failed to log to DB", { error: dbError });
       }
-    } catch (alertError) {
-      logStep("Failed to log alert", { error: alertError });
+    }
+
+    // ALWAYS send email alert
+    if (resendApiKey) {
+      try {
+        const resend = new Resend(resendApiKey);
+        await resend.emails.send({
+          from: "Cosmic Brief Alerts <noreply@notifications.cosmicbrief.com>",
+          to: ["support@cosmicbrief.com"],
+          subject: "🚨 PAID FORECAST GENERATION FAILED",
+          html: `
+            <h2>Paid Forecast Generation Failed</h2>
+            <p><strong>Kundli ID:</strong> ${body.kundli_id || 'UNKNOWN'}</p>
+            <p><strong>Session ID:</strong> ${body.session_id || 'UNKNOWN'}</p>
+            <p><strong>Customer Email:</strong> ${customerEmail}</p>
+            <p><strong>Customer Name:</strong> ${customerName}</p>
+            <p><strong>Error:</strong> ${errMessage}</p>
+            <p><strong>Stack:</strong></p>
+            <pre style="background:#f5f5f5;padding:10px;font-size:12px;overflow:auto;">${errStack || 'N/A'}</pre>
+            <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+            <hr>
+            <p>The customer paid but forecast generation failed. Manual intervention required.</p>
+          `,
+        });
+        logStep("Alert email sent");
+      } catch (emailError) {
+        logStep("Failed to send alert email", { error: emailError });
+      }
     }
 
     // Return friendly error with support contact
