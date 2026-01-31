@@ -668,55 +668,59 @@ Deno.serve(async (req) => {
       logStep("Paid forecast saved to database");
     }
 
-    // Send email with link and PDF attachment
+    // Send email with PDF attachment asynchronously (fire-and-forget)
+    // This way the user gets their forecast immediately without waiting for PDF/email
     const customerEmail = kundliData.email;
     if (customerEmail) {
-      try {
-        const resendApiKey = Deno.env.get("RESEND_API_KEY");
-        if (resendApiKey) {
-          const resend = new Resend(resendApiKey);
-          const emailHtml = buildVedicPaidEmailHtml(kundliData.name, shareableLink);
-
-          // Generate PDF
-          let pdfAttachment: { filename: string; content: string } | null = null;
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        // Fire and forget - don't await
+        (async () => {
           try {
-            const pdfBytes = await generateForecastPdf(forecastText, {
-              name: kundliData.name,
-              birth_date: kundliData.birth_date,
-              birth_time: kundliData.birth_time,
-              birth_location: kundliData.birth_location,
-            });
-            // Convert to base64
-            const pdfBase64 = btoa(String.fromCharCode(...pdfBytes));
-            pdfAttachment = {
-              filename: "Your-2026-Cosmic-Brief.pdf",
-              content: pdfBase64,
+            const resend = new Resend(resendApiKey);
+            const emailHtml = buildVedicPaidEmailHtml(kundliData.name, shareableLink);
+
+            // Generate PDF
+            let pdfAttachment: { filename: string; content: string } | null = null;
+            try {
+              const pdfBytes = await generateForecastPdf(forecastText, {
+                name: kundliData.name,
+                birth_date: kundliData.birth_date,
+                birth_time: kundliData.birth_time,
+                birth_location: kundliData.birth_location,
+              });
+              const pdfBase64 = btoa(String.fromCharCode(...pdfBytes));
+              pdfAttachment = {
+                filename: "Your-2026-Cosmic-Brief.pdf",
+                content: pdfBase64,
+              };
+              logStep("PDF generated successfully (async)", { size: pdfBytes.length });
+            } catch (pdfError) {
+              const pdfErrMsg = pdfError instanceof Error ? pdfError.message : "Unknown PDF error";
+              logStep("PDF generation failed, sending email without attachment", { error: pdfErrMsg });
+            }
+
+            const emailOptions: any = {
+              from: "Cosmic Brief <noreply@notifications.cosmicbrief.com>",
+              to: [customerEmail],
+              subject: "Your Complete Vedic Cosmic Brief is Ready! ✨",
+              html: emailHtml,
             };
-            logStep("PDF generated successfully", { size: pdfBytes.length });
-          } catch (pdfError) {
-            const pdfErrMsg = pdfError instanceof Error ? pdfError.message : "Unknown PDF error";
-            logStep("PDF generation failed, sending email without attachment", { error: pdfErrMsg });
+
+            if (pdfAttachment) {
+              emailOptions.attachments = [pdfAttachment];
+            }
+
+            const emailResponse = await resend.emails.send(emailOptions);
+            logStep("Email sent successfully (async)", { emailId: emailResponse?.data?.id, hasPdf: !!pdfAttachment });
+          } catch (emailError) {
+            const emailErrMsg = emailError instanceof Error ? emailError.message : "Unknown email error";
+            logStep("Failed to send email (async)", { error: emailErrMsg });
           }
-
-          const emailOptions: any = {
-            from: "Cosmic Brief <noreply@notifications.cosmicbrief.com>",
-            to: [customerEmail],
-            subject: "Your Complete Vedic Cosmic Brief is Ready! ✨",
-            html: emailHtml,
-          };
-
-          if (pdfAttachment) {
-            emailOptions.attachments = [pdfAttachment];
-          }
-
-          const emailResponse = await resend.emails.send(emailOptions);
-          logStep("Email sent successfully", { emailId: emailResponse?.data?.id, hasPdf: !!pdfAttachment });
-        } else {
-          logStep("RESEND_API_KEY not configured, skipping email");
-        }
-      } catch (emailError) {
-        const emailErrMsg = emailError instanceof Error ? emailError.message : "Unknown email error";
-        logStep("Failed to send email", { error: emailErrMsg });
+        })();
+        logStep("Email/PDF generation initiated (async)");
+      } else {
+        logStep("RESEND_API_KEY not configured, skipping email");
       }
     } else {
       logStep("No email address provided, skipping email");

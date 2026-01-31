@@ -167,10 +167,14 @@ const VedicResultsPage = () => {
 
   // Calculate derived values unconditionally (before any returns)
   const hasPaidForecast = useMemo(() => !!kundli?.paid_vedic_forecast, [kundli]);
-  const forecastToShow = useMemo(() => 
-    (isPaidView && kundli?.paid_vedic_forecast) ? kundli?.paid_vedic_forecast : kundli?.free_vedic_forecast,
-    [isPaidView, kundli]
-  );
+  const forecastToShow = useMemo(() => {
+    // If paid view requested and paid forecast exists and has content, show it
+    if (isPaidView && kundli?.paid_vedic_forecast && kundli.paid_vedic_forecast.trim().length > 0) {
+      return kundli.paid_vedic_forecast;
+    }
+    // Otherwise fall back to free forecast
+    return kundli?.free_vedic_forecast || null;
+  }, [isPaidView, kundli]);
   const parsedForecast = useMemo(() => 
     forecastToShow ? parseJsonForecast(forecastToShow) : null,
     [forecastToShow]
@@ -852,9 +856,28 @@ const VedicResultsPage = () => {
                 </div>
               )}
             </div>
+          </div>
+        ) : (
+          <div className="max-w-3xl mx-auto text-center py-12">
+            <p className="text-cream-muted mb-4">
+              {isPaidView
+                ? "Your paid forecast is still being generated. Please refresh in a moment."
+                : "No forecast available yet."}
+            </p>
+            <Button onClick={() => window.location.reload()} variant="outline" className="mr-2">
+              Refresh
+            </Button>
+            {isPaidView && kundli?.free_vedic_forecast && (
+              <Button onClick={() => handleViewChange(false)} variant="ghost">
+                View Free Forecast
+              </Button>
+            )}
+          </div>
+        )}
 
-            {/* Upgrade CTA - Only show on free forecast for owners */}
-            {!hasPaidForecast && isOwner && (
+        {/* Upgrade CTA - Only show on free forecast for owners */}
+        {forecastToShow && !hasPaidForecast && isOwner && (
+          <div className="max-w-3xl mx-auto">
               <div ref={inlineCTARef} className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-6 md:p-8 text-center overflow-hidden mx-0">
                 <div className="flex justify-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
@@ -907,38 +930,39 @@ const VedicResultsPage = () => {
                   One-time payment • Instant access
                 </p>
               </div>
-            )}
+          </div>
+        )}
 
-            {/* Share and Download CTAs - Show for paid forecasts */}
-            {hasPaidForecast && isOwner && (
-              <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-                {kundli.shareable_link && (
-                  <Button
-                    onClick={() => {
-                      navigator.clipboard.writeText(kundli.shareable_link!);
-                      toast.success('Link copied to clipboard!', {
-                        description: 'Share your Cosmic Brief with friends and family.',
-                      });
-                    }}
-                    variant="outline"
-                    className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share my Cosmic Brief
-                  </Button>
-                )}
+        {/* Share and Download CTAs - Show for paid forecasts */}
+        {forecastToShow && hasPaidForecast && isOwner && (
+          <div className="max-w-3xl mx-auto">
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+              {kundli.shareable_link && (
                 <Button
-                  onClick={() => handleDownloadPdf()}
+                  onClick={() => {
+                    navigator.clipboard.writeText(kundli.shareable_link!);
+                    toast.success('Link copied to clipboard!', {
+                      description: 'Share your Cosmic Brief with friends and family.',
+                    });
+                  }}
                   variant="outline"
                   className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download as PDF
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share my Cosmic Brief
                 </Button>
-              </div>
-            )}
+              )}
+              <Button
+                onClick={() => handleDownloadPdf()}
+                variant="outline"
+                className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download as PDF
+              </Button>
+            </div>
           </div>
-        ) : null}
+        )}
       </main>
 
     </div>
