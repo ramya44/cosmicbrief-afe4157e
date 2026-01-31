@@ -11,7 +11,7 @@ const VedicPaymentSuccessPage = () => {
   const sessionId = searchParams.get('session_id');
   const kundliId = searchParams.get('kundli_id');
 
-  const [status, setStatus] = useState<'generating' | 'success' | 'error' | 'manual'>('generating');
+  const [status, setStatus] = useState<'generating' | 'success' | 'error' | 'manual' | 'timeout'>('generating');
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -28,13 +28,32 @@ const VedicPaymentSuccessPage = () => {
       }, 1500);
 
       try {
-        const { data, error } = await supabase.functions.invoke('generate-paid-vedic-forecast', {
+        // Race between the API call and a 120 second timeout
+        // Claude generation can take 60-90s, so we give it 2 minutes
+        const timeoutPromise = new Promise<{ timeout: true }>((resolve) => {
+          setTimeout(() => resolve({ timeout: true }), 120000);
+        });
+
+        const apiPromise = supabase.functions.invoke('generate-paid-vedic-forecast', {
           body: { session_id: sessionId, kundli_id: kundliId },
         });
 
+        const result = await Promise.race([apiPromise, timeoutPromise]);
+
         clearInterval(progressInterval);
 
+        // Check if we hit the timeout
+        if ('timeout' in result) {
+          console.log('[PaymentSuccess] Request timed out after 120s');
+          setProgress(100);
+          setStatus('timeout');
+          return;
+        }
+
+        const { data, error } = result;
+
         if (error) {
+          console.log('[PaymentSuccess] Error from edge function:', error);
           setStatus('error');
           toast.error('Failed to generate your forecast');
           return;
@@ -207,6 +226,31 @@ const VedicPaymentSuccessPage = () => {
             >
               View Free Preview
             </button>
+          </div>
+        )}
+
+        {status === 'timeout' && (
+          <div className="animate-fade-up max-w-md">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/20 flex items-center justify-center">
+              <svg className="w-8 h-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h1 className="font-display text-3xl text-cream mb-4">Almost There!</h1>
+            <p className="text-cream-muted mb-4">
+              Your detailed forecast is being finalized. It will be emailed to you shortly, or you can check your results page in a moment.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => navigate(`/vedic/results?id=${kundliId}&paid=true`)}
+                className="px-6 py-2 bg-gold text-midnight rounded-lg font-medium hover:bg-gold-light transition-colors"
+              >
+                Check My Forecast
+              </button>
+              <p className="text-cream-muted/60 text-sm">
+                If it's not ready yet, refresh the page in 30 seconds
+              </p>
+            </div>
           </div>
         )}
 
