@@ -228,8 +228,9 @@ export const SaveProfileDialog = ({
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
+                          id="login-email"
                           type="email"
-                          autoComplete="email"
+                          autoComplete="username email"
                           name="email"
                           placeholder="you@example.com"
                           className="pl-10 bg-white border-gold/30 text-gray-900 placeholder:text-gray-400"
@@ -252,6 +253,7 @@ export const SaveProfileDialog = ({
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
+                          id="login-password"
                           type="password"
                           autoComplete="current-password"
                           name="password"
@@ -305,6 +307,7 @@ export const SaveProfileDialog = ({
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
+                          id="signup-name"
                           autoComplete="name"
                           name="displayName"
                           placeholder="Enter your name"
@@ -328,6 +331,7 @@ export const SaveProfileDialog = ({
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
+                          id="signup-email"
                           type="email"
                           autoComplete="email"
                           name="email"
@@ -352,6 +356,7 @@ export const SaveProfileDialog = ({
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                           {...field}
+                          id="signup-password"
                           type="password"
                           autoComplete="new-password"
                           name="password"
