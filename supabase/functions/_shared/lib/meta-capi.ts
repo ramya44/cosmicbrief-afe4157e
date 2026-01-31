@@ -28,7 +28,7 @@ interface CustomData {
 }
 
 interface EventData {
-  eventName: "Lead" | "Purchase" | "InitiateCheckout" | "ViewContent" | "CompleteRegistration";
+  eventName: string; // Standard events or custom event names
   eventTime?: number; // Unix timestamp in seconds
   eventSourceUrl?: string;
   userData: UserData;
@@ -166,20 +166,33 @@ export async function trackLead(params: {
 }): Promise<void> {
   const nameParts = params.name?.split(" ") || [];
 
+  const userData = {
+    email: params.email,
+    firstName: nameParts[0],
+    lastName: nameParts.slice(1).join(" ") || undefined,
+    clientIpAddress: params.clientIp,
+    clientUserAgent: params.userAgent,
+  };
+
+  const customData = {
+    content_name: "free_vedic_forecast",
+    content_category: "astrology",
+  };
+
+  // Send standard Lead event (for Meta optimization)
   await trackServerEvent({
     eventName: "Lead",
     eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/input",
-    userData: {
-      email: params.email,
-      firstName: nameParts[0],
-      lastName: nameParts.slice(1).join(" ") || undefined,
-      clientIpAddress: params.clientIp,
-      clientUserAgent: params.userAgent,
-    },
-    customData: {
-      content_name: "free_vedic_forecast",
-      content_category: "astrology",
-    },
+    userData,
+    customData,
+  });
+
+  // Send custom named event (for clear dashboard visibility)
+  await trackServerEvent({
+    eventName: "FreeForecastGenerated",
+    eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/input",
+    userData,
+    customData,
   });
 }
 
@@ -198,22 +211,36 @@ export async function trackPurchase(params: {
 }): Promise<void> {
   const nameParts = params.name?.split(" ") || [];
 
+  const userData = {
+    email: params.email,
+    firstName: nameParts[0],
+    lastName: nameParts.slice(1).join(" ") || undefined,
+    clientIpAddress: params.clientIp,
+    clientUserAgent: params.userAgent,
+  };
+
+  const customData = {
+    value: params.value,
+    currency: params.currency,
+    content_name: "paid_vedic_forecast",
+    content_category: "astrology",
+  };
+
+  // Send standard Purchase event (for Meta optimization)
   await trackServerEvent({
     eventName: "Purchase",
     eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/payment-success",
-    eventId: params.transactionId, // For deduplication
-    userData: {
-      email: params.email,
-      firstName: nameParts[0],
-      lastName: nameParts.slice(1).join(" ") || undefined,
-      clientIpAddress: params.clientIp,
-      clientUserAgent: params.userAgent,
-    },
-    customData: {
-      value: params.value,
-      currency: params.currency,
-      content_name: "paid_vedic_forecast",
-      content_category: "astrology",
-    },
+    eventId: params.transactionId,
+    userData,
+    customData,
+  });
+
+  // Send custom named event (for clear dashboard visibility)
+  await trackServerEvent({
+    eventName: "PaidForecastPurchased",
+    eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/payment-success",
+    eventId: params.transactionId ? `${params.transactionId}_custom` : undefined,
+    userData,
+    customData,
   });
 }
