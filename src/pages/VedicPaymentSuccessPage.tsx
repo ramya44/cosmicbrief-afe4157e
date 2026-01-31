@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { StarField } from '@/components/StarField';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { trackPurchase } from '@/lib/meta-pixel';
 
 const VedicPaymentSuccessPage = () => {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ const VedicPaymentSuccessPage = () => {
           setProgress(100);
           setStatus('success');
           toast.success('Your complete forecast is ready!');
+
+          // Track successful purchase
+          trackPurchase({ value: 19.99, currency: 'USD' });
 
           // Fetch the full kundli data before navigating to avoid loading screen
           const deviceId = (await import('@/lib/deviceId')).getDeviceId();

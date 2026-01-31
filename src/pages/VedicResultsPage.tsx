@@ -7,6 +7,7 @@ import { Sparkles, Lock, ChevronRight, User, Share2, Check, Download } from 'luc
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
+import { trackInitiateCheckout } from '@/lib/meta-pixel';
 import { ForecastTableOfContents } from '@/components/ForecastTableOfContents';
 import { BirthChartWheel } from '@/components/BirthChartWheel';
 import {
@@ -286,6 +287,9 @@ const VedicResultsPage = () => {
         setIsUpgrading(false);
         return;
       }
+
+      // Track checkout initiation
+      trackInitiateCheckout({ value: 19.99, currency: 'USD' });
 
       window.location.href = data.url;
     } catch (err) {

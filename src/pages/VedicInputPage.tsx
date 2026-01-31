@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Sparkles, Calendar, Clock, MapPin, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackLead } from '@/lib/meta-pixel';
 
 const FORM_STORAGE_KEY = 'vedic_input_form_data';
 
@@ -113,6 +114,9 @@ const VedicInputPage = () => {
         })
         .then((result) => {
           setForecastReady(true);
+
+          // Track successful lead generation
+          trackLead({ content_name: 'free_vedic_forecast' });
 
           if (result.data?.high_demand) {
             toast.warning("We're experiencing high demand. Please try again in a minute.", {
@@ -242,6 +246,9 @@ const VedicInputPage = () => {
       } else if (data?.manual_generation) {
         toast.info("Your Cosmic Brief is being prepared. You'll receive it via email shortly.");
       }
+
+      // Track successful lead generation
+      trackLead({ content_name: 'free_vedic_forecast' });
 
       // Navigate to results
       navigate(`/vedic/results?id=${kundliIdToUse}`);

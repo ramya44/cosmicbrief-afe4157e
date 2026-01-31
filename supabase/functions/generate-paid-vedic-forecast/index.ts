@@ -4,6 +4,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 import { buildVedicPaidEmailHtml } from "../_shared/lib/email-templates.ts";
 import { generateForecastPdf } from "../_shared/lib/pdf-generator.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
+import { trackPurchase } from "../_shared/lib/meta-capi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -720,6 +721,20 @@ Deno.serve(async (req) => {
     } else {
       logStep("No email address provided, skipping email");
     }
+
+    // Track Purchase event via Meta Conversions API (fire-and-forget)
+    const purchaseValue = session.amount_total ? session.amount_total / 100 : 19.99;
+    trackPurchase({
+      email: customerEmail,
+      name: kundliData.name,
+      value: purchaseValue,
+      currency: "USD",
+      clientIp: req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("cf-connecting-ip") || undefined,
+      userAgent: req.headers.get("user-agent") || undefined,
+      transactionId: session_id,
+    }).catch((err) => {
+      logStep("Meta CAPI tracking failed", { error: err instanceof Error ? err.message : "Unknown" });
+    });
 
     return new Response(
       JSON.stringify({

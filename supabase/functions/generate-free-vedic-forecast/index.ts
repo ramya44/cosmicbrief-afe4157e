@@ -31,6 +31,7 @@ import {
   toWesternSign,
 } from "../_shared/lib/planetary-positions.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
+import { trackLead } from "../_shared/lib/meta-capi.ts";
 
 const logStep = createLogger("GENERATE-FREE-VEDIC-FORECAST");
 
@@ -722,35 +723,41 @@ Deno.serve(async (req) => {
       logStep("Forecast saved to database");
     }
 
-    // Send email with link to the forecast
+    // Send email asynchronously (fire-and-forget) - don't block the response
     const customerEmail = kundliData.email;
     if (customerEmail) {
-      try {
-        const resendApiKey = Deno.env.get("RESEND_API_KEY");
-        if (resendApiKey) {
-          const resend = new Resend(resendApiKey);
-          const resultsUrl = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}`;
-          const emailHtml = buildVedicFreeEmailHtml(kundliData.name, resultsUrl);
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        // Fire and forget - don't await
+        const resend = new Resend(resendApiKey);
+        const resultsUrl = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}`;
+        const emailHtml = buildVedicFreeEmailHtml(kundliData.name, resultsUrl);
 
-          const emailResponse = await resend.emails.send({
-            from: "Cosmic Brief <noreply@notifications.cosmicbrief.com>",
-            to: [customerEmail],
-            subject: "Your Free Vedic Forecast is Ready! ✨",
-            html: emailHtml,
-          });
+        resend.emails.send({
+          from: "Cosmic Brief <noreply@notifications.cosmicbrief.com>",
+          to: [customerEmail],
+          subject: "Your Free Vedic Forecast is Ready!",
+          html: emailHtml,
+        }).then(() => {
+          logStep("Email sent successfully");
+        }).catch((emailError) => {
+          const emailErrMsg = emailError instanceof Error ? emailError.message : "Unknown email error";
+          logStep("Failed to send email", { error: emailErrMsg });
+        });
 
-          logStep("Email sent successfully", { emailId: emailResponse?.data?.id });
-        } else {
-          logStep("RESEND_API_KEY not configured, skipping email");
-        }
-      } catch (emailError) {
-        // Don't fail the request if email fails
-        const emailErrMsg = emailError instanceof Error ? emailError.message : "Unknown email error";
-        logStep("Failed to send email", { error: emailErrMsg });
+        logStep("Email send initiated (async)");
       }
-    } else {
-      logStep("No email address provided, skipping email");
     }
+
+    // Track Lead event via Meta Conversions API (fire-and-forget)
+    trackLead({
+      email: customerEmail,
+      name: kundliData.name,
+      clientIp: req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("cf-connecting-ip") || undefined,
+      userAgent: req.headers.get("user-agent") || undefined,
+    }).catch((err) => {
+      logStep("Meta CAPI tracking failed", { error: err instanceof Error ? err.message : "Unknown" });
+    });
 
     return jsonResponse({
       forecast: forecastText,
