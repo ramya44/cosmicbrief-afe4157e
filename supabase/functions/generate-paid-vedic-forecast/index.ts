@@ -664,6 +664,36 @@ Deno.serve(async (req) => {
 
     if (updateError) {
       logStep("Failed to save forecast", { error: updateError.message });
+
+      // CRITICAL: Alert owner via email when save fails
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+      if (resendApiKey) {
+        const resend = new Resend(resendApiKey);
+        resend.emails.send({
+          from: "Cosmic Brief Alerts <noreply@notifications.cosmicbrief.com>",
+          to: ["support@cosmicbrief.com"],
+          subject: "🚨 PAID FORECAST SAVE FAILED",
+          html: `
+            <h2>Paid Forecast Failed to Save</h2>
+            <p><strong>Kundli ID:</strong> ${kundli_id}</p>
+            <p><strong>Customer Email:</strong> ${kundliData.email || 'N/A'}</p>
+            <p><strong>Customer Name:</strong> ${kundliData.name || 'N/A'}</p>
+            <p><strong>Session ID:</strong> ${session_id}</p>
+            <p><strong>Error:</strong> ${updateError.message}</p>
+            <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+            <hr>
+            <p>The forecast WAS generated but failed to save to the database. The customer may see a blank page on refresh.</p>
+            <p>Manual intervention required - retrieve forecast from logs or regenerate.</p>
+          `,
+        }).catch(e => logStep("Failed to send alert email", { error: e }));
+      }
+
+      // Log to alerts table
+      await supabase.from("vedic_generation_alerts").insert({
+        kundli_id,
+        error_message: `Save failed: ${updateError.message}`,
+        error_type: "paid_save_failed",
+      });
     } else {
       logStep("Paid forecast saved to database");
     }
@@ -755,33 +785,64 @@ Deno.serve(async (req) => {
     const errMessage = error instanceof Error ? error.message : "Unknown error";
     logStep("Error", { message: errMessage });
 
-    // Try to log to alerts table
+    // Try to log to alerts table and send email notification
     try {
       const body = await req
         .clone()
         .json()
         .catch(() => ({}));
-      if (body.kundli_id) {
-        const supabaseUrl = Deno.env.get("SUPABASE_URL");
-        const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-        if (supabaseUrl && supabaseServiceKey) {
-          const alertSupabase = createClient(supabaseUrl, supabaseServiceKey);
-          await alertSupabase.from("vedic_generation_alerts").insert({
-            kundli_id: body.kundli_id,
-            error_message: errMessage,
-            error_type: "paid_generation",
-          });
+
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      const resendApiKey = Deno.env.get("RESEND_API_KEY");
+
+      if (body.kundli_id && supabaseUrl && supabaseServiceKey) {
+        const alertSupabase = createClient(supabaseUrl, supabaseServiceKey);
+
+        // Get customer details for the alert
+        const { data: kundliData } = await alertSupabase
+          .from("user_kundli_details")
+          .select("email, name")
+          .eq("id", body.kundli_id)
+          .single();
+
+        // Log to alerts table
+        await alertSupabase.from("vedic_generation_alerts").insert({
+          kundli_id: body.kundli_id,
+          error_message: errMessage,
+          error_type: "paid_generation",
+        });
+
+        // Send email alert to owner
+        if (resendApiKey) {
+          const resend = new Resend(resendApiKey);
+          resend.emails.send({
+            from: "Cosmic Brief Alerts <noreply@notifications.cosmicbrief.com>",
+            to: ["support@cosmicbrief.com"],
+            subject: "🚨 PAID FORECAST GENERATION FAILED",
+            html: `
+              <h2>Paid Forecast Generation Failed</h2>
+              <p><strong>Kundli ID:</strong> ${body.kundli_id}</p>
+              <p><strong>Session ID:</strong> ${body.session_id || 'N/A'}</p>
+              <p><strong>Customer Email:</strong> ${kundliData?.email || 'N/A'}</p>
+              <p><strong>Customer Name:</strong> ${kundliData?.name || 'N/A'}</p>
+              <p><strong>Error:</strong> ${errMessage}</p>
+              <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+              <hr>
+              <p>The customer paid but forecast generation failed. Manual intervention required.</p>
+            `,
+          }).catch(e => logStep("Failed to send alert email", { error: e }));
         }
       }
     } catch (alertError) {
       logStep("Failed to log alert", { error: alertError });
     }
 
-    // Return friendly error
+    // Return friendly error with support contact
     return new Response(
       JSON.stringify({
         manual_generation: true,
-        message: "Your Cosmic Brief is being manually prepared and will be emailed to you shortly.",
+        message: "Your Cosmic Brief is being manually prepared. If you don't receive it within 24 hours, please contact support@cosmicbrief.com",
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

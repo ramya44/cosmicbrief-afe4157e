@@ -872,6 +872,14 @@ const VedicResultsPage = () => {
                 View Free Forecast
               </Button>
             )}
+            {isPaidView && (
+              <p className="text-cream-muted/60 text-sm mt-6">
+                If your forecast doesn't appear after a few minutes, please contact{' '}
+                <a href="mailto:support@cosmicbrief.com" className="text-gold hover:underline">
+                  support@cosmicbrief.com
+                </a>
+              </p>
+            )}
           </div>
         )}
 
