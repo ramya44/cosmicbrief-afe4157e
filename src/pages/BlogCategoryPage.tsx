@@ -69,6 +69,13 @@ const postsByCategory: Record<string, Array<{
   ],
   nakshatras: [
     {
+      title: "Pushya Nakshatra: The Nourisher of the Zodiac",
+      excerpt: "Explore Pushya, the most auspicious nakshatra in Vedic astrology. Discover its nurturing power, spiritual depth, and capacity to provide.",
+      link: "/blog/pushya-nakshatra",
+      author: "Maya G.",
+      date: "Jan 29, 2025",
+    },
+    {
       title: "Punarvasu Nakshatra: The Star of Infinite Renewal",
       excerpt: "Discover Punarvasu, the star of renewal ruled by Jupiter. Learn about its optimistic nature, resilience, and capacity for new beginnings.",
       link: "/blog/punarvasu-nakshatra",
