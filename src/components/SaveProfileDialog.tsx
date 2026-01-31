@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -71,10 +71,17 @@ export const SaveProfileDialog = ({
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: existingEmail || '',
+      email: '',
       password: '',
     },
   });
+
+  // Update login form email when existingEmail is set (after signup fails for existing user)
+  useEffect(() => {
+    if (existingEmail && showLogin) {
+      loginForm.setValue('email', existingEmail);
+    }
+  }, [existingEmail, showLogin, loginForm]);
 
   const handleSignup = async (data: SignupFormData) => {
     setIsLoading(true);
@@ -230,8 +237,8 @@ export const SaveProfileDialog = ({
                           {...field}
                           id="login-email"
                           type="email"
-                          autoComplete="username email"
-                          name="email"
+                          autoComplete="off"
+                          name="login-email"
                           placeholder="you@example.com"
                           className="pl-10 bg-white border-gold/30 text-gray-900 placeholder:text-gray-400"
                         />

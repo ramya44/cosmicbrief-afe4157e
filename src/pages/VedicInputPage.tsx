@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StarField } from '@/components/StarField';
 import { BirthDetailsForm, BirthFormData } from '@/components/BirthDetailsForm';
+import { AnimatedChartLoadingScreen } from '@/components/AnimatedChartLoadingScreen';
 import { VedicLoadingScreen } from '@/components/VedicLoadingScreen';
 import { useForecastStore } from '@/store/forecastStore';
 import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
@@ -35,6 +36,7 @@ const VedicInputPage = () => {
   const forecastPromiseRef = useRef<Promise<any> | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [submittedFormData, setSubmittedFormData] = useState<BirthFormData | null>(null);
+  const [calculatedKundliData, setCalculatedKundliData] = useState<any>(null);
 
   // Quick generate state for logged-in users
   const [isQuickGenerating, setIsQuickGenerating] = useState(false);
@@ -104,6 +106,8 @@ const VedicInputPage = () => {
       // Set local state for this page's flow
       setLocalKundliId(saveResult.id);
       setSubmittedFormData(data);
+      // Save calculated kundli data for animated loading screen
+      setCalculatedKundliData(kundliData);
 
       // Start generating forecast in background
       forecastPromiseRef.current = supabase.functions
@@ -132,12 +136,8 @@ const VedicInputPage = () => {
       // If name is already provided, skip the name prompt
       if (data.name && data.name.trim()) {
         // Name already available, go directly to generating/loading screen
+        // AnimatedChartLoadingScreen will handle navigation when ready
         setFlowState('generating');
-
-        // Wait for forecast and navigate
-        await forecastPromiseRef.current;
-        localStorage.removeItem(FORM_STORAGE_KEY);
-        navigate(`/vedic/results?id=${saveResult.id}`);
         return;
       }
 
@@ -170,23 +170,15 @@ const VedicInputPage = () => {
         });
     }
 
-    // If forecast is already ready, go directly to results
-    if (forecastReady) {
+    // If forecast is already ready and we have kundli data, go directly to results
+    if (forecastReady && calculatedKundliData) {
       localStorage.removeItem(FORM_STORAGE_KEY);
       navigate(`/vedic/results?id=${localKundliId}`);
       return;
     }
 
-    // Otherwise show loading screen while waiting
+    // Show animated loading screen - it will handle navigation when ready
     setFlowState('generating');
-
-    if (forecastPromiseRef.current) {
-      await forecastPromiseRef.current;
-    }
-
-    // Navigate to results
-    localStorage.removeItem(FORM_STORAGE_KEY);
-    navigate(`/vedic/results?id=${localKundliId}`);
   };
 
   const handleSkipName = async () => {
@@ -194,22 +186,15 @@ const VedicInputPage = () => {
 
     setIsNavigating(true);
 
-    // If forecast is ready, go directly to results
-    if (forecastReady) {
+    // If forecast is already ready and we have kundli data, go directly to results
+    if (forecastReady && calculatedKundliData) {
       localStorage.removeItem(FORM_STORAGE_KEY);
       navigate(`/vedic/results?id=${localKundliId}`);
       return;
     }
 
-    // Otherwise show loading screen while waiting
+    // Show animated loading screen - it will handle navigation when ready
     setFlowState('generating');
-
-    if (forecastPromiseRef.current) {
-      await forecastPromiseRef.current;
-    }
-
-    localStorage.removeItem(FORM_STORAGE_KEY);
-    navigate(`/vedic/results?id=${localKundliId}`);
   };
 
   // Quick generate for users with existing kundli (authenticated or session)
@@ -319,8 +304,22 @@ const VedicInputPage = () => {
     );
   }
 
-  // Show full-screen loading during forecast generation
+  // Show animated chart loading during forecast generation
   if (flowState === 'generating') {
+    // If we have calculated kundli data, show animated chart
+    if (calculatedKundliData) {
+      return (
+        <AnimatedChartLoadingScreen
+          kundliData={calculatedKundliData}
+          forecastReady={forecastReady}
+          onComplete={() => {
+            localStorage.removeItem(FORM_STORAGE_KEY);
+            navigate(`/vedic/results?id=${localKundliId}`);
+          }}
+        />
+      );
+    }
+    // Fallback to simple loading screen (e.g., quick generate flow)
     return <VedicLoadingScreen />;
   }
 
