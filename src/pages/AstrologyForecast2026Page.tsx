@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { StarField } from "@/components/StarField";
-import { ArrowRight, Sparkles, Globe, Briefcase, BookOpen, Star, Heart, Users, Compass } from "lucide-react";
+import { ArrowRight, Sparkles, Globe, Briefcase, BookOpen, Star, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 
@@ -110,20 +110,6 @@ const AstrologyForecast2026Page = () => {
       title: "Cosmic Weather",
       description: "Current planetary movements and what they mean for you.",
       link: "/blog/category/transits",
-      available: true
-    },
-    {
-      icon: Heart,
-      title: "Relationships",
-      description: "Compatibility, connection, and synastry through a Vedic lens.",
-      link: "/blog/category/relationships",
-      available: true
-    },
-    {
-      icon: Compass,
-      title: "Life Themes",
-      description: "Career, purpose, timing, and the big questions.",
-      link: "/blog/category/life",
       available: true
     },
   ];

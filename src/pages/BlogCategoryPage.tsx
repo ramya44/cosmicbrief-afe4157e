@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { StarField } from "@/components/StarField";
-import { ArrowRight, BookOpen, Star, Globe, Heart, Compass } from "lucide-react";
+import { BookOpen, Star, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
 
@@ -29,18 +29,6 @@ const categories: Record<string, {
     longDescription: "What's happening in the sky right now and what it means for you. Planetary transits decoded.",
     icon: Globe,
   },
-  relationships: {
-    title: "Relationships",
-    description: "Compatibility and connection",
-    longDescription: "Compatibility, synastry, and relationship dynamics through a Vedic lens.",
-    icon: Heart,
-  },
-  life: {
-    title: "Life Themes",
-    description: "Career, purpose, and timing",
-    longDescription: "Career, money, health, and the big questions — explored through Vedic astrology.",
-    icon: Compass,
-  },
 };
 
 // Posts by category (will grow over time)
@@ -68,6 +56,20 @@ const postsByCategory: Record<string, Array<{
     },
   ],
   nakshatras: [
+    {
+      title: "Magha Nakshatra: The Throne of Ancestral Power",
+      excerpt: "Discover Magha, the royal star of ancestral connection. Learn about its regal nature, leadership power, and connection to lineage.",
+      link: "/blog/magha-nakshatra",
+      author: "Maya G.",
+      date: "Jan 31, 2025",
+    },
+    {
+      title: "Ashlesha Nakshatra: The Coiled Serpent of Wisdom",
+      excerpt: "Explore Ashlesha, the powerful serpent star. Discover its hypnotic energy, transformative wisdom, and penetrating psychological insight.",
+      link: "/blog/ashlesha-nakshatra",
+      author: "Maya G.",
+      date: "Jan 31, 2025",
+    },
     {
       title: "Pushya Nakshatra: The Nourisher of the Zodiac",
       excerpt: "Explore Pushya, the most auspicious nakshatra in Vedic astrology. Discover its nurturing power, spiritual depth, and capacity to provide.",
@@ -154,12 +156,6 @@ const postsByCategory: Record<string, Array<{
       author: "Maya G.",
       date: "Jan 1, 2025",
     },
-  ],
-  relationships: [
-    // Posts will be added here
-  ],
-  life: [
-    // Posts will be added here
   ],
 };
 
