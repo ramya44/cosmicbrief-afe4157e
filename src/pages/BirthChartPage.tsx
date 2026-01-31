@@ -156,6 +156,7 @@ const BirthChartPage = () => {
               birthTime: data.birth_time,
               birthPlace: data.birth_place,
               name: data.name,
+              email: data.email,
               lat: 0,
               lon: 0,
               kundliId: data.id,

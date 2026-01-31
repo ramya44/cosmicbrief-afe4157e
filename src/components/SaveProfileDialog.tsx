@@ -91,17 +91,30 @@ export const SaveProfileDialog = ({
       });
 
       if (signUpError) {
-        // Check if user already exists
-        if (signUpError.message.includes('already registered') || 
-            signUpError.message.includes('already exists') ||
-            signUpError.message.includes('User already registered')) {
+        // Check if user already exists - handle various error message formats
+        const errorMsg = signUpError.message.toLowerCase();
+        if (errorMsg.includes('already registered') ||
+            errorMsg.includes('already exists') ||
+            errorMsg.includes('user already registered') ||
+            errorMsg.includes('email already') ||
+            errorMsg.includes('duplicate')) {
           setExistingEmail(data.email);
-          loginForm.setValue('email', data.email);
+          loginForm.reset({ email: data.email, password: '' });
           setShowLogin(true);
           toast.info('This email is already registered. Please log in.');
           return;
         }
         throw signUpError;
+      }
+
+      // Supabase may return success but with empty identities if user exists
+      // This happens when email confirmation is enabled and user already exists
+      if (authData.user && authData.user.identities && authData.user.identities.length === 0) {
+        setExistingEmail(data.email);
+        loginForm.reset({ email: data.email, password: '' });
+        setShowLogin(true);
+        toast.info('This email is already registered. Please log in.');
+        return;
       }
 
       if (authData.user) {
