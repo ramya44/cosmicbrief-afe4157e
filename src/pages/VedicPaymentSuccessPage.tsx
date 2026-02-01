@@ -66,6 +66,69 @@ const VedicPaymentSuccessPage = () => {
           return;
         }
 
+        // NEW: Handle "processing" status - poll for completion
+        if (data?.status === 'processing') {
+          console.log('[PaymentSuccess] Generation started in background, polling for completion');
+
+          // Poll every 5 seconds for up to 3 minutes
+          const maxPolls = 36; // 36 * 5s = 180s = 3 minutes
+          let pollCount = 0;
+
+          const pollForCompletion = async (): Promise<boolean> => {
+            pollCount++;
+            console.log(`[PaymentSuccess] Polling attempt ${pollCount}/${maxPolls}`);
+
+            const deviceId = (await import('@/lib/deviceId')).getDeviceId();
+            let { data: kundliData } = await supabase.functions.invoke('get-vedic-kundli-details', {
+              body: { kundli_id: kundliId, device_id: deviceId },
+            });
+
+            // Try shared access if owner access failed
+            if (!kundliData) {
+              const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
+                body: { kundli_id: kundliId, shared: true },
+              });
+              kundliData = sharedResult.data;
+            }
+
+            if (kundliData?.paid_vedic_forecast) {
+              console.log('[PaymentSuccess] Forecast ready!', { length: kundliData.paid_vedic_forecast.length });
+              return true;
+            }
+
+            return false;
+          };
+
+          // Start polling
+          const pollInterval = setInterval(async () => {
+            try {
+              const isReady = await pollForCompletion();
+              if (isReady) {
+                clearInterval(pollInterval);
+                clearInterval(progressInterval);
+                setProgress(100);
+                setStatus('success');
+                toast.success('Your complete forecast is ready!');
+                trackPurchase({ value: 19.99, currency: 'USD' });
+
+                // Navigate after a short delay
+                setTimeout(() => {
+                  navigate(`/vedic/results?id=${kundliId}&paid=true`);
+                }, 1000);
+              } else if (pollCount >= maxPolls) {
+                clearInterval(pollInterval);
+                clearInterval(progressInterval);
+                setProgress(100);
+                setStatus('timeout');
+              }
+            } catch (pollError) {
+              console.error('[PaymentSuccess] Polling error:', pollError);
+            }
+          }, 5000);
+
+          return; // Exit the main flow, polling will handle navigation
+        }
+
         if (data?.forecast) {
           setProgress(100);
           setStatus('success');

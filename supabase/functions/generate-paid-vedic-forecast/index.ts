@@ -6,6 +6,11 @@ import { generateForecastPdf } from "../_shared/lib/pdf-generator.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
 import { trackPurchase } from "../_shared/lib/meta-capi.ts";
 
+// Declare EdgeRuntime for background processing
+declare const EdgeRuntime: {
+  waitUntil: (promise: Promise<unknown>) => void;
+};
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -467,10 +472,11 @@ Deno.serve(async (req) => {
     // Check if forecast already generated for this session
     const { data: existingForecast } = await supabase
       .from("user_kundli_details")
-      .select("paid_vedic_forecast, stripe_session_id")
+      .select("paid_vedic_forecast, stripe_session_id, paid_forecast_status")
       .eq("id", kundli_id)
       .single();
 
+    // If forecast already exists and complete, return it
     if (existingForecast?.stripe_session_id === session_id && existingForecast?.paid_vedic_forecast) {
       logStep("Returning existing forecast");
       return new Response(
@@ -485,16 +491,62 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch kundli details
-    const { data: kundliData, error: kundliError } = await supabase
-      .from("user_kundli_details")
-      .select("*")
-      .eq("id", kundli_id)
-      .single();
-
-    if (kundliError || !kundliData) {
-      throw new Error("Kundli not found");
+    // If generation is already in progress for this session, return processing status
+    if (existingForecast?.stripe_session_id === session_id && existingForecast?.paid_forecast_status === "generating") {
+      logStep("Generation already in progress");
+      return new Response(
+        JSON.stringify({
+          status: "processing",
+          message: "Your forecast is being generated",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 202,
+        },
+      );
     }
+
+    // CRITICAL: Mark payment as verified and generation as started IMMEDIATELY
+    // This ensures even if connection drops, we know payment was valid
+    const { error: markStartedError } = await supabase
+      .from("user_kundli_details")
+      .update({
+        stripe_session_id: session_id,
+        paid_at: new Date().toISOString(),
+        paid_amount: session.amount_total,
+        paid_forecast_status: "generating",
+      })
+      .eq("id", kundli_id);
+
+    if (markStartedError) {
+      logStep("Failed to mark generation started", { error: markStartedError.message });
+    } else {
+      logStep("Payment verified and generation marked as started");
+    }
+
+    // IMMEDIATELY return "processing" status to the client
+    // This prevents connection drops from killing the function
+    // The actual generation happens in background via EdgeRuntime.waitUntil()
+
+    // Capture request headers before returning (needed for Meta tracking later)
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("cf-connecting-ip") || undefined;
+    const userAgent = req.headers.get("user-agent") || undefined;
+
+    // Start background generation
+    const backgroundGeneration = (async () => {
+      try {
+        logStep("Background generation started");
+
+        // Fetch kundli details
+        const { data: kundliData, error: kundliError } = await supabase
+          .from("user_kundli_details")
+          .select("*")
+          .eq("id", kundli_id)
+          .single();
+
+        if (kundliError || !kundliData) {
+          throw new Error("Kundli not found");
+        }
 
     logStep("Kundli data fetched", { birth_date: kundliData.birth_date });
 
@@ -648,7 +700,7 @@ Deno.serve(async (req) => {
     // Generate shareable link for paid forecast (includes paid=true)
     const shareableLink = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}&paid=true`;
 
-    // Save the paid forecast
+    // Save the paid forecast with status = complete
     const { error: updateError } = await supabase
       .from("user_kundli_details")
       .update({
@@ -659,6 +711,7 @@ Deno.serve(async (req) => {
         shareable_link: shareableLink,
         paid_prompt_tokens: claudeData.usage?.input_tokens || null,
         paid_completion_tokens: claudeData.usage?.output_tokens || null,
+        paid_forecast_status: "complete",
       })
       .eq("id", kundli_id);
 
@@ -763,22 +816,74 @@ Deno.serve(async (req) => {
       name: kundliData.name,
       value: purchaseValue,
       currency: "USD",
-      clientIp: req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("cf-connecting-ip") || undefined,
-      userAgent: req.headers.get("user-agent") || undefined,
+      clientIp,
+      userAgent,
       transactionId: session_id,
     }).catch((err) => {
       logStep("Meta CAPI tracking failed", { error: err instanceof Error ? err.message : "Unknown" });
     });
 
+    logStep("Background generation completed successfully", {
+      forecastLength: forecastText.length,
+      model: claudeData.model,
+    });
+
+      } catch (bgError) {
+        // Handle errors in background generation
+        const bgErrMessage = bgError instanceof Error ? bgError.message : "Unknown error";
+        const bgErrStack = bgError instanceof Error ? bgError.stack : "";
+        logStep("Background generation error", { message: bgErrMessage });
+
+        // Update status to failed
+        await supabase
+          .from("user_kundli_details")
+          .update({ paid_forecast_status: "failed" })
+          .eq("id", kundli_id);
+
+        // Log to alerts
+        await supabase.from("vedic_generation_alerts").insert({
+          kundli_id,
+          error_message: bgErrMessage,
+          error_type: "paid_background_generation",
+        });
+
+        // Send alert email
+        const resendApiKey = Deno.env.get("RESEND_API_KEY");
+        if (resendApiKey) {
+          const resend = new Resend(resendApiKey);
+          await resend.emails.send({
+            from: "Cosmic Brief Alerts <noreply@notifications.cosmicbrief.com>",
+            to: ["support@cosmicbrief.com"],
+            subject: "🚨 PAID FORECAST BACKGROUND GENERATION FAILED",
+            html: `
+              <h2>Background Generation Failed</h2>
+              <p><strong>Kundli ID:</strong> ${kundli_id}</p>
+              <p><strong>Session ID:</strong> ${session_id}</p>
+              <p><strong>Error:</strong> ${bgErrMessage}</p>
+              <p><strong>Stack:</strong></p>
+              <pre style="background:#f5f5f5;padding:10px;font-size:12px;">${bgErrStack}</pre>
+              <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+            `,
+          }).catch(e => logStep("Failed to send background error alert", { error: e }));
+        }
+      }
+    })();
+
+    // Use EdgeRuntime.waitUntil to keep the function alive for background processing
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      EdgeRuntime.waitUntil(backgroundGeneration);
+    }
+
+    // Return immediately - frontend will poll for completion
     return new Response(
       JSON.stringify({
-        forecast: forecastText,
-        model: claudeData.model,
-        usage: claudeData.usage,
+        status: "processing",
+        message: "Your forecast is being generated. This may take up to 2 minutes.",
+        kundli_id,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
+        status: 202,
       },
     );
   } catch (error) {
