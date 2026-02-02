@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Sparkles, Calendar, Clock, MapPin, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
-import { trackLead } from '@/lib/meta-pixel';
+import { trackLead, generateEventId } from '@/lib/meta-pixel';
 
 const FORM_STORAGE_KEY = 'vedic_input_form_data';
 
@@ -22,7 +22,7 @@ type FlowState = 'input' | 'name-prompt' | 'generating';
 
 const VedicInputPage = () => {
   const navigate = useNavigate();
-  const { setBirthData, setIsPaid, setStrategicForecast, setKundliId, setKundliData } = useForecastStore();
+  const { setBirthData, setIsPaid, setStrategicForecast, setKundliId, setKundliData, setFreeForecast, freeForecast, kundliId: storeKundliId } = useForecastStore();
   const { calculate, isCalculating } = useVedicChart();
   const { isAuthenticated, hasKundli: authHasKundli, kundli, isLoading: authLoading } = useAuth();
   const { hasKundli: sessionHasKundli, kundliId: sessionKundliId, birthData: sessionBirthData, clearKundli } = useSessionKundli();
@@ -40,6 +40,15 @@ const VedicInputPage = () => {
 
   // Quick generate state for logged-in users
   const [isQuickGenerating, setIsQuickGenerating] = useState(false);
+
+  // Redirect to results if user already has a forecast in this session
+  useEffect(() => {
+    // If we have a stored kundliId and a freeForecast, the user already generated a forecast
+    // Redirect them to results instead of showing the input form again
+    if (storeKundliId && freeForecast && flowState === 'input' && !authLoading) {
+      navigate(`/vedic/results?id=${storeKundliId}`, { replace: true });
+    }
+  }, [storeKundliId, freeForecast, flowState, authLoading, navigate]);
 
   const handleSubmit = async (data: BirthFormData) => {
     try {
@@ -109,18 +118,27 @@ const VedicInputPage = () => {
       // Save calculated kundli data for animated loading screen
       setCalculatedKundliData(kundliData);
 
+      // Generate event ID for Meta pixel/CAPI deduplication
+      const eventId = generateEventId();
+
       // Start generating forecast in background
       forecastPromiseRef.current = supabase.functions
         .invoke('generate-free-vedic-forecast', {
           body: {
             kundli_id: saveResult.id,
+            event_id: eventId, // For CAPI deduplication
           },
         })
         .then((result) => {
           setForecastReady(true);
 
-          // Track successful lead generation
-          trackLead({ content_name: 'free_vedic_forecast' });
+          // Store the forecast in the global store so we can redirect back here
+          if (result.data?.forecast) {
+            setFreeForecast({ forecast: result.data.forecast, id: saveResult.id });
+          }
+
+          // Track successful lead generation (with matching event_id for deduplication)
+          trackLead({ content_name: 'free_vedic_forecast' }, eventId);
 
           if (result.data?.high_demand) {
             toast.warning("We're experiencing high demand. Please try again in a minute.", {
@@ -213,10 +231,14 @@ const VedicInputPage = () => {
       // Show loading screen
       setFlowState('generating');
 
+      // Generate event ID for Meta pixel/CAPI deduplication
+      const eventId = generateEventId();
+
       // Generate forecast using existing kundli
       const { data, error } = await supabase.functions.invoke('generate-free-vedic-forecast', {
         body: {
           kundli_id: kundliIdToUse,
+          event_id: eventId, // For CAPI deduplication
         },
       });
 
@@ -232,8 +254,13 @@ const VedicInputPage = () => {
         toast.info("Your Cosmic Brief is being prepared. You'll receive it via email shortly.");
       }
 
-      // Track successful lead generation
-      trackLead({ content_name: 'free_vedic_forecast' });
+      // Store the forecast in the global store so we can redirect back here
+      if (data?.forecast) {
+        setFreeForecast({ forecast: data.forecast, id: kundliIdToUse });
+      }
+
+      // Track successful lead generation (with matching event_id for deduplication)
+      trackLead({ content_name: 'free_vedic_forecast' }, eventId);
 
       // Navigate to results
       navigate(`/vedic/results?id=${kundliIdToUse}`);

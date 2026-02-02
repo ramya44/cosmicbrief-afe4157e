@@ -1,10 +1,20 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { Sparkles } from 'lucide-react';
+import { useForecastStore } from '@/store/forecastStore';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { freeForecast, kundliId } = useForecastStore();
+
+  // Redirect to results if user already has a forecast in this session
+  useEffect(() => {
+    if (kundliId && freeForecast) {
+      navigate(`/vedic/results?id=${kundliId}`, { replace: true });
+    }
+  }, [kundliId, freeForecast, navigate]);
 
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">

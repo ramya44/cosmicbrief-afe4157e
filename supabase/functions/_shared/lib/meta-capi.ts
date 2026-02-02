@@ -163,6 +163,7 @@ export async function trackLead(params: {
   clientIp?: string;
   userAgent?: string;
   sourceUrl?: string;
+  eventId?: string; // For deduplication with browser pixel
 }): Promise<void> {
   const nameParts = params.name?.split(" ") || [];
 
@@ -183,6 +184,7 @@ export async function trackLead(params: {
   await trackServerEvent({
     eventName: "Lead",
     eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/input",
+    eventId: params.eventId,
     userData,
     customData,
   });
@@ -191,6 +193,7 @@ export async function trackLead(params: {
   await trackServerEvent({
     eventName: "FreeForecastGenerated",
     eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/input",
+    eventId: params.eventId ? `${params.eventId}_custom` : undefined,
     userData,
     customData,
   });

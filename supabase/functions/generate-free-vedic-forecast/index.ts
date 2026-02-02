@@ -38,6 +38,7 @@ const logStep = createLogger("GENERATE-FREE-VEDIC-FORECAST");
 // Input validation schema
 const ForecastRequestSchema = z.object({
   kundli_id: z.string().uuid("Invalid kundli ID format"),
+  event_id: z.string().optional(), // For Meta CAPI deduplication with browser pixel
 });
 
 const SYSTEM_PROMPT = `You are an expert astrologer who writes personalized forecasts in accessible, modern language. Your writing style is:
@@ -376,8 +377,8 @@ Deno.serve(async (req) => {
       return errorResponse(`Invalid input: ${errorMessages}`, 400);
     }
 
-    const { kundli_id } = validationResult.data;
-    logStep("Request validated", { kundli_id });
+    const { kundli_id, event_id } = validationResult.data;
+    logStep("Request validated", { kundli_id, event_id });
 
     // Fetch the kundli details
     const { data: kundliData, error: kundliError } = await supabase
@@ -755,6 +756,7 @@ Deno.serve(async (req) => {
       name: kundliData.name,
       clientIp: req.headers.get("x-forwarded-for")?.split(",")[0] || req.headers.get("cf-connecting-ip") || undefined,
       userAgent: req.headers.get("user-agent") || undefined,
+      eventId: event_id, // For deduplication with browser pixel
     }).catch((err) => {
       logStep("Meta CAPI tracking failed", { error: err instanceof Error ? err.message : "Unknown" });
     });

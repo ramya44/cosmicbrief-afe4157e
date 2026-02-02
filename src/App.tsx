@@ -37,6 +37,7 @@ import PunarvasuNakshatraPage from "./pages/PunarvasuNakshatraPage";
 import PushyaNakshatraPage from "./pages/PushyaNakshatraPage";
 import AshleshaNakshatraPage from "./pages/AshleshaNakshatraPage";
 import MaghaNakshatraPage from "./pages/MaghaNakshatraPage";
+import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
@@ -97,6 +98,7 @@ const App = () => (
           <Route path="/blog/pushya-nakshatra" element={<PushyaNakshatraPage />} />
           <Route path="/blog/ashlesha-nakshatra" element={<AshleshaNakshatraPage />} />
           <Route path="/blog/magha-nakshatra" element={<MaghaNakshatraPage />} />
+          <Route path="/blog/purva-bhadrapada-nakshatra" element={<PurvaBhadrapadaNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />

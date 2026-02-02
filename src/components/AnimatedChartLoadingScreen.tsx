@@ -264,10 +264,10 @@ export const AnimatedChartLoadingScreen = ({
   }, [center, zodiacRadius, ascendant_sign_id]);
 
   return (
-    <div className="relative min-h-screen bg-celestial flex flex-col items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen bg-celestial flex flex-col items-center justify-start overflow-y-auto">
       <StarField />
 
-      <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-2xl mx-auto">
+      <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-2xl mx-auto pt-8 pb-12 sm:pt-16 sm:justify-center sm:min-h-screen">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -495,20 +495,6 @@ export const AnimatedChartLoadingScreen = ({
                 </div>
                 <h3 className="font-display text-xl text-cream mb-1">Your Forecast is Ready!</h3>
                 <p className="text-cream/60 text-sm">Revealing your cosmic insights...</p>
-              </motion.div>
-            )}
-
-            {animationComplete && !forecastReady && !showForecastReady && (
-              <motion.div
-                key="waiting"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center"
-              >
-                <div className="w-12 h-12 mx-auto mb-3">
-                  <div className="w-full h-full rounded-full border-2 border-gold/20 border-t-gold animate-spin" />
-                </div>
-                <p className="text-cream/70 text-sm">Finalizing your personalized forecast...</p>
               </motion.div>
             )}
           </AnimatePresence>

@@ -57,6 +57,13 @@ const postsByCategory: Record<string, Array<{
   ],
   nakshatras: [
     {
+      title: "Purva Bhadrapada Nakshatra: The Bridge Between Worlds",
+      excerpt: "Explore Purva Bhadrapada, the intense star of spiritual fire and transformation. Discover its dual nature, mystical power, and revolutionary energy.",
+      link: "/blog/purva-bhadrapada-nakshatra",
+      author: "Maya G.",
+      date: "Feb 1, 2026",
+    },
+    {
       title: "Magha Nakshatra: The Throne of Ancestral Power",
       excerpt: "Discover Magha, the royal star of ancestral connection. Learn about its regal nature, leadership power, and connection to lineage.",
       link: "/blog/magha-nakshatra",
