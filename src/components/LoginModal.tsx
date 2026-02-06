@@ -224,8 +224,9 @@ export const LoginModal = () => {
 
       // Post-login kundli handling happens in useEffect above
       toast.success('Welcome back!');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to log in');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to log in';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -270,8 +271,9 @@ export const LoginModal = () => {
 
       // Post-login kundli handling happens in useEffect above
       toast.success('Account created successfully!');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create account');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to create account';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -290,8 +292,9 @@ export const LoginModal = () => {
 
       toast.success('Check your email for the password reset link');
       setMode('login');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to send reset email');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to send reset email';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
