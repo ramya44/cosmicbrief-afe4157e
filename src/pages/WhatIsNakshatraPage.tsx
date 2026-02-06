@@ -259,6 +259,27 @@ const WhatIsNakshatraPage = () => {
             Each nakshatra carries a distinct energy. Rohini is sensual and magnetic. Ardra is intense and transformative. Revati is gentle and boundaryless. Knowing yours adds dimension that sun signs can't touch.
           </p>
 
+          {/* Nakshatra Deep Dives */}
+          <div className="my-12 p-6 bg-cream/5 rounded-lg border border-cream/10">
+            <h3 className="font-display text-xl text-cream mb-4">Nakshatra Deep Dives</h3>
+            <p className="text-cream/70 text-sm mb-4">Explore individual nakshatras in detail:</p>
+            <div className="grid sm:grid-cols-2 gap-2 text-sm">
+              <Link to="/blog/ashwini-nakshatra" className="text-gold hover:underline">Ashwini — The Swift Healers →</Link>
+              <Link to="/blog/bharani-nakshatra" className="text-gold hover:underline">Bharani — The Bearer of Life →</Link>
+              <Link to="/blog/krittika-nakshatra" className="text-gold hover:underline">Krittika — The Cosmic Cutter →</Link>
+              <Link to="/blog/rohini-nakshatra" className="text-gold hover:underline">Rohini — The Red Star of Desire →</Link>
+              <Link to="/blog/mrigashira-nakshatra" className="text-gold hover:underline">Mrigashira — The Searching Star →</Link>
+              <Link to="/blog/ardra-nakshatra" className="text-gold hover:underline">Ardra — The Storm Star →</Link>
+              <Link to="/blog/punarvasu-nakshatra" className="text-gold hover:underline">Punarvasu — Return of the Light →</Link>
+              <Link to="/blog/pushya-nakshatra" className="text-gold hover:underline">Pushya — The Nourishing Star →</Link>
+              <Link to="/blog/ashlesha-nakshatra" className="text-gold hover:underline">Ashlesha — The Coiled Serpent →</Link>
+              <Link to="/blog/magha-nakshatra" className="text-gold hover:underline">Magha — The Throne of Power →</Link>
+              <Link to="/blog/purva-phalguni-nakshatra" className="text-gold hover:underline">Purva Phalguni — The Bed of Pleasure →</Link>
+              <Link to="/blog/uttara-phalguni-nakshatra" className="text-gold hover:underline">Uttara Phalguni — Noble Service →</Link>
+              <Link to="/blog/purva-bhadrapada-nakshatra" className="text-gold hover:underline">Purva Bhadrapada — The Burning Pair →</Link>
+            </div>
+          </div>
+
           {/* Why Your Moon Nakshatra Matters Most */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             Why Your Moon Nakshatra Matters Most

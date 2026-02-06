@@ -16,7 +16,6 @@ import VedicResultsPage from "./pages/VedicResultsPage";
 import VedicPaymentSuccessPage from "./pages/VedicPaymentSuccessPage";
 import VedicAstrologyExplainedPage from "./pages/VedicAstrologyExplainedPage";
 import VedicProfilePage from "./pages/VedicProfilePage";
-import AuthPage from "./pages/AuthPage";
 import ContactPage from "./pages/ContactPage";
 import BackgroundPage from "./pages/BackgroundPage";
 import WeeklyHoroscopePage from "./pages/WeeklyHoroscopePage";
@@ -37,6 +36,8 @@ import PunarvasuNakshatraPage from "./pages/PunarvasuNakshatraPage";
 import PushyaNakshatraPage from "./pages/PushyaNakshatraPage";
 import AshleshaNakshatraPage from "./pages/AshleshaNakshatraPage";
 import MaghaNakshatraPage from "./pages/MaghaNakshatraPage";
+import PurvaPhalguniNakshatraPage from "./pages/PurvaPhalguniNakshatraPage";
+import UttaraPhalguniNakshatraPage from "./pages/UttaraPhalguniNakshatraPage";
 import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
@@ -98,13 +99,14 @@ const App = () => (
           <Route path="/blog/pushya-nakshatra" element={<PushyaNakshatraPage />} />
           <Route path="/blog/ashlesha-nakshatra" element={<AshleshaNakshatraPage />} />
           <Route path="/blog/magha-nakshatra" element={<MaghaNakshatraPage />} />
+          <Route path="/blog/purva-phalguni-nakshatra" element={<PurvaPhalguniNakshatraPage />} />
+          <Route path="/blog/uttara-phalguni-nakshatra" element={<UttaraPhalguniNakshatraPage />} />
           <Route path="/blog/purva-bhadrapada-nakshatra" element={<PurvaBhadrapadaNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="/vedic/payment-success" element={<VedicPaymentSuccessPage />} />
           <Route path="/vedic/profile" element={<VedicProfilePage />} />
-          <Route path="/auth" element={<AuthPage />} />
           <Route path="/vedic-astrology-explained" element={<VedicAstrologyExplainedPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/background" element={<BackgroundPage />} />
