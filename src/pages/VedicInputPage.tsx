@@ -11,7 +11,6 @@ import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
 import { useSessionKundli } from '@/hooks/useSessionKundli';
 import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { Sparkles, Calendar, Clock, MapPin, Loader2, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackLead, generateEventId } from '@/lib/meta-pixel';
@@ -24,7 +23,6 @@ const VedicInputPage = () => {
   const navigate = useNavigate();
   const { setBirthData, setIsPaid, setStrategicForecast, setKundliId, setKundliData, setFreeForecast, freeForecast, kundliId: storeKundliId } = useForecastStore();
   const { calculate, isCalculating } = useVedicChart();
-  const { isAuthenticated, hasKundli: authHasKundli, kundli, isLoading: authLoading } = useAuth();
   const { hasKundli: sessionHasKundli, kundliId: sessionKundliId, birthData: sessionBirthData, clearKundli } = useSessionKundli();
 
   const [flowState, setFlowState] = useState<FlowState>('input');
@@ -45,10 +43,10 @@ const VedicInputPage = () => {
   useEffect(() => {
     // If we have a stored kundliId and a freeForecast, the user already generated a forecast
     // Redirect them to results instead of showing the input form again
-    if (storeKundliId && freeForecast && flowState === 'input' && !authLoading) {
+    if (storeKundliId && freeForecast && flowState === 'input') {
       navigate(`/vedic/results?id=${storeKundliId}`, { replace: true });
     }
-  }, [storeKundliId, freeForecast, flowState, authLoading, navigate]);
+  }, [storeKundliId, freeForecast, flowState, navigate]);
 
   const handleSubmit = async (data: BirthFormData) => {
     try {
@@ -87,6 +85,7 @@ const VedicInputPage = () => {
             longitude: data.longitude,
             email: data.email,
             device_id: deviceId,
+            marketing_consent: data.marketingConsent ?? true,
             kundli_data: kundliData,
           },
         }
@@ -215,11 +214,9 @@ const VedicInputPage = () => {
     setFlowState('generating');
   };
 
-  // Quick generate for users with existing kundli (authenticated or session)
+  // Quick generate for users with existing kundli in session
   const handleQuickGenerate = async () => {
-    // Use authenticated kundli ID or session kundli ID
-    const kundliIdToUse = isAuthenticated ? kundli?.id : sessionKundliId;
-    if (!kundliIdToUse) return;
+    if (!sessionKundliId) return;
 
     setIsQuickGenerating(true);
 
@@ -227,6 +224,12 @@ const VedicInputPage = () => {
       // Reset paid state for new forecast entry
       setIsPaid(false);
       setStrategicForecast(null);
+
+      // Try to get kundli data from store for animated loading screen
+      const storeKundliData = useForecastStore.getState().kundliData;
+      if (storeKundliData) {
+        setCalculatedKundliData(storeKundliData);
+      }
 
       // Show loading screen
       setFlowState('generating');
@@ -237,7 +240,7 @@ const VedicInputPage = () => {
       // Generate forecast using existing kundli
       const { data, error } = await supabase.functions.invoke('generate-free-vedic-forecast', {
         body: {
-          kundli_id: kundliIdToUse,
+          kundli_id: sessionKundliId,
           event_id: eventId, // For CAPI deduplication
         },
       });
@@ -256,14 +259,14 @@ const VedicInputPage = () => {
 
       // Store the forecast in the global store so we can redirect back here
       if (data?.forecast) {
-        setFreeForecast({ forecast: data.forecast, id: kundliIdToUse });
+        setFreeForecast({ forecast: data.forecast, id: sessionKundliId });
       }
 
       // Track successful lead generation (with matching event_id for deduplication)
       trackLead({ content_name: 'free_vedic_forecast' }, eventId);
 
       // Navigate to results
-      navigate(`/vedic/results?id=${kundliIdToUse}`);
+      navigate(`/vedic/results?id=${sessionKundliId}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to generate forecast. Please try again.');
       setFlowState('input');
@@ -350,38 +353,19 @@ const VedicInputPage = () => {
     return <VedicLoadingScreen />;
   }
 
-  // Show loading while checking auth for logged-in users
-  if (authLoading) {
-    return (
-      <div className="relative min-h-screen bg-celestial flex items-center justify-center">
-        <StarField />
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-gold animate-spin mx-auto mb-4" />
-          <p className="text-cream-muted">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Determine if we have usable kundli data from session
+  const hasUsableKundli = sessionHasKundli && sessionKundliId && sessionBirthData;
 
-  // Determine if we have usable kundli data (either from auth or session)
-  const hasUsableKundli = (isAuthenticated && authHasKundli && kundli) || (!isAuthenticated && sessionHasKundli && sessionKundliId && sessionBirthData);
-
-  // Get the effective kundli data to display
-  const effectiveKundliId = isAuthenticated ? kundli?.id : sessionKundliId;
-  const effectiveBirthData = isAuthenticated && kundli ? {
-    name: kundli.name,
-    birthDate: kundli.birth_date,
-    birthTime: kundli.birth_time,
-    birthPlace: kundli.birth_place,
-  } : sessionBirthData ? {
+  // Get the session birth data to display
+  const effectiveBirthData = sessionBirthData ? {
     name: sessionBirthData.name,
     birthDate: sessionBirthData.birthDate,
     birthTime: sessionBirthData.birthTime,
     birthPlace: sessionBirthData.birthPlace,
   } : null;
 
-  // Simplified view for users with existing kundli (authenticated OR session)
-  if (hasUsableKundli && effectiveBirthData && effectiveKundliId) {
+  // Simplified view for users with existing kundli in session
+  if (hasUsableKundli && effectiveBirthData && sessionKundliId) {
     const formatDate = (dateStr: string) => {
       try {
         return new Date(dateStr).toLocaleDateString('en-US', {
@@ -507,7 +491,7 @@ const VedicInputPage = () => {
             showName={false}
             showEmail
             requireAge18
-            storageKey={isAuthenticated ? undefined : FORM_STORAGE_KEY}
+            storageKey={FORM_STORAGE_KEY}
             onSubmit={handleSubmit}
             isSubmitting={isCalculating}
             submitButtonText="Generate my 2026 Brief"

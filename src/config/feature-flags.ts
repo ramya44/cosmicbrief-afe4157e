@@ -13,11 +13,6 @@ export const FEATURE_FLAGS = {
   LIFE_ARC_ENABLED: false,
 
   /**
-   * Weekly Horoscope subscription feature
-   */
-  WEEKLY_HOROSCOPE_ENABLED: true,
-
-  /**
    * Birth Chart feature
    */
   BIRTH_CHART_ENABLED: true,

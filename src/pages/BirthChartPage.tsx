@@ -8,9 +8,8 @@ import { StarField } from '@/components/StarField';
 import { BirthChartWheel } from '@/components/BirthChartWheel';
 import { NorthIndianChart } from '@/components/NorthIndianChart';
 import { SouthIndianChart } from '@/components/SouthIndianChart';
-import { SaveProfileDialog } from '@/components/SaveProfileDialog';
 import { useForecastStore } from '@/store/forecastStore';
-import { Sparkles, Calendar, Clock, MapPin, Save, Share2, UserPlus } from 'lucide-react';
+import { Sparkles, Calendar, Clock, MapPin, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ChartStyle = 'western' | 'north-indian' | 'south-indian';
@@ -117,7 +116,6 @@ const BirthChartPage = () => {
   const [searchParams] = useSearchParams();
   const kundliIdFromUrl = searchParams.get('id');
   const [chartData, setChartData] = useState<ChartData | null>(null);
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [chartStyle, setChartStyle] = useState<ChartStyle>('western');
   const { clearSession } = useForecastStore();
@@ -204,11 +202,6 @@ const BirthChartPage = () => {
 
     loadData();
   }, [navigate, kundliIdFromUrl]);
-
-  const handleSaveSuccess = () => {
-    toast.success('Birth chart saved to your profile!');
-    setSaveDialogOpen(false);
-  };
 
   const handleShare = async () => {
     // Build shareable URL with kundliId
@@ -369,16 +362,6 @@ const BirthChartPage = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 mb-4">
-            {chartData.kundliId && (
-              <Button
-                onClick={() => setSaveDialogOpen(true)}
-                size="lg"
-                className="bg-gold hover:bg-gold-light text-midnight font-semibold"
-              >
-                <Save className="w-5 h-5 mr-2" />
-                Save to Profile
-              </Button>
-            )}
             <Button
               onClick={handleShare}
               variant="outline"
@@ -431,17 +414,6 @@ const BirthChartPage = () => {
             </div>
           </div>
         </footer>
-        {/* Save Profile Dialog */}
-        {chartData.kundliId && (
-          <SaveProfileDialog
-            open={saveDialogOpen}
-            onOpenChange={setSaveDialogOpen}
-            kundliId={chartData.kundliId}
-            defaultName={chartData.name}
-            defaultEmail={chartData.email}
-            onSuccess={handleSaveSuccess}
-          />
-        )}
       </div>
     </>
   );

@@ -5,8 +5,7 @@ import { BirthDetailsForm, BirthFormData } from '@/components/BirthDetailsForm';
 import { useVedicChart, getBirthDateTimeUtc } from '@/hooks/useVedicChart';
 import { getDeviceId } from '@/lib/deviceId';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useSessionKundli } from '@/hooks/useSessionKundli';
+import { useAuthContext } from '@/context/AuthContext';
 import { useForecastStore } from '@/store/forecastStore';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,14 +16,17 @@ const FORM_STORAGE_KEY = 'birth_chart_form_data';
 const BirthChartInputPage = () => {
   const navigate = useNavigate();
   const { calculate, isCalculating } = useVedicChart();
-  const { isAuthenticated, hasKundli: authHasKundli, kundli, isLoading: authLoading } = useAuth();
-  const { hasKundli: sessionHasKundli, kundliId: sessionKundliId } = useSessionKundli();
-  const { setKundliId, setKundliData, setBirthData } = useForecastStore();
+  const { isAuthenticated, hasKundli: authHasKundli, kundli, isLoading: authLoading, isKundliLoading } = useAuthContext();
+  const sessionKundliId = useForecastStore((state) => state.kundliId);
+  const setKundliId = useForecastStore((state) => state.setKundliId);
+  const setKundliData = useForecastStore((state) => state.setKundliData);
+  const setBirthData = useForecastStore((state) => state.setBirthData);
 
   // Redirect users with existing kundli to their birth chart
   // Priority: authenticated user's kundli > session kundli from store
   useEffect(() => {
-    if (authLoading) return;
+    // Wait for auth to finish loading
+    if (authLoading || isKundliLoading) return;
 
     // First check authenticated user's kundli
     if (isAuthenticated && authHasKundli && kundli?.id) {
@@ -32,12 +34,12 @@ const BirthChartInputPage = () => {
       return;
     }
 
-    // Then check session kundli from store (for anonymous users)
-    if (!isAuthenticated && sessionHasKundli && sessionKundliId) {
+    // Then check session kundli from store (for anonymous users or logged in without saved kundli)
+    if (sessionKundliId) {
       navigate(`/birth-chart?id=${sessionKundliId}`, { replace: true });
       return;
     }
-  }, [authLoading, isAuthenticated, authHasKundli, kundli, sessionHasKundli, sessionKundliId, navigate]);
+  }, [authLoading, isKundliLoading, isAuthenticated, authHasKundli, kundli, sessionKundliId, navigate]);
 
   const handleSubmit = async (data: BirthFormData) => {
     try {
@@ -73,6 +75,7 @@ const BirthChartInputPage = () => {
               email: data.email,
               name: data.name || undefined,
               device_id: getDeviceId(),
+              marketing_consent: data.marketingConsent ?? true,
               kundli_data: kundliData,
             },
           }
@@ -127,8 +130,8 @@ const BirthChartInputPage = () => {
   };
 
   // Show loading while checking auth or if we have existing kundli data
-  const hasExistingKundli = (isAuthenticated && authHasKundli) || (!isAuthenticated && sessionHasKundli);
-  if (authLoading || hasExistingKundli) {
+  const hasExistingKundli = (isAuthenticated && authHasKundli) || sessionKundliId;
+  if (authLoading || isKundliLoading || hasExistingKundli) {
     return (
       <div className="relative min-h-screen bg-celestial flex items-center justify-center">
         <StarField />

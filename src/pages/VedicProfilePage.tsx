@@ -4,8 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
-import { SaveProfileDialog } from '@/components/SaveProfileDialog';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface KundliData {
   id: string;
@@ -15,7 +14,6 @@ interface KundliData {
   sun_sign: string | null;
   ascendant_sign: string | null;
   name: string | null;
-  user_id: string | null;
 }
 
 interface AnimalData {
@@ -53,21 +51,6 @@ const VedicProfilePage = () => {
   const [zodiacLookup, setZodiacLookup] = useState<ZodiacLookup>({});
   const [loading, setLoading] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Check current user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setCurrentUser(session?.user?.id || null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(session?.user?.id || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,7 +79,6 @@ const VedicProfilePage = () => {
           sun_sign: kundliData.sun_sign,
           ascendant_sign: kundliData.ascendant_sign,
           name: kundliData.name,
-          user_id: kundliData.user_id,
         });
 
         // Fetch zodiac lookup for Western names
@@ -166,25 +148,11 @@ const VedicProfilePage = () => {
   return (
     <div className="min-h-screen bg-midnight relative overflow-hidden">
       <StarField />
-      
+
       {/* Header */}
       <header className="relative z-10 border-b border-border/30 bg-midnight/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <h1 className="font-display text-xl text-gold">{kundli.name ? `${kundli.name}'s Profile` : 'Vedic Profile'}</h1>
-          {/* Show Save button only if profile is not already saved */}
-          {!kundli.user_id ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSaveDialog(true)}
-              className="border-gold/40 text-gold hover:bg-gold/10"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save
-            </Button>
-          ) : (
-            <div className="w-20" /> 
-          )}
         </div>
       </header>
 
@@ -192,14 +160,14 @@ const VedicProfilePage = () => {
       <main className="relative z-10 container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto flex flex-col items-center">
           {/* Flip Card */}
-          <div 
+          <div
             className="w-80 h-96 cursor-pointer perspective-1000"
             onClick={() => setIsFlipped(!isFlipped)}
             style={{ perspective: '1000px' }}
           >
-            <div 
+            <div
               className="relative w-full h-full transition-transform duration-700"
-              style={{ 
+              style={{
                 transformStyle: 'preserve-3d',
                 transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
               }}
@@ -231,9 +199,9 @@ const VedicProfilePage = () => {
               </div>
 
               {/* Back of Card - Astrological Details */}
-              <div 
+              <div
                 className="absolute inset-0 bg-midnight/90 border border-gold/40 rounded-2xl p-6 flex flex-col justify-center"
-                style={{ 
+                style={{
                   backfaceVisibility: 'hidden',
                   transform: 'rotateY(180deg)'
                 }}
@@ -298,8 +266,8 @@ const VedicProfilePage = () => {
           {/* Vedic vs Western note */}
           <p className="text-cream-muted text-sm text-center mt-8 max-w-sm">
             Vedic signs are different from Western signs.{' '}
-            <a 
-              href="/#/vedic-astrology-explained" 
+            <a
+              href="/#/vedic-astrology-explained"
               className="text-gold hover:underline"
             >
               Read more here
@@ -307,15 +275,6 @@ const VedicProfilePage = () => {
           </p>
         </div>
       </main>
-
-      {/* Save Profile Dialog */}
-      <SaveProfileDialog
-        open={showSaveDialog}
-        onOpenChange={setShowSaveDialog}
-        kundliId={kundliId || ''}
-        defaultName={kundli.name || undefined}
-        onSuccess={() => navigate(`/vedic/results?id=${kundliId}`)}
-      />
     </div>
   );
 };

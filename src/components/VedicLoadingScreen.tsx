@@ -14,7 +14,6 @@ const MYSTICAL_PHRASES = [
 
 export const VedicLoadingScreen = () => {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const [progressDots, setProgressDots] = useState(0);
 
   useEffect(() => {
     // Rotate phrases every 4 seconds
@@ -27,14 +26,8 @@ export const VedicLoadingScreen = () => {
       });
     }, 4000);
 
-    // Advance progress dots with phrase changes
-    const dotsInterval = setInterval(() => {
-      setProgressDots((prev) => Math.min(prev + 1, MYSTICAL_PHRASES.length - 1));
-    }, 4000);
-
     return () => {
       clearInterval(phraseInterval);
-      clearInterval(dotsInterval);
     };
   }, []);
 
@@ -53,31 +46,14 @@ export const VedicLoadingScreen = () => {
         </div>
         
         {/* Header */}
-        <h2 className="font-display text-2xl md:text-3xl text-cream mb-3">
+        <h2 className="font-display text-2xl md:text-3xl text-cream mb-8">
           Generating Your Vedic Forecast
         </h2>
-        <p className="text-cream/50 text-sm mb-8">
-          This may take up to 30 seconds
-        </p>
         
         {/* Rotating phrase */}
-        <p className="text-cream italic text-lg mb-8 h-8 transition-opacity duration-500">
+        <p className="text-cream italic text-lg h-8 transition-opacity duration-500">
           {MYSTICAL_PHRASES[currentPhraseIndex]}
         </p>
-        
-        {/* Progress dots */}
-        <div className="flex gap-2">
-          {MYSTICAL_PHRASES.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full transition-all duration-500 ${
-                index <= progressDots 
-                  ? 'bg-gold' 
-                  : 'bg-gold/20'
-              }`}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

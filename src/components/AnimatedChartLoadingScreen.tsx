@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StarField } from '@/components/StarField';
+import { Loader2 } from 'lucide-react';
 
 interface PlanetPosition {
   id: number;
@@ -79,6 +80,12 @@ const ZODIAC_SIGNS = [
 const calculateHouse = (planetSignId: number, ascendantSignId: number): number => {
   const house = ((planetSignId - ascendantSignId + 12) % 12) + 1;
   return house;
+};
+
+// Convert Vedic sign name to Western
+const toWesternSign = (vedicName: string): string => {
+  const sign = ZODIAC_SIGNS.find(z => z.vedic === vedicName);
+  return sign?.name || vedicName;
 };
 
 export const AnimatedChartLoadingScreen = ({
@@ -262,6 +269,9 @@ export const AnimatedChartLoadingScreen = ({
     }
     return positions;
   }, [center, zodiacRadius, ascendant_sign_id]);
+
+  // Determine what to show in the info card area
+  const showWaitingState = animationComplete && !forecastReady;
 
   return (
     <div className="relative min-h-screen bg-celestial flex flex-col items-center justify-start overflow-y-auto">
@@ -453,7 +463,7 @@ export const AnimatedChartLoadingScreen = ({
         {/* Current planet info card */}
         <div className="h-32 flex items-center justify-center w-full max-w-md">
           <AnimatePresence mode="wait">
-            {currentItem && currentConfig && !showForecastReady && (
+            {currentItem && currentConfig && !showForecastReady && !showWaitingState && (
               <motion.div
                 key={currentItem.name}
                 initial={{ opacity: 0, y: 20 }}
@@ -472,11 +482,30 @@ export const AnimatedChartLoadingScreen = ({
                   <div>
                     <span className="text-cream font-semibold">{currentItem.name}</span>
                     <span className="text-cream/60 mx-2">in</span>
-                    <span className="text-gold font-medium">{currentItem.sign}</span>
+                    <span className="text-gold font-medium">{toWesternSign(currentItem.sign)}</span>
                   </div>
                 </div>
                 <p className="text-cream/70 text-sm italic">
                   {currentConfig.description}
+                </p>
+              </motion.div>
+            )}
+
+            {showWaitingState && (
+              <motion.div
+                key="waiting"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="text-center"
+              >
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <Loader2 className="w-5 h-5 text-gold animate-spin" />
+                  <span className="text-cream font-medium">Preparing your forecast...</span>
+                </div>
+                <p className="text-cream/60 text-sm">
+                  Analyzing your unique celestial blueprint
                 </p>
               </motion.div>
             )}

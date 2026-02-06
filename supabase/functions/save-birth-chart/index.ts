@@ -36,6 +36,7 @@ const BirthChartInputSchema = z.object({
   email: z.string().email("Invalid email").max(255).toLowerCase().trim().optional().or(z.literal("")),
   name: z.string().max(100).trim().optional(),
   device_id: z.string().uuid("Invalid device ID").optional(),
+  marketing_consent: z.boolean().optional().default(true),
   kundli_data: z.object({
     // Core Nakshatra data
     nakshatra: z.string().max(50),
@@ -89,6 +90,20 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Check for authenticated user
+    let userId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const supabaseUser = createClient(supabaseUrl, supabaseServiceKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: { user } } = await supabaseUser.auth.getUser();
+      if (user) {
+        userId = user.id;
+        logStep("Authenticated user", { userId });
+      }
+    }
+
     // Parse and validate input
     let rawBody: unknown;
     try {
@@ -131,7 +146,8 @@ serve(async (req) => {
       email: birthDetails.email || null,
       name: birthDetails.name || null,
       device_id: birthDetails.device_id || null,
-      
+      marketing_consent: birthDetails.marketing_consent ?? true,
+
       // Basic Vedic data
       moon_sign: kundli_data.moon_sign,
       moon_sign_id: kundli_data.moon_sign_id,
@@ -166,20 +182,55 @@ serve(async (req) => {
       // NO dasha_periods - will be calculated on-demand for forecasts
     };
 
-    logStep("Inserting birth chart into database");
+    // If user is logged in, check for existing kundli
+    let existingKundliId: string | null = null;
+    if (userId) {
+      const { data: existingKundli } = await supabase
+        .from("user_kundli_details")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(1)
+        .single();
 
-    const { data, error } = await supabase
-      .from("user_kundli_details")
-      .insert(insertData)
-      .select("id")
-      .single();
+      if (existingKundli) {
+        existingKundliId = existingKundli.id;
+        logStep("Found existing kundli for user", { kundliId: existingKundliId });
+      }
+    }
+
+    let data: { id: string };
+    let error: any;
+
+    if (existingKundliId) {
+      // Update existing kundli (user already has one)
+      logStep("Updating existing birth chart");
+      const result = await supabase
+        .from("user_kundli_details")
+        .update(insertData)
+        .eq("id", existingKundliId)
+        .select("id")
+        .single();
+      data = result.data!;
+      error = result.error;
+    } else {
+      // Insert new kundli
+      logStep("Inserting new birth chart into database");
+      const dataWithUserId = userId ? { ...insertData, user_id: userId } : insertData;
+      const result = await supabase
+        .from("user_kundli_details")
+        .insert(dataWithUserId)
+        .select("id")
+        .single();
+      data = result.data!;
+      error = result.error;
+    }
 
     if (error) {
-      logStep("Database insert error", { error: error.message });
+      logStep("Database error", { error: error.message });
       throw new Error(`Failed to save birth chart: ${error.message}`);
     }
 
-    logStep("Birth chart saved successfully", { id: data.id });
+    logStep("Birth chart saved successfully", { id: data.id, updated: !!existingKundliId });
 
     return new Response(JSON.stringify({ id: data.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

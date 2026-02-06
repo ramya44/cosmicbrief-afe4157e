@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
+import { useForecastStore } from '@/store/forecastStore';
 import {
   Dialog,
   DialogContent,
@@ -144,6 +145,10 @@ export const SaveProfileDialog = ({
           throw new Error('Failed to save profile. Please try again.');
         }
 
+        // Update forecastStore to ensure it has the correct kundliId
+        // This prevents race conditions with useAuth's SIGNED_IN handler
+        useForecastStore.getState().setKundliId(kundliId);
+
         toast.success('Profile saved successfully!');
         onSuccess();
         onOpenChange(false);
@@ -185,6 +190,10 @@ export const SaveProfileDialog = ({
         if (updateError || updateResult?.error) {
           throw new Error('Failed to save profile. Please try again.');
         }
+
+        // Update forecastStore to ensure it has the correct kundliId
+        // This prevents race conditions with useAuth's SIGNED_IN handler
+        useForecastStore.getState().setKundliId(kundliId);
 
         toast.success('Profile saved successfully!');
         onSuccess();

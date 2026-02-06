@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useAuth } from '@/hooks/useAuth';
-import { LogIn, LogOut, Menu, Calendar, Circle, BookOpen, ChevronDown } from 'lucide-react';
+import { Menu, Calendar, Circle, BookOpen, ChevronDown, LogIn, LogOut } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
+import { useAuthContext } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useForecastStore } from '@/store/forecastStore';
+import { toast } from 'sonner';
 
 // Primary nav items shown in bottom bar on mobile
 const primaryNavItems = [
@@ -24,7 +27,6 @@ const blogArticles = [
 
 // Secondary nav items shown in hamburger menu on mobile
 const secondaryNavItems = [
-  { label: 'Weekly Horoscope', path: '/weekly-horoscope' },
   ...(FEATURE_FLAGS.LIFE_ARC_ENABLED ? [{ label: 'Life Arc', path: '/life-arc' }] : []),
   { label: 'What is Vedic Astrology', path: '/vedic-astrology-explained' },
 ];
@@ -33,7 +35,6 @@ const secondaryNavItems = [
 const allNavItems = [
   { label: '2026 Forecast', path: '/' },
   { label: 'Birth Chart', path: '/get-birth-chart' },
-  { label: 'Weekly Horoscope', path: '/weekly-horoscope' },
   ...(FEATURE_FLAGS.LIFE_ARC_ENABLED ? [{ label: 'Life Arc', path: '/life-arc' }] : []),
   { label: 'What is Vedic Astrology', path: '/vedic-astrology-explained' },
 ];
@@ -41,9 +42,10 @@ const allNavItems = [
 export const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [blogDropdownOpen, setBlogDropdownOpen] = useState(false);
+  const { isAuthenticated, user, openLoginModal } = useAuthContext();
+  const resetStore = useForecastStore((state) => state.reset);
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -51,10 +53,32 @@ export const Navigation = () => {
     setBlogDropdownOpen(false);
   };
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogin = () => {
     setMenuOpen(false);
-    navigate('/');
+    openLoginModal();
+  };
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+
+    // Clear store
+    resetStore();
+
+    // Clear Supabase auth from localStorage directly
+    const localStorageKey = Object.keys(localStorage).find(key =>
+      key.startsWith('sb-') && key.endsWith('-auth-token')
+    );
+    if (localStorageKey) {
+      localStorage.removeItem(localStorageKey);
+    }
+
+    // Try Supabase signOut in background (don't wait for it)
+    supabase.auth.signOut().catch(() => {});
+
+    toast.success('Logged out successfully');
+
+    // Force page reload to reset all state
+    window.location.href = '/#/';
   };
 
   const isBlogActive = location.pathname.startsWith('/blog');
@@ -122,27 +146,35 @@ export const Navigation = () => {
           </div>
         </div>
 
-        {isAuthenticated ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0 font-[Inter]"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/auth')}
-            className="text-cream-muted hover:text-cream hover:bg-gold/10 ml-4 shrink-0 font-[Inter]"
-          >
-            <LogIn className="w-4 h-4 mr-2" />
-            Login
-          </Button>
-        )}
+        {/* Auth buttons - desktop */}
+        <div className="flex items-center gap-3 ml-4">
+          {isAuthenticated ? (
+            <>
+              <span className="text-sm text-cream/60 truncate max-w-[150px]">
+                {user?.email}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-cream-muted hover:text-cream hover:bg-gold/10"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Log Out
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogin}
+              className="text-gold hover:text-gold-light hover:bg-gold/10"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Log In
+            </Button>
+          )}
+        </div>
       </nav>
 
       {/* Mobile Top Bar - hamburger menu only */}
@@ -160,6 +192,32 @@ export const Navigation = () => {
           </SheetTrigger>
           <SheetContent side="right" className="bg-midnight/95 backdrop-blur-lg border-gold/20 w-72">
             <div className="flex flex-col gap-2 mt-8">
+              {/* Auth section - mobile */}
+              <div className="mb-4 pb-4 border-b border-gold/20">
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <div className="px-4 text-sm text-cream/60 truncate">
+                      {user?.email}
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-3 text-base font-sans text-cream-muted hover:text-cream hover:bg-gold/5 rounded-md transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Log Out
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleLogin}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-base font-sans text-gold hover:bg-gold/5 rounded-md transition-colors"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Log In
+                  </button>
+                )}
+              </div>
+
               {secondaryNavItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -205,26 +263,6 @@ export const Navigation = () => {
                   })}
                 </div>
               </div>
-
-              <div className="border-t border-gold/20 my-4" />
-
-              {isAuthenticated ? (
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center px-4 py-3 text-base font-sans text-cream-muted hover:text-cream hover:bg-gold/5 rounded-md transition-colors"
-                >
-                  <LogOut className="w-4 h-4 mr-3" />
-                  Logout
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleNavigation('/auth')}
-                  className="flex items-center px-4 py-3 text-base font-sans text-cream-muted hover:text-cream hover:bg-gold/5 rounded-md transition-colors"
-                >
-                  <LogIn className="w-4 h-4 mr-3" />
-                  Login
-                </button>
-              )}
             </div>
           </SheetContent>
         </Sheet>

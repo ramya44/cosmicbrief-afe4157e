@@ -1,72 +1,61 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface KundliDetails {
-  id: string;
-  birth_date: string;
-  birth_time: string;
-  birth_place: string;
-  latitude: number;
-  longitude: number;
-  moon_sign: string | null;
-  sun_sign: string | null;
-  nakshatra: string | null;
-  ascendant_sign: string | null;
-  ascendant_sign_id: number | null;
-  planetary_positions: any[] | null;
-  free_vedic_forecast: string | null;
-  paid_vedic_forecast: string | null;
-  name: string | null;
-  email: string | null;
-}
+export type UserKundli = Tables<'user_kundli_details'>;
 
 interface AuthState {
   user: User | null;
   session: Session | null;
-  kundli: KundliDetails | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  kundli: UserKundli | null;
   hasKundli: boolean;
+  isKundliLoading: boolean;
 }
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
     user: null,
     session: null,
-    kundli: null,
     isLoading: true,
     isAuthenticated: false,
+    kundli: null,
     hasKundli: false,
+    isKundliLoading: false,
   });
 
-  // Fetch user's kundli data with timeout
-  const fetchUserKundli = useCallback(async (userId: string): Promise<KundliDetails | null> => {
+  // Fetch user's kundli from database with timeout
+  const fetchKundli = useCallback(async (userId: string): Promise<UserKundli | null> => {
+    console.log('fetchKundli called for user:', userId);
     try {
-      // Add timeout to prevent hanging forever
-      const timeoutPromise = new Promise<null>((_, reject) => {
-        setTimeout(() => reject(new Error('Kundli fetch timeout')), 5000);
-      });
+      const timeoutPromise = new Promise<null>((resolve) =>
+        setTimeout(() => {
+          console.warn('fetchKundli timed out after 5s');
+          resolve(null);
+        }, 5000)
+      );
 
       const fetchPromise = supabase
         .from('user_kundli_details')
-        .select('id, birth_date, birth_time, birth_place, latitude, longitude, moon_sign, sun_sign, nakshatra, ascendant_sign, ascendant_sign_id, planetary_positions, free_vedic_forecast, paid_vedic_forecast, name, email')
+        .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+        .maybeSingle()
+        .then(({ data, error }) => {
+          console.log('fetchKundli result:', { data: data ? 'found' : 'null', error });
+          if (error) {
+            console.error('Error fetching kundli:', error);
+            return null;
+          }
+          return data;
+        });
 
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise.then(() => ({ data: null, error: null }))]) as { data: KundliDetails | null; error: any };
-
-      if (error && error.code !== 'PGRST116') {
-        // PGRST116 = no rows returned, which is fine
-        console.error('Error fetching kundli:', error);
-        return null;
-      }
-
-      return data;
+      const result = await Promise.race([fetchPromise, timeoutPromise]);
+      console.log('fetchKundli final result:', result ? 'kundli found' : 'no kundli');
+      return result;
     } catch (err) {
-      console.error('Error fetching kundli:', err);
+      console.error('Exception fetching kundli:', err);
       return null;
     }
   }, []);
@@ -89,31 +78,40 @@ export function useAuth() {
         }
 
         if (session?.user && mounted) {
-          // Fetch user's kundli
-          const kundli = await fetchUserKundli(session.user.id);
-
-          setState({
+          setState(prev => ({
+            ...prev,
             user: session.user,
             session,
-            kundli,
             isLoading: false,
             isAuthenticated: true,
-            hasKundli: !!kundli,
-          });
+            isKundliLoading: true,
+          }));
+
+          // Fetch kundli for authenticated user
+          const kundli = await fetchKundli(session.user.id);
+          if (mounted) {
+            setState(prev => ({
+              ...prev,
+              kundli,
+              hasKundli: kundli !== null,
+              isKundliLoading: false,
+            }));
+          }
         } else if (mounted) {
           setState({
             user: null,
             session: null,
-            kundli: null,
             isLoading: false,
             isAuthenticated: false,
+            kundli: null,
             hasKundli: false,
+            isKundliLoading: false,
           });
         }
       } catch (err) {
         console.error('Auth init error:', err);
         if (mounted) {
-          setState(prev => ({ ...prev, isLoading: false }));
+          setState(prev => ({ ...prev, isLoading: false, isKundliLoading: false }));
         }
       }
     };
@@ -124,24 +122,37 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      if (event === 'SIGNED_IN' && session?.user) {
-        const kundli = await fetchUserKundli(session.user.id);
-        setState({
+      if (session?.user) {
+        setState(prev => ({
+          ...prev,
           user: session.user,
           session,
-          kundli,
           isLoading: false,
           isAuthenticated: true,
-          hasKundli: !!kundli,
-        });
-      } else if (event === 'SIGNED_OUT') {
+          isKundliLoading: event === 'SIGNED_IN',
+        }));
+
+        // Fetch kundli on sign in
+        if (event === 'SIGNED_IN') {
+          const kundli = await fetchKundli(session.user.id);
+          if (mounted) {
+            setState(prev => ({
+              ...prev,
+              kundli,
+              hasKundli: kundli !== null,
+              isKundliLoading: false,
+            }));
+          }
+        }
+      } else {
         setState({
           user: null,
           session: null,
-          kundli: null,
           isLoading: false,
           isAuthenticated: false,
+          kundli: null,
           hasKundli: false,
+          isKundliLoading: false,
         });
       }
     });
@@ -150,29 +161,39 @@ export function useAuth() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchUserKundli]);
-
-  // Refresh kundli data
-  const refreshKundli = useCallback(async () => {
-    if (!state.user) return;
-    const kundli = await fetchUserKundli(state.user.id);
-    setState(prev => ({
-      ...prev,
-      kundli,
-      hasKundli: !!kundli,
-    }));
-  }, [state.user, fetchUserKundli]);
+  }, [fetchKundli]);
 
   // Sign out
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+      }
+    } catch (err) {
+      console.error('Sign out exception:', err);
+    }
   }, []);
+
+  // Refresh kundli data (useful after saving/updating kundli)
+  const refreshKundli = useCallback(async () => {
+    if (!state.user) return;
+
+    setState(prev => ({ ...prev, isKundliLoading: true }));
+    const kundli = await fetchKundli(state.user.id);
+    setState(prev => ({
+      ...prev,
+      kundli,
+      hasKundli: kundli !== null,
+      isKundliLoading: false,
+    }));
+  }, [state.user, fetchKundli]);
 
   return {
     ...state,
-    refreshKundli,
     signOut,
+    refreshKundli,
   };
 }
 
-export type { KundliDetails, AuthState };
+export type { AuthState };

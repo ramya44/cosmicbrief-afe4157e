@@ -20,7 +20,6 @@ import VedicAstrologyExplainedPage from "./pages/VedicAstrologyExplainedPage";
 import VedicProfilePage from "./pages/VedicProfilePage";
 import ContactPage from "./pages/ContactPage";
 import BackgroundPage from "./pages/BackgroundPage";
-import WeeklyHoroscopePage from "./pages/WeeklyHoroscopePage";
 import LifeArcPage from "./pages/LifeArcPage";
 import HowToReadChartPage from "./pages/HowToReadChartPage";
 import VedicVsWesternPage from "./pages/VedicVsWesternPage";
@@ -116,7 +115,6 @@ const App = () => (
           <Route path="/vedic-astrology-explained" element={<VedicAstrologyExplainedPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/background" element={<BackgroundPage />} />
-          <Route path="/weekly-horoscope" element={<WeeklyHoroscopePage />} />
           {FEATURE_FLAGS.LIFE_ARC_ENABLED && (
             <Route path="/life-arc" element={<LifeArcPage />} />
           )}

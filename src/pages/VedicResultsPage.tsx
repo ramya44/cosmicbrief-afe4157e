@@ -3,7 +3,8 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Sparkles, Lock, ChevronRight, User, Share2, Check, Download } from 'lucide-react';
+import { Sparkles, Lock, ChevronRight, User, Share2, Check, Download, Plus } from 'lucide-react';
+import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
@@ -187,6 +188,28 @@ const VedicResultsPage = () => {
     } else {
       navigate(`/vedic/results?id=${kundliId}`);
     }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = kundliId
+      ? `${window.location.origin}/#/vedic/results?id=${kundliId}`
+      : window.location.href;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copied to clipboard!');
+    } catch {
+      toast.error('Failed to copy link');
+    }
+  };
+
+  const { setKundliId, setFreeForecast } = useForecastStore();
+
+  const handleNewBirthDetails = () => {
+    // Clear stored kundli so user can enter fresh details
+    setKundliId(null);
+    setFreeForecast(null);
+    navigate('/vedic/input');
   };
 
   // Track when inline CTA is visible to hide sticky CTA
@@ -844,16 +867,27 @@ const VedicResultsPage = () => {
                     </div>
                   )}
                 </div>
-                {isOwner && (
+                <div className="flex flex-col gap-2 mt-4">
+                  {isOwner && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-gold border-gold/30 hover:bg-gold/10"
+                      onClick={() => navigate(`/vedic/profile?id=${kundliId}`)}
+                    >
+                      View Profile
+                    </Button>
+                  )}
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
-                    className="w-full mt-4 text-gold border-gold/30 hover:bg-gold/10"
-                    onClick={() => navigate(`/vedic/profile?id=${kundliId}`)}
+                    className="w-full text-cream-muted hover:text-cream hover:bg-gold/10"
+                    onClick={handleNewBirthDetails}
                   >
-                    View Profile
+                    <Plus className="w-4 h-4 mr-2" />
+                    New birth details
                   </Button>
-                )}
+                </div>
               </PopoverContent>
             </Popover>
           </div>
@@ -930,6 +964,20 @@ const VedicResultsPage = () => {
                 </a>
               </p>
             )}
+          </div>
+        )}
+
+        {/* Share button for free forecast */}
+        {forecastToShow && !hasPaidForecast && isOwner && (
+          <div className="max-w-3xl mx-auto flex justify-center mt-8">
+            <Button
+              onClick={handleShare}
+              variant="outline"
+              className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Share my Cosmic Brief
+            </Button>
           </div>
         )}
 

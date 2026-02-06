@@ -33,9 +33,9 @@ Deno.serve(async (req) => {
     const { kundli_id, device_id, shared } = body;
 
     if (!kundli_id) {
-      return new Response(JSON.stringify({ error: "kundli_id is required" }), { 
-        status: 400, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      return new Response(JSON.stringify({ error: "kundli_id is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
@@ -44,7 +44,7 @@ Deno.serve(async (req) => {
     const { data, error } = await supabase
       .from("user_kundli_details")
       .select(
-        "id, birth_date, birth_time, birth_place, moon_sign, moon_sign_id, moon_sign_lord, sun_sign, sun_sign_id, sun_sign_lord, nakshatra, nakshatra_id, nakshatra_pada, nakshatra_lord, ascendant_sign, ascendant_sign_id, ascendant_sign_lord, animal_sign, deity, name, user_id, free_vedic_forecast, paid_vedic_forecast, forecast_generated_at, email, device_id, shareable_link, planetary_positions"
+        "id, birth_date, birth_time, birth_place, moon_sign, moon_sign_id, moon_sign_lord, sun_sign, sun_sign_id, sun_sign_lord, nakshatra, nakshatra_id, nakshatra_pada, nakshatra_lord, ascendant_sign, ascendant_sign_id, ascendant_sign_lord, animal_sign, deity, name, user_id, free_vedic_forecast, paid_vedic_forecast, forecast_generated_at, device_id, shareable_link, planetary_positions"
       )
       .eq("id", kundli_id)
       .maybeSingle();
@@ -64,12 +64,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // For shared links: allow read-only access without device_id verification
-    // For normal access: require device_id match
+    // Check ownership: device_id match only
     const isSharedAccess = shared === true;
-    const isOwner = data.device_id && data.device_id === device_id;
+    const isDeviceOwner = data.device_id && data.device_id === device_id;
 
-    if (!isSharedAccess && !isOwner) {
+    logStep("Access check", { isSharedAccess, isDeviceOwner });
+
+    if (!isSharedAccess && !isDeviceOwner) {
       // Deliberately 404 (not 403) to avoid leaking existence of rows
       return new Response(JSON.stringify({ error: "Not found" }), {
         status: 404,
@@ -77,16 +78,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Don't return device_id or email to client (privacy)
-    const { device_id: _omitDevice, email: _omitEmail, ...safe } = data as any;
+    // Don't return device_id to client (privacy)
+    const { device_id: _omitDevice, ...safe } = data as any;
 
     // For shared access, also indicate it's read-only
     const response = {
       ...safe,
-      is_owner: isOwner,
+      is_owner: isDeviceOwner,
     };
 
-    logStep("Returning kundli data", { is_owner: isOwner, shared: isSharedAccess });
+    logStep("Returning kundli data", { is_owner: isDeviceOwner, shared: isSharedAccess });
 
     return new Response(JSON.stringify(response), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

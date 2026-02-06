@@ -16,6 +16,7 @@ export interface BirthFormData {
   birthPlace: string;
   latitude: number;
   longitude: number;
+  marketingConsent?: boolean;
 }
 
 export interface BirthDetailsFormProps {
@@ -81,6 +82,7 @@ export const BirthDetailsForm = ({
       : null
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [marketingConsent, setMarketingConsent] = useState(true);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -163,6 +165,7 @@ export const BirthDetailsForm = ({
       birthPlace: formData.birthPlace,
       latitude: placeCoords.lat,
       longitude: placeCoords.lon,
+      marketingConsent,
     };
 
     if (showName && formData.name.trim()) {
@@ -291,10 +294,10 @@ export const BirthDetailsForm = ({
                 setFormData({ ...formData, birthTime: '' });
               }
             }}
-            className="w-4 h-4 rounded border-border/50 bg-secondary/50 text-gold focus:ring-gold/20 focus:ring-offset-0 cursor-pointer"
+            className="w-3.5 h-3.5 rounded border-border/50 bg-secondary/50 text-gold focus:ring-gold/20 focus:ring-offset-0 cursor-pointer"
             disabled={isSubmitting}
           />
-          <span className="text-sm text-cream-muted group-hover:text-cream transition-colors">
+          <span className="text-xs text-cream-muted group-hover:text-cream transition-colors italic">
             I don't know my birth time
           </span>
         </label>
@@ -346,6 +349,21 @@ export const BirthDetailsForm = ({
         className="pt-4 animate-fade-up"
         style={{ animationDelay: `${getNextDelay()}ms`, animationFillMode: 'both' }}
       >
+        {/* Marketing Consent */}
+        {showEmail && (
+          <label className="flex items-center gap-2 cursor-pointer group mb-3">
+            <input
+              type="checkbox"
+              checked={marketingConsent}
+              onChange={(e) => setMarketingConsent(e.target.checked)}
+              className="w-3.5 h-3.5 rounded border-border/50 bg-secondary/50 text-gold focus:ring-gold/20 focus:ring-offset-0 cursor-pointer"
+              disabled={isSubmitting}
+            />
+            <span className="text-xs text-cream-muted group-hover:text-cream transition-colors italic">
+              Send me occasional cosmic insights and updates
+            </span>
+          </label>
+        )}
         <Button type="submit" variant="hero" size="lg" className="w-full group" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
