@@ -276,6 +276,7 @@ const WhatIsNakshatraPage = () => {
               <Link to="/blog/magha-nakshatra" className="text-gold hover:underline">Magha — The Throne of Power →</Link>
               <Link to="/blog/purva-phalguni-nakshatra" className="text-gold hover:underline">Purva Phalguni — The Bed of Pleasure →</Link>
               <Link to="/blog/uttara-phalguni-nakshatra" className="text-gold hover:underline">Uttara Phalguni — Noble Service →</Link>
+              <Link to="/blog/hasta-nakshatra" className="text-gold hover:underline">Hasta — The Divine Hand →</Link>
               <Link to="/blog/purva-bhadrapada-nakshatra" className="text-gold hover:underline">Purva Bhadrapada — The Burning Pair →</Link>
             </div>
           </div>

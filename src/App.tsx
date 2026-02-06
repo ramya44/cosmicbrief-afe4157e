@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
+import { AuthProvider } from "@/context/AuthContext";
+import { LoginModal } from "@/components/LoginModal";
 import Index from "./pages/Index";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
@@ -38,6 +40,7 @@ import AshleshaNakshatraPage from "./pages/AshleshaNakshatraPage";
 import MaghaNakshatraPage from "./pages/MaghaNakshatraPage";
 import PurvaPhalguniNakshatraPage from "./pages/PurvaPhalguniNakshatraPage";
 import UttaraPhalguniNakshatraPage from "./pages/UttaraPhalguniNakshatraPage";
+import HastaNakshatraPage from "./pages/HastaNakshatraPage";
 import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
@@ -72,14 +75,16 @@ const LegacyUrlRedirectHelper = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <LegacyUrlRedirectHelper />
-      <Toaster />
-      <Sonner />
-      <HashRouter>
-        <ScrollToTop />
-        <Navigation />
-        <div className="pt-14 md:pt-16 pb-16 md:pb-0">
-        <Routes>
+      <AuthProvider>
+        <LegacyUrlRedirectHelper />
+        <Toaster />
+        <Sonner />
+        <HashRouter>
+          <ScrollToTop />
+          <Navigation />
+          <LoginModal />
+          <div className="pt-14 md:pt-16 pb-16 md:pb-0">
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
@@ -101,6 +106,7 @@ const App = () => (
           <Route path="/blog/magha-nakshatra" element={<MaghaNakshatraPage />} />
           <Route path="/blog/purva-phalguni-nakshatra" element={<PurvaPhalguniNakshatraPage />} />
           <Route path="/blog/uttara-phalguni-nakshatra" element={<UttaraPhalguniNakshatraPage />} />
+          <Route path="/blog/hasta-nakshatra" element={<HastaNakshatraPage />} />
           <Route path="/blog/purva-bhadrapada-nakshatra" element={<PurvaBhadrapadaNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
@@ -119,9 +125,10 @@ const App = () => (
           <Route path="/get-birth-chart" element={<BirthChartInputPage />} />
           <Route path="/birth-chart" element={<BirthChartPage />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-        </div>
-      </HashRouter>
+          </Routes>
+          </div>
+        </HashRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
