@@ -83,7 +83,6 @@ const PurvaPhalguniNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Front legs of bed, hammock, fig tree</p>
               <p><span className="text-gold">Element:</span> Water</p>
               <p><span className="text-gold">Quality:</span> Fierce, sharp</p>
-              <p><span className="text-gold">Caste:</span> Brahmin</p>
               <p><span className="text-gold">Pair:</span> Forms a pair with Uttara Phalguni</p>
             </div>
           </div>

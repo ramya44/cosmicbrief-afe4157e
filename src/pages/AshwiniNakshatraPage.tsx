@@ -83,7 +83,6 @@ const AshwiniNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Horse's head</p>
               <p><span className="text-gold">Element:</span> Earth</p>
               <p><span className="text-gold">Quality:</span> Light, swift</p>
-              <p><span className="text-gold">Caste:</span> Merchant</p>
             </div>
           </div>
 

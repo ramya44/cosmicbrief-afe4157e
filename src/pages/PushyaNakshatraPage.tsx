@@ -83,7 +83,6 @@ const PushyaNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Cow's udder, lotus, arrow</p>
               <p><span className="text-gold">Element:</span> Water</p>
               <p><span className="text-gold">Quality:</span> Light, swift</p>
-              <p><span className="text-gold">Caste:</span> Brahmin</p>
               <p><span className="text-gold">Status:</span> Most auspicious nakshatra</p>
             </div>
           </div>

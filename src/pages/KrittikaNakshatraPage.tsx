@@ -83,7 +83,6 @@ const KrittikaNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Razor, axe, flame</p>
               <p><span className="text-gold">Element:</span> Fire</p>
               <p><span className="text-gold">Quality:</span> Sharp, fierce</p>
-              <p><span className="text-gold">Caste:</span> Brahmin</p>
               <p><span className="text-gold">Western Star:</span> The Pleiades</p>
             </div>
           </div>

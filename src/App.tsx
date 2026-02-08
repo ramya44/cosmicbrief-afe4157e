@@ -40,6 +40,7 @@ import MaghaNakshatraPage from "./pages/MaghaNakshatraPage";
 import PurvaPhalguniNakshatraPage from "./pages/PurvaPhalguniNakshatraPage";
 import UttaraPhalguniNakshatraPage from "./pages/UttaraPhalguniNakshatraPage";
 import HastaNakshatraPage from "./pages/HastaNakshatraPage";
+import ChitraNakshatraPage from "./pages/ChitraNakshatraPage";
 import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
@@ -106,6 +107,7 @@ const App = () => (
           <Route path="/blog/purva-phalguni-nakshatra" element={<PurvaPhalguniNakshatraPage />} />
           <Route path="/blog/uttara-phalguni-nakshatra" element={<UttaraPhalguniNakshatraPage />} />
           <Route path="/blog/hasta-nakshatra" element={<HastaNakshatraPage />} />
+          <Route path="/blog/chitra-nakshatra" element={<ChitraNakshatraPage />} />
           <Route path="/blog/purva-bhadrapada-nakshatra" element={<PurvaBhadrapadaNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />

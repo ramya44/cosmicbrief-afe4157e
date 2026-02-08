@@ -83,7 +83,6 @@ const RohiniNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Chariot, cart, ox</p>
               <p><span className="text-gold">Element:</span> Earth</p>
               <p><span className="text-gold">Quality:</span> Fixed, stable</p>
-              <p><span className="text-gold">Caste:</span> Farmer/Merchant</p>
               <p><span className="text-gold">Western Star:</span> Aldebaran</p>
             </div>
           </div>

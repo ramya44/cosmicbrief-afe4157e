@@ -83,7 +83,6 @@ const PunarvasuNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Quiver of arrows, house, bow</p>
               <p><span className="text-gold">Element:</span> Water</p>
               <p><span className="text-gold">Quality:</span> Movable, changeable</p>
-              <p><span className="text-gold">Caste:</span> Merchant</p>
               <p><span className="text-gold">Western Stars:</span> Castor and Pollux</p>
             </div>
           </div>

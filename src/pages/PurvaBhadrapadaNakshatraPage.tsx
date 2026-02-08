@@ -50,7 +50,6 @@ const PurvaBhadrapadaNakshatraPage = () => {
             <li><strong className="text-cream">Symbol:</strong> Front legs of funeral cot, two-faced man, sword</li>
             <li><strong className="text-cream">Element:</strong> Ether/Space</li>
             <li><strong className="text-cream">Quality:</strong> Fierce, sharp</li>
-            <li><strong className="text-cream">Caste:</strong> Brahmin</li>
             <li><strong className="text-cream">Western Stars:</strong> Markab and Scheat (Pegasus)</li>
           </ul>
         </section>

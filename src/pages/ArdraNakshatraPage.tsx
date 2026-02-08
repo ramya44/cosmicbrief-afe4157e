@@ -83,7 +83,6 @@ const ArdraNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Teardrop, diamond, human head</p>
               <p><span className="text-gold">Element:</span> Water</p>
               <p><span className="text-gold">Quality:</span> Sharp, fierce</p>
-              <p><span className="text-gold">Caste:</span> Butcher</p>
               <p><span className="text-gold">Western Star:</span> Betelgeuse (Orion)</p>
             </div>
           </div>

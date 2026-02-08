@@ -83,7 +83,6 @@ const BharaniNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Yoni (female organ)</p>
               <p><span className="text-gold">Element:</span> Earth</p>
               <p><span className="text-gold">Quality:</span> Fierce, severe</p>
-              <p><span className="text-gold">Caste:</span> Outcast/Chandala</p>
             </div>
           </div>
 

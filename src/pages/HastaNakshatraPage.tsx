@@ -83,7 +83,6 @@ const HastaNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Open hand, palm, fist</p>
               <p><span className="text-gold">Element:</span> Fire</p>
               <p><span className="text-gold">Quality:</span> Light, swift</p>
-              <p><span className="text-gold">Caste:</span> Merchant</p>
               <p><span className="text-gold">Power:</span> Hasta Sthapaniya Agama Shakti (power to manifest what you seek)</p>
             </div>
           </div>

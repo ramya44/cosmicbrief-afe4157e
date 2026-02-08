@@ -83,7 +83,6 @@ const UttaraPhalguniNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Back legs of bed, four legs of cot</p>
               <p><span className="text-gold">Element:</span> Fire</p>
               <p><span className="text-gold">Quality:</span> Fixed, stable</p>
-              <p><span className="text-gold">Caste:</span> Kshatriya (Warrior)</p>
               <p><span className="text-gold">Pair:</span> Forms a pair with Purva Phalguni</p>
             </div>
           </div>

@@ -83,7 +83,6 @@ const MaghaNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Royal throne, palanquin</p>
               <p><span className="text-gold">Element:</span> Water</p>
               <p><span className="text-gold">Quality:</span> Fierce, sharp</p>
-              <p><span className="text-gold">Caste:</span> Servant</p>
               <p><span className="text-gold">Western Star:</span> Regulus</p>
             </div>
           </div>

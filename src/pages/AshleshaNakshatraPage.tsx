@@ -83,7 +83,6 @@ const AshleshaNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Coiled serpent, wheel</p>
               <p><span className="text-gold">Element:</span> Water</p>
               <p><span className="text-gold">Quality:</span> Sharp, fierce</p>
-              <p><span className="text-gold">Caste:</span> Outcaste</p>
               <p><span className="text-gold">Power:</span> Poisoning and healing</p>
             </div>
           </div>

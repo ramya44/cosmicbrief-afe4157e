@@ -83,7 +83,6 @@ const MrigashiraNakshatraPage = () => {
               <p><span className="text-gold">Symbol:</span> Deer's head, antelope</p>
               <p><span className="text-gold">Element:</span> Earth</p>
               <p><span className="text-gold">Quality:</span> Soft, tender</p>
-              <p><span className="text-gold">Caste:</span> Farmer/Servant</p>
               <p><span className="text-gold">Western Star:</span> Orion's Belt</p>
             </div>
           </div>
