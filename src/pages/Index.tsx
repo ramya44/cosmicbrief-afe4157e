@@ -49,9 +49,9 @@ const Index = () => {
     // Wait for initial auth check only (not kundli loading)
     if (isLoading) return;
 
-    // Case 2: Authenticated user with saved kundli - load and redirect
-    if (isAuthenticated && hasKundli && kundli) {
-      console.log('Redirecting: authenticated user with saved kundli');
+    // Case 2: Authenticated user with saved kundli AND forecast - load and redirect
+    if (isAuthenticated && hasKundli && kundli && kundli.free_vedic_forecast) {
+      console.log('Redirecting: authenticated user with saved kundli and forecast');
       hasRedirected.current = true;
 
       // Load saved birth data into store
@@ -66,14 +66,12 @@ const Index = () => {
       });
       setKundliId(kundli.id);
 
-      // Load forecast if exists
-      if (kundli.free_vedic_forecast) {
-        setFreeForecast({
-          forecast: kundli.free_vedic_forecast,
-          id: kundli.id,
-          animalSign: kundli.animal_sign || undefined,
-        });
-      }
+      // Load forecast
+      setFreeForecast({
+        forecast: kundli.free_vedic_forecast,
+        id: kundli.id,
+        animalSign: kundli.animal_sign || undefined,
+      });
 
       navigate(`/vedic/results?id=${kundli.id}`, { replace: true });
     }

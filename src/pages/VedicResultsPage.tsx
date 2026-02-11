@@ -800,9 +800,22 @@ const VedicResultsPage = () => {
     return elements;
   };
 
-  // Show loading while fetching data or waiting for forecast
-  if (loading || (kundli && !kundli.free_vedic_forecast && !kundli.paid_vedic_forecast)) {
+  // Show loading while fetching data
+  if (loading) {
     return <LoadingSpinner />;
+  }
+
+  // If kundli exists but no forecast, show message and redirect to input
+  if (kundli && !kundli.free_vedic_forecast && !kundli.paid_vedic_forecast) {
+    return (
+      <div className="relative min-h-screen bg-celestial">
+        <StarField />
+        <div className="relative z-10 container mx-auto px-4 py-12 text-center">
+          <p className="text-cream-muted mb-4">No forecast found. Let's generate one for you.</p>
+          <Button onClick={() => navigate('/vedic/input')}>Generate Forecast</Button>
+        </div>
+      </div>
+    );
   }
 
   if (error || !kundli) {
