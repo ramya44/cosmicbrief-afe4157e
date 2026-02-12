@@ -280,7 +280,8 @@ const VedicResultsPage = () => {
           forecastLength: sharedResult.data?.paid_vedic_forecast?.length || 0
         });
 
-        if (sharedResult.error || !sharedResult.data) {
+        if (sharedResult.error || !sharedResult.data || sharedResult.data.error) {
+          console.log('[ResultsPage] Shared access also failed:', sharedResult.data?.error);
           setError('Forecast not found');
           setLoading(false);
           return;
