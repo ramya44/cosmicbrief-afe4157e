@@ -266,7 +266,8 @@ const VedicResultsPage = () => {
       });
 
       // If not found with device_id, try as shared link
-      if (fnError || !data) {
+      // Also check data.error since the function returns {error: "Not found"} for access denied
+      if (fnError || !data || data.error) {
         console.log('[ResultsPage] Owner access failed, trying shared access');
         const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
           body: { kundli_id: kundliId, shared: true },

@@ -129,11 +129,10 @@ async function sendEmail(to: string, name: string | null): Promise<boolean> {
 }
 
 async function main() {
-  // Get today's date range (UTC)
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  // Get yesterday's date (UTC) - we emailed those users already
+  const yesterday = new Date();
+  yesterday.setUTCHours(0, 0, 0, 0);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
   // Test mode - send to a single email
   if (testEmail) {
@@ -148,21 +147,20 @@ async function main() {
   }
 
   console.log(isDryRun ? '🔍 DRY RUN - No emails will be sent' : '📧 SENDING EMAILS');
-  console.log(`📅 Filtering for forecasts created today (${today.toISOString().split('T')[0]})\n`);
+  console.log(`📅 Filtering for forecasts created BEFORE yesterday (${yesterday.toISOString().split('T')[0]})\n`);
 
   // Query users who have:
   // - An email address
   // - A free forecast
   // - No paid forecast
-  // - Created today
+  // - Created BEFORE yesterday (not emailed yet)
   const { data: users, error } = await supabase
     .from('user_kundli_details')
     .select('id, email, name, created_at')
     .not('email', 'is', null)
     .not('free_vedic_forecast', 'is', null)
     .is('paid_vedic_forecast', null)
-    .gte('created_at', today.toISOString())
-    .lt('created_at', tomorrow.toISOString())
+    .lt('created_at', yesterday.toISOString())
     .order('created_at', { ascending: false });
 
   if (error) {
