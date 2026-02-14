@@ -43,6 +43,8 @@ import HastaNakshatraPage from "./pages/HastaNakshatraPage";
 import ChitraNakshatraPage from "./pages/ChitraNakshatraPage";
 import SwatiNakshatraPage from "./pages/SwatiNakshatraPage";
 import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
+import VishakhaNakshatraPage from "./pages/VishakhaNakshatraPage";
+import AnuradhaNakshatraPage from "./pages/AnuradhaNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
@@ -111,6 +113,8 @@ const App = () => (
           <Route path="/blog/chitra-nakshatra" element={<ChitraNakshatraPage />} />
           <Route path="/blog/swati-nakshatra" element={<SwatiNakshatraPage />} />
           <Route path="/blog/purva-bhadrapada-nakshatra" element={<PurvaBhadrapadaNakshatraPage />} />
+          <Route path="/blog/vishakha-nakshatra" element={<VishakhaNakshatraPage />} />
+          <Route path="/blog/anuradha-nakshatra" element={<AnuradhaNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
