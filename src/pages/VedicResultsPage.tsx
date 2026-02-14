@@ -168,6 +168,14 @@ const VedicResultsPage = () => {
 
   // Calculate derived values unconditionally (before any returns)
   const hasPaidForecast = useMemo(() => !!kundli?.paid_vedic_forecast, [kundli]);
+  const hasFreeForecast = useMemo(() => !!kundli?.free_vedic_forecast, [kundli]);
+
+  // Detect shared paid view - show both forecasts for non-owners viewing paid link
+  const isSharedPaidView = useMemo(() =>
+    isPaidView && hasPaidForecast && hasFreeForecast && !isOwner,
+    [isPaidView, hasPaidForecast, hasFreeForecast, isOwner]
+  );
+
   const forecastToShow = useMemo(() => {
     // If paid view requested and paid forecast exists and has content, show it
     if (isPaidView && kundli?.paid_vedic_forecast && kundli.paid_vedic_forecast.trim().length > 0) {
@@ -176,11 +184,38 @@ const VedicResultsPage = () => {
     // Otherwise fall back to free forecast
     return kundli?.free_vedic_forecast || null;
   }, [isPaidView, kundli]);
-  const parsedForecast = useMemo(() => 
+
+  // Parse both forecasts for shared view
+  const parsedFreeForecast = useMemo(() =>
+    kundli?.free_vedic_forecast ? parseJsonForecast(kundli.free_vedic_forecast) : null,
+    [kundli?.free_vedic_forecast]
+  );
+  const parsedPaidForecast = useMemo(() =>
+    kundli?.paid_vedic_forecast ? parseJsonForecast(kundli.paid_vedic_forecast) : null,
+    [kundli?.paid_vedic_forecast]
+  );
+
+  const parsedForecast = useMemo(() =>
     forecastToShow ? parseJsonForecast(forecastToShow) : null,
     [forecastToShow]
   );
   const sectionsWithIds = useMemo(() => getSectionsWithIds(parsedForecast), [parsedForecast]);
+
+  // For shared view, combine section IDs from both forecasts
+  const sharedViewSectionsWithIds = useMemo(() => {
+    if (!isSharedPaidView) return sectionsWithIds;
+    const freeSections = parsedFreeForecast ? getSectionsWithIds(parsedFreeForecast).map(s => ({
+      ...s,
+      id: `free-${s.id}`,
+      heading: s.heading,
+    })) : [];
+    const paidSections = parsedPaidForecast ? getSectionsWithIds(parsedPaidForecast).map(s => ({
+      ...s,
+      id: `paid-${s.id}`,
+      heading: s.heading,
+    })) : [];
+    return [...freeSections, ...paidSections];
+  }, [isSharedPaidView, parsedFreeForecast, parsedPaidForecast, sectionsWithIds]);
 
   const handleViewChange = (isPaid: boolean) => {
     if (isPaid) {
@@ -948,25 +983,62 @@ const VedicResultsPage = () => {
         {forecastToShow ? (
           <div className="max-w-3xl mx-auto">
             {/* Table of Contents - hide toggle for shared views, just show section nav */}
-            {parsedForecast && sectionsWithIds.length > 0 && (
+            {!isSharedPaidView && parsedForecast && sectionsWithIds.length > 0 && (
               <ForecastTableOfContents
                 sections={sectionsWithIds}
                 hasPaidForecast={hasPaidForecast}
                 isPaidView={isPaidView}
                 onViewChange={handleViewChange}
-                isSharedView={!isOwner && isPaidView && hasPaidForecast}
+                isSharedView={false}
               />
             )}
 
-            <div className="bg-midnight/40 md:border md:border-border/30 rounded-none md:rounded-2xl p-4 md:p-10 backdrop-blur-sm -mx-4 md:mx-0">
-              {parsedForecast ? (
-                renderJsonForecast(parsedForecast, isPaidView && hasPaidForecast)
-              ) : (
-                <div className="prose prose-invert max-w-none">
-                  {renderMarkdownForecast(forecastToShow)}
+            {/* Shared Paid View: Show synopsis (free) first, then full forecast */}
+            {isSharedPaidView ? (
+              <>
+                {/* Synopsis Section */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="w-5 h-5 text-gold" />
+                    <h2 className="text-xl font-display text-gold">Synopsis</h2>
+                  </div>
+                  <div className="bg-midnight/40 md:border md:border-border/30 rounded-none md:rounded-2xl p-4 md:p-10 backdrop-blur-sm -mx-4 md:mx-0">
+                    {parsedFreeForecast ? (
+                      renderJsonForecast(parsedFreeForecast, false)
+                    ) : (
+                      <p className="text-cream-muted">Synopsis not available</p>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* Divider */}
+                <div className="flex items-center gap-4 my-12">
+                  <div className="flex-1 h-px bg-gold/30" />
+                  <span className="text-gold text-sm font-medium px-4">Full Cosmic Brief</span>
+                  <div className="flex-1 h-px bg-gold/30" />
+                </div>
+
+                {/* Full Paid Forecast Section */}
+                <div className="bg-midnight/40 md:border md:border-border/30 rounded-none md:rounded-2xl p-4 md:p-10 backdrop-blur-sm -mx-4 md:mx-0">
+                  {parsedPaidForecast ? (
+                    renderJsonForecast(parsedPaidForecast, true)
+                  ) : (
+                    <p className="text-cream-muted">Full forecast not available</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Regular view: Show single forecast */
+              <div className="bg-midnight/40 md:border md:border-border/30 rounded-none md:rounded-2xl p-4 md:p-10 backdrop-blur-sm -mx-4 md:mx-0">
+                {parsedForecast ? (
+                  renderJsonForecast(parsedForecast, isPaidView && hasPaidForecast)
+                ) : (
+                  <div className="prose prose-invert max-w-none">
+                    {renderMarkdownForecast(forecastToShow)}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="max-w-3xl mx-auto text-center py-12">
