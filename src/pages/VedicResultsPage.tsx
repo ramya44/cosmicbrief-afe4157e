@@ -75,7 +75,7 @@ interface ContentItem {
   title?: string;
   what_happening?: string;
   astrology?: string;
-  key_actions?: string;
+  key_actions?: string | string[];
   transitions?: { date: string; significance: string }[];
   quarter?: string;
   question?: string;
@@ -676,7 +676,18 @@ const VedicResultsPage = () => {
               {item.key_actions && (
                 <div className="bg-gold/10 border border-gold/30 rounded-lg p-4">
                   <p className="text-gold text-sm font-medium mb-2">Key Actions:</p>
-                  <p className="text-sm">{renderMarkdownText(item.key_actions)}</p>
+                  {Array.isArray(item.key_actions) ? (
+                    <ul className="text-sm space-y-2">
+                      {item.key_actions.map((action, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-gold mt-1">•</span>
+                          <span>{renderMarkdownText(action)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm">{renderMarkdownText(item.key_actions)}</p>
+                  )}
                 </div>
               )}
             </div>
