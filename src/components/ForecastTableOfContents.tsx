@@ -12,6 +12,7 @@ interface ForecastTableOfContentsProps {
   hasPaidForecast: boolean;
   isPaidView: boolean;
   onViewChange: (isPaid: boolean) => void;
+  isSharedView?: boolean;
 }
 
 export const ForecastTableOfContents = ({
@@ -19,6 +20,7 @@ export const ForecastTableOfContents = ({
   hasPaidForecast,
   isPaidView,
   onViewChange,
+  isSharedView = false,
 }: ForecastTableOfContentsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -59,7 +61,19 @@ export const ForecastTableOfContents = ({
   // Build navigation items with Synopsis/Full Brief as clickable sections
   const buildNavItems = () => {
     const items: { label: string; id: string | null; type: 'section' | 'view-toggle'; isPaid?: boolean }[] = [];
-    
+
+    // For shared views, just show section navigation without toggles
+    if (isSharedView) {
+      displaySections.forEach((section) => {
+        items.push({
+          label: section.heading,
+          id: section.id,
+          type: 'section',
+        });
+      });
+      return items;
+    }
+
     // Add Synopsis as first item (links to free view)
     items.push({
       label: 'Synopsis',
@@ -70,7 +84,7 @@ export const ForecastTableOfContents = ({
 
     // If in Synopsis view, show Synopsis sections
     if (!isPaidView) {
-      displaySections.forEach((section, idx) => {
+      displaySections.forEach((section) => {
         items.push({
           label: section.heading,
           id: section.id,
@@ -90,7 +104,7 @@ export const ForecastTableOfContents = ({
 
       // If in Full Brief view, show Full Brief sections
       if (isPaidView) {
-        displaySections.forEach((section, idx) => {
+        displaySections.forEach((section) => {
           items.push({
             label: section.heading,
             id: section.id,
@@ -156,7 +170,7 @@ export const ForecastTableOfContents = ({
                     : item.type === 'section' && activeSection === item.id
                     ? "bg-gold/20 text-gold"
                     : "text-cream-muted hover:text-cream hover:bg-white/5",
-                  item.type === 'section' && "pl-6"
+                  item.type === 'section' && !isSharedView && "pl-6"
                 )}
               >
                 {item.type === 'section' && (
@@ -183,10 +197,10 @@ export const ForecastTableOfContents = ({
                 : item.type === 'section' && activeSection === item.id
                 ? "bg-gold/20 text-gold"
                 : "text-cream-muted hover:text-cream hover:bg-white/5",
-              item.type === 'section' && "pl-6"
+              item.type === 'section' && !isSharedView && "pl-6"
             )}
           >
-            {item.type === 'section' && (
+            {item.type === 'section' && !isSharedView && (
               <span className="text-gold/60 mr-2">•</span>
             )}
             {item.label}

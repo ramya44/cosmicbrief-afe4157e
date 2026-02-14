@@ -947,13 +947,14 @@ const VedicResultsPage = () => {
 
         {forecastToShow ? (
           <div className="max-w-3xl mx-auto">
-            {/* Table of Contents */}
+            {/* Table of Contents - hide toggle for shared views, just show section nav */}
             {parsedForecast && sectionsWithIds.length > 0 && (
               <ForecastTableOfContents
                 sections={sectionsWithIds}
                 hasPaidForecast={hasPaidForecast}
                 isPaidView={isPaidView}
                 onViewChange={handleViewChange}
+                isSharedView={!isOwner && isPaidView && hasPaidForecast}
               />
             )}
 
