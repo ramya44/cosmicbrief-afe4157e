@@ -22,7 +22,7 @@ const BharaniNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/bharani-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/bharani-nakshatra"
     },
     "keywords": ["Bharani nakshatra", "Vedic astrology", "nakshatras", "Yama", "Venus", "lunar mansions", "birth stars", "transformation"]
   };
@@ -32,7 +32,7 @@ const BharaniNakshatraPage = () => {
       <Helmet>
         <title>Bharani Nakshatra: The Cosmic Womb of Transformation | Cosmic Brief</title>
         <meta name="description" content="Discover Bharani nakshatra, the second lunar mansion in Vedic astrology. Learn about its transformative power, connection to life and death, and how it shapes destiny." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/bharani-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/bharani-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

@@ -22,7 +22,7 @@ const ChitraNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/chitra-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/chitra-nakshatra"
     },
     "keywords": ["Chitra nakshatra", "Vedic astrology", "Vishwakarma", "nakshatras", "creativity", "architecture", "lunar mansions", "Spica"]
   };
@@ -32,7 +32,7 @@ const ChitraNakshatraPage = () => {
       <Helmet>
         <title>Chitra Nakshatra: The Jewel of Creation | Cosmic Brief</title>
         <meta name="description" content="Explore Chitra nakshatra, the brilliant star of artistry and creation in Vedic astrology. Discover its visionary power, aesthetic genius, and architectural mastery." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/chitra-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/chitra-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

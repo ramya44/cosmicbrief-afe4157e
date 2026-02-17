@@ -22,7 +22,7 @@ const ArdraNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/ardra-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/ardra-nakshatra"
     },
     "keywords": ["Ardra nakshatra", "Vedic astrology", "Rudra", "Rahu", "nakshatras", "lunar mansions", "birth stars", "transformation", "Betelgeuse"]
   };
@@ -32,7 +32,7 @@ const ArdraNakshatraPage = () => {
       <Helmet>
         <title>Ardra Nakshatra: The Storm Star of Transformation | Cosmic Brief</title>
         <meta name="description" content="Explore Ardra nakshatra, the stormy star of destruction and renewal in Vedic astrology. Discover its intense energy, transformative power, and emotional depth." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/ardra-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/ardra-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

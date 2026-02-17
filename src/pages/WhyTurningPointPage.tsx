@@ -22,7 +22,7 @@ const WhyTurningPointPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/why-2026-is-a-turning-point"
+      "@id": "https://www.cosmicbrief.com/blog/why-2026-is-a-turning-point"
     },
     "keywords": ["vedic astrology 2026", "jupiter exalted cancer", "rahu ketu transit 2026", "aquarius stellium 2026", "saturn pisces 2026", "2026 planetary transits"]
   };
@@ -32,7 +32,7 @@ const WhyTurningPointPage = () => {
       <Helmet>
         <title>Why 2026 Is a Turning Point in Astrology | Cosmic Brief</title>
         <meta name="description" content="Jupiter exalted in Cancer, the Rahu-Ketu nodal shift, a five-planet stellium in Aquarius, and more. A Vedic astrology breakdown of 2026's major transits." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/why-2026-is-a-turning-point" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/why-2026-is-a-turning-point" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

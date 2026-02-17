@@ -731,7 +731,7 @@ Deno.serve(async (req) => {
       if (resendApiKey) {
         // Fire and forget - don't await
         const resend = new Resend(resendApiKey);
-        const resultsUrl = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}`;
+        const resultsUrl = `https://www.cosmicbrief.com/vedic/results?id=${kundli_id}`;
         const emailHtml = buildVedicFreeEmailHtml(kundliData.name, resultsUrl);
 
         resend.emails.send({

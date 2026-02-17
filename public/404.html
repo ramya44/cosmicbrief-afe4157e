@@ -3,21 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirecting...</title>
+  <title>Cosmic Brief</title>
   <script>
-    // SPA fallback: redirect to root while preserving path + query for React Router
+    // SPA redirect for static hosting (GitHub Pages, etc.)
+    // Preserves the path so the React app can handle routing
     (function() {
       var path = window.location.pathname;
       var search = window.location.search;
-      var hash = window.location.hash;
-      // Store the intended destination
-      sessionStorage.setItem('spa_redirect', path + search + hash);
-      // Redirect to root
-      window.location.replace('/' + search + hash);
+
+      // Skip if we're at root
+      if (path === '/' || path === '/index.html') {
+        return;
+      }
+
+      // Redirect to root with the path encoded in a query param
+      // The app will read this and navigate via React Router
+      var redirectUrl = '/?redirect=' + encodeURIComponent(path + search);
+      window.location.replace(redirectUrl);
     })();
   </script>
 </head>
 <body>
-  <p>Redirecting...</p>
+  <p>Loading...</p>
 </body>
 </html>

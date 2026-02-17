@@ -22,7 +22,7 @@ const CareerAstrology2026Page = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/career-astrology-2026"
+      "@id": "https://www.cosmicbrief.com/blog/career-astrology-2026"
     },
     "keywords": ["2026 career astrology", "vedic astrology career", "jupiter in cancer 2026", "saturn in pisces career", "moon sign career predictions", "vedic transits 2026"]
   };
@@ -214,7 +214,7 @@ From June, Jupiter enters Cancer (your 5th house) in exaltation. This is creativ
       <Helmet>
         <title>Career Transits in 2026: Vedic Astrology Guide by Moon Sign | Cosmic Brief</title>
         <meta name="description" content="2026 career predictions by Moon sign. Jupiter exalted in Cancer, Saturn in Pisces, and the Rahu-Ketu shift into Capricorn-Cancer. Find your professional outlook." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/career-astrology-2026" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/career-astrology-2026" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

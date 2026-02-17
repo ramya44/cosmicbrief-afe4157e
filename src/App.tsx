@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoginModal } from "@/components/LoginModal";
@@ -53,23 +53,26 @@ import { FEATURE_FLAGS } from "./config/feature-flags";
 
 const queryClient = new QueryClient();
 
-// Redirect helper for legacy non-hash URLs
-// This runs once on app load to handle cases where users have old bookmarks or the 404.html redirect
-const LegacyUrlRedirectHelper = () => {
+// Redirect helper for:
+// 1. Legacy hash-based URLs (old bookmarks with #/)
+// 2. 404.html redirects (SPA fallback with ?redirect= param)
+const RedirectHelper = () => {
   useEffect(() => {
-    // Only run on initial page load, not within hash router
-    if (window.location.hash) return;
-
-    const { origin, pathname, search } = window.location;
-
-    // If we're on root path, don't redirect
-    if (pathname === '/') {
+    // Handle legacy hash URLs (e.g., /#/blog -> /blog)
+    if (window.location.hash && window.location.hash.startsWith('#/')) {
+      const cleanPath = window.location.hash.slice(1); // Remove the #
+      window.history.replaceState(null, '', window.location.origin + cleanPath);
+      window.location.reload();
       return;
     }
 
-    // For any non-root path without a hash, convert to hash-based route
-    // This handles /vedic/*, /vedic-astrology-explained, /privacy, etc.
-    window.location.replace(`${origin}/#${pathname}${search}`);
+    // Handle 404.html redirects (e.g., /?redirect=/blog -> /blog)
+    const params = new URLSearchParams(window.location.search);
+    const redirectPath = params.get('redirect');
+    if (redirectPath) {
+      window.history.replaceState(null, '', redirectPath);
+      window.location.reload();
+    }
   }, []);
 
   return null;
@@ -79,10 +82,10 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <LegacyUrlRedirectHelper />
+        <RedirectHelper />
         <Toaster />
         <Sonner />
-        <HashRouter>
+        <BrowserRouter>
           <ScrollToTop />
           <Navigation />
           <LoginModal />
@@ -133,7 +136,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
           </Routes>
           </div>
-        </HashRouter>
+        </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

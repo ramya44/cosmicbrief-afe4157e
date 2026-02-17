@@ -22,7 +22,7 @@ const AnuradhaNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/anuradha-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/anuradha-nakshatra"
     },
     "keywords": ["Anuradha nakshatra", "Vedic astrology", "Mitra", "nakshatras", "friendship", "devotion", "lunar mansions"]
   };
@@ -32,7 +32,7 @@ const AnuradhaNakshatraPage = () => {
       <Helmet>
         <title>Anuradha Nakshatra: The Lotus in the Mud | Cosmic Brief</title>
         <meta name="description" content="Explore Anuradha nakshatra, the star of friendship, devotion, and success through collaboration in Vedic astrology. Discover its loyal nature and spiritual depth." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/anuradha-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/anuradha-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

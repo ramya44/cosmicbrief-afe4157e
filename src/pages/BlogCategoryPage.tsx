@@ -192,7 +192,7 @@ const BlogCategoryPage = () => {
       <Helmet>
         <title>{category.title} | The Cosmic Brief Journal</title>
         <meta name="description" content={category.longDescription} />
-        <link rel="canonical" href={`https://cosmicbrief.com/blog/category/${categorySlug}`} />
+        <link rel="canonical" href={`https://www.cosmicbrief.com/blog/category/${categorySlug}`} />
       </Helmet>
       <StarField />
 

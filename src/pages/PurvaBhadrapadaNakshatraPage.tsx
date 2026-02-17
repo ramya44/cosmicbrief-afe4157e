@@ -9,7 +9,7 @@ const PurvaBhadrapadaNakshatraPage = () => {
         <title>Purva Bhadrapada Nakshatra: The Bridge Between Worlds | Cosmic Brief</title>
         <meta name="description" content="Explore Purva Bhadrapada nakshatra, the intense star of spiritual fire and transformation in Vedic astrology. Discover its dual nature, mystical power, and revolutionary energy." />
         <meta name="keywords" content="Purva Bhadrapada nakshatra, Vedic astrology, Aja Ekapada, nakshatras, spiritual transformation, lunar mansions, Pegasus" />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/purva-bhadrapada-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/purva-bhadrapada-nakshatra" />
       </Helmet>
       <StarField />
 

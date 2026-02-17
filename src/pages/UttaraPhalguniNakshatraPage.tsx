@@ -22,7 +22,7 @@ const UttaraPhalguniNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/uttara-phalguni-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/uttara-phalguni-nakshatra"
     },
     "keywords": ["Uttara Phalguni nakshatra", "Vedic astrology", "Aryaman", "nakshatras", "partnership", "service", "lunar mansions"]
   };
@@ -32,7 +32,7 @@ const UttaraPhalguniNakshatraPage = () => {
       <Helmet>
         <title>Uttara Phalguni Nakshatra: The Pillar of Noble Service | Cosmic Brief</title>
         <meta name="description" content="Explore Uttara Phalguni nakshatra, the star of commitment, service, and noble partnerships in Vedic astrology. Discover its leadership qualities and generous spirit." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/uttara-phalguni-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/uttara-phalguni-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

@@ -22,7 +22,7 @@ const RohiniNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/rohini-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/rohini-nakshatra"
     },
     "keywords": ["Rohini nakshatra", "Vedic astrology", "nakshatras", "Moon", "lunar mansions", "birth stars", "creativity", "Taurus", "Aldebaran"]
   };
@@ -32,7 +32,7 @@ const RohiniNakshatraPage = () => {
       <Helmet>
         <title>Rohini Nakshatra: The Fertile Garden of Creation | Cosmic Brief</title>
         <meta name="description" content="Explore Rohini nakshatra, the most auspicious lunar mansion in Vedic astrology. Discover its creative power, beauty, and influence on growth and prosperity." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/rohini-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/rohini-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

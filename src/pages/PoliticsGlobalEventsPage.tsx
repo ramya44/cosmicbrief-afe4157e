@@ -22,7 +22,7 @@ const PoliticsGlobalEventsPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/politics-and-global-events"
+      "@id": "https://www.cosmicbrief.com/blog/politics-and-global-events"
     },
     "keywords": ["political astrology 2026", "saturn in aries politics", "neptune in aries", "2026 global events", "astrology predictions politics", "pluto in aquarius usa"]
   };
@@ -71,7 +71,7 @@ const PoliticsGlobalEventsPage = () => {
       <Helmet>
         <title>2026 Political Astrology: What Aries Energy Means for Global Events</title>
         <meta name="description" content="Explore how Saturn and Neptune in Aries may shape global politics in 2026. Political astrology analysis of nationalism, leadership shifts, and grassroots movements." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/politics-and-global-events" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/politics-and-global-events" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
       </Helmet>

@@ -22,7 +22,7 @@ const VishakhaNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/vishakha-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/vishakha-nakshatra"
     },
     "keywords": ["Vishakha nakshatra", "Vedic astrology", "Indra Agni", "nakshatras", "ambition", "transformation", "lunar mansions"]
   };
@@ -32,7 +32,7 @@ const VishakhaNakshatraPage = () => {
       <Helmet>
         <title>Vishakha Nakshatra: The Forked Branch of Destiny | Cosmic Brief</title>
         <meta name="description" content="Discover Vishakha nakshatra, the star of goal-oriented determination in Vedic astrology. Learn about its focused energy, transformative power, and relentless ambition." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/vishakha-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/vishakha-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

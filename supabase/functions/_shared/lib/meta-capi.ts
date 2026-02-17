@@ -183,7 +183,7 @@ export async function trackLead(params: {
   // Send standard Lead event (for Meta optimization)
   await trackServerEvent({
     eventName: "Lead",
-    eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/input",
+    eventSourceUrl: params.sourceUrl || "https://www.cosmicbrief.com/vedic/input",
     eventId: params.eventId,
     userData,
     customData,
@@ -192,7 +192,7 @@ export async function trackLead(params: {
   // Send custom named event (for clear dashboard visibility)
   await trackServerEvent({
     eventName: "FreeForecastGenerated",
-    eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/input",
+    eventSourceUrl: params.sourceUrl || "https://www.cosmicbrief.com/vedic/input",
     eventId: params.eventId ? `${params.eventId}_custom` : undefined,
     userData,
     customData,
@@ -232,7 +232,7 @@ export async function trackPurchase(params: {
   // Send standard Purchase event (for Meta optimization)
   await trackServerEvent({
     eventName: "Purchase",
-    eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/payment-success",
+    eventSourceUrl: params.sourceUrl || "https://www.cosmicbrief.com/vedic/payment-success",
     eventId: params.transactionId,
     userData,
     customData,
@@ -241,7 +241,7 @@ export async function trackPurchase(params: {
   // Send custom named event (for clear dashboard visibility)
   await trackServerEvent({
     eventName: "PaidForecastPurchased",
-    eventSourceUrl: params.sourceUrl || "https://cosmicbrief.com/#/vedic/payment-success",
+    eventSourceUrl: params.sourceUrl || "https://www.cosmicbrief.com/vedic/payment-success",
     eventId: params.transactionId ? `${params.transactionId}_custom` : undefined,
     userData,
     customData,

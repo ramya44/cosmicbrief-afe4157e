@@ -23,7 +23,7 @@ const WhatIsNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/what-is-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/what-is-nakshatra"
     },
     "keywords": ["nakshatra", "lunar mansions", "vedic astrology", "moon nakshatra", "27 nakshatras", "jyotish", "vedic birth chart"]
   };
@@ -144,7 +144,7 @@ const WhatIsNakshatraPage = () => {
       <Helmet>
         <title>Nakshatra: Your True Cosmic DNA | Cosmic Brief</title>
         <meta name="description" content="Discover the 27 lunar mansions of Vedic astrology. Learn why your Moon nakshatra reveals more about you than your zodiac sign ever could." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/what-is-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/what-is-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

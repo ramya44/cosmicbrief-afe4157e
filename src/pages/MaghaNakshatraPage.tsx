@@ -22,7 +22,7 @@ const MaghaNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/magha-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/magha-nakshatra"
     },
     "keywords": ["Magha nakshatra", "Vedic astrology", "Pitris", "royal star", "nakshatras", "lunar mansions", "ancestors", "Regulus"]
   };
@@ -32,7 +32,7 @@ const MaghaNakshatraPage = () => {
       <Helmet>
         <title>Magha Nakshatra: The Throne of Ancestral Power | Cosmic Brief</title>
         <meta name="description" content="Discover Magha nakshatra, the star of royal authority and ancestral connection in Vedic astrology. Learn about its regal nature, tradition, and leadership power." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/magha-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/magha-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

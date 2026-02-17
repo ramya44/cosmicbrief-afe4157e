@@ -22,7 +22,7 @@ const SwatiNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/swati-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/swati-nakshatra"
     },
     "keywords": ["Swati nakshatra", "Vedic astrology", "Vayu", "nakshatras", "independence", "freedom", "lunar mansions", "Arcturus"]
   };
@@ -32,7 +32,7 @@ const SwatiNakshatraPage = () => {
       <Helmet>
         <title>Swati Nakshatra: The Sword in the Wind | Cosmic Brief</title>
         <meta name="description" content="Discover Swati nakshatra, the star of independence and freedom in Vedic astrology. Learn about its flexible nature, diplomatic gifts, and quest for autonomy." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/swati-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/swati-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

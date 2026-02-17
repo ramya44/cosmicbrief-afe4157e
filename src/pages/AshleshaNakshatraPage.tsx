@@ -22,7 +22,7 @@ const AshleshaNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/ashlesha-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/ashlesha-nakshatra"
     },
     "keywords": ["Ashlesha nakshatra", "Vedic astrology", "serpent star", "Nagas", "nakshatras", "lunar mansions", "kundalini"]
   };
@@ -32,7 +32,7 @@ const AshleshaNakshatraPage = () => {
       <Helmet>
         <title>Ashlesha Nakshatra: The Coiled Serpent of Wisdom | Cosmic Brief</title>
         <meta name="description" content="Explore Ashlesha nakshatra, the powerful serpent star in Vedic astrology. Discover its hypnotic energy, transformative wisdom, and penetrating insight." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/ashlesha-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/ashlesha-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

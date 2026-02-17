@@ -22,7 +22,7 @@ const AshwiniNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/ashwini-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/ashwini-nakshatra"
     },
     "keywords": ["Ashwini nakshatra", "Vedic astrology", "nakshatras", "Ashwini Kumaras", "lunar mansions", "birth stars", "healers"]
   };
@@ -32,7 +32,7 @@ const AshwiniNakshatraPage = () => {
       <Helmet>
         <title>Ashwini Nakshatra: The Divine Healers | Cosmic Brief</title>
         <meta name="description" content="Discover Ashwini nakshatra, the first lunar mansion in Vedic astrology. Learn about its healing powers, swift energy, and how it shapes personality and destiny." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/ashwini-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/ashwini-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

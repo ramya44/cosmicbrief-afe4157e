@@ -22,7 +22,7 @@ const HastaNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/hasta-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/hasta-nakshatra"
     },
     "keywords": ["Hasta nakshatra", "Vedic astrology", "Savitar", "nakshatras", "skillful hands", "craftsmanship", "lunar mansions"]
   };
@@ -32,7 +32,7 @@ const HastaNakshatraPage = () => {
       <Helmet>
         <title>Hasta Nakshatra: The Divine Hand of Creation | Cosmic Brief</title>
         <meta name="description" content="Discover Hasta nakshatra, the star of skillful hands and divine craftsmanship in Vedic astrology. Learn about its dexterity, humor, and manifestation power." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/hasta-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/hasta-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

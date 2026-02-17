@@ -22,7 +22,7 @@ const PunarvasuNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/punarvasu-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/punarvasu-nakshatra"
     },
     "keywords": ["Punarvasu nakshatra", "Vedic astrology", "Aditi", "Jupiter", "nakshatras", "lunar mansions", "birth stars", "renewal", "Castor and Pollux"]
   };
@@ -32,7 +32,7 @@ const PunarvasuNakshatraPage = () => {
       <Helmet>
         <title>Punarvasu Nakshatra: The Star of Renewal and Return | Cosmic Brief</title>
         <meta name="description" content="Discover Punarvasu nakshatra, the star of renewal and restoration in Vedic astrology. Learn about its optimistic nature, resilience, and capacity for new beginnings." />
-        <link rel="canonical" href="https://cosmicbrief.com/#/blog/punarvasu-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/punarvasu-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

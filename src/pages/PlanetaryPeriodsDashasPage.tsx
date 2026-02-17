@@ -22,7 +22,7 @@ const PlanetaryPeriodsDashasPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/planetary-periods-dashas"
+      "@id": "https://www.cosmicbrief.com/blog/planetary-periods-dashas"
     },
     "keywords": ["dasha system", "planetary periods", "vedic astrology", "mahadasha", "antardasha", "vimshottari dasha", "jyotish timing"]
   };
@@ -68,7 +68,7 @@ const PlanetaryPeriodsDashasPage = () => {
       <Helmet>
         <title>Planetary Periods (Dasha System) Explained | Cosmic Brief</title>
         <meta name="description" content="Understand the Vedic dasha system - how planetary periods shape your life in cycles of 6-20 years. Learn which period you're in and what it means." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/planetary-periods-dashas" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/planetary-periods-dashas" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

@@ -22,7 +22,7 @@ const PurvaPhalguniNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/purva-phalguni-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/purva-phalguni-nakshatra"
     },
     "keywords": ["Purva Phalguni nakshatra", "Vedic astrology", "Bhaga", "nakshatras", "love star", "creativity", "lunar mansions"]
   };
@@ -32,7 +32,7 @@ const PurvaPhalguniNakshatraPage = () => {
       <Helmet>
         <title>Purva Phalguni Nakshatra: The Bed of Pleasure | Cosmic Brief</title>
         <meta name="description" content="Discover Purva Phalguni nakshatra, the star of love, creativity, and pleasure in Vedic astrology. Learn about its artistic nature, romantic energy, and creative power." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/purva-phalguni-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/purva-phalguni-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

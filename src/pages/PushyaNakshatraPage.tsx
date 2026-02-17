@@ -22,7 +22,7 @@ const PushyaNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/pushya-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/pushya-nakshatra"
     },
     "keywords": ["Pushya nakshatra", "Vedic astrology", "Brihaspati", "Saturn", "nakshatras", "lunar mansions", "birth stars", "most auspicious nakshatra"]
   };
@@ -32,7 +32,7 @@ const PushyaNakshatraPage = () => {
       <Helmet>
         <title>Pushya Nakshatra: The Most Auspicious Star in Vedic Astrology | Cosmic Brief</title>
         <meta name="description" content="Explore Pushya nakshatra, the most auspicious and nourishing star in Vedic astrology. Discover its nurturing power, spiritual depth, and capacity to provide." />
-        <link rel="canonical" href="https://cosmicbrief.com/#/blog/pushya-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/pushya-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

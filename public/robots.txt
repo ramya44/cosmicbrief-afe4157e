@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://cosmicbrief.com/sitemap.xml
+Sitemap: https://www.cosmicbrief.com/sitemap.xml

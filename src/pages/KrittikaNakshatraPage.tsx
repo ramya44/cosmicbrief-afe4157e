@@ -22,7 +22,7 @@ const KrittikaNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/krittika-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/krittika-nakshatra"
     },
     "keywords": ["Krittika nakshatra", "Vedic astrology", "Agni", "Pleiades", "nakshatras", "birth stars", "fire energy", "Sun nakshatra"]
   };
@@ -32,7 +32,7 @@ const KrittikaNakshatraPage = () => {
       <Helmet>
         <title>Krittika Nakshatra: The Blazing Flame of Truth | Cosmic Brief</title>
         <meta name="description" content="Discover Krittika nakshatra, the blazing star of purification in Vedic astrology. Learn about its fiery energy, cutting precision, and transformative power." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/krittika-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/krittika-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

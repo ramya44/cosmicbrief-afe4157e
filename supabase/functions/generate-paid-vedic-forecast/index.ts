@@ -698,7 +698,7 @@ Deno.serve(async (req) => {
     });
 
     // Generate shareable link for paid forecast (includes paid=true)
-    const shareableLink = `https://cosmicbrief.com/#/vedic/results?id=${kundli_id}&paid=true`;
+    const shareableLink = `https://www.cosmicbrief.com/vedic/results?id=${kundli_id}&paid=true`;
 
     // Save the paid forecast with status = complete
     const { error: updateError } = await supabase

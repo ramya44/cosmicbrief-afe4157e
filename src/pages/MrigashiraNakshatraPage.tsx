@@ -22,7 +22,7 @@ const MrigashiraNakshatraPage = () => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "https://cosmicbrief.com/blog/mrigashira-nakshatra"
+      "@id": "https://www.cosmicbrief.com/blog/mrigashira-nakshatra"
     },
     "keywords": ["Mrigashira nakshatra", "Vedic astrology", "nakshatras", "Soma", "lunar mansions", "birth stars", "deer head", "Orion"]
   };
@@ -32,7 +32,7 @@ const MrigashiraNakshatraPage = () => {
       <Helmet>
         <title>Mrigashira Nakshatra: The Eternal Seeker | Cosmic Brief</title>
         <meta name="description" content="Discover Mrigashira nakshatra, the cosmic seeker in Vedic astrology. Learn about its curious nature, quest for knowledge, and restless pursuit of truth." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog/mrigashira-nakshatra" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog/mrigashira-nakshatra" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />

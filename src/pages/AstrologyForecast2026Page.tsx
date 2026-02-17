@@ -10,7 +10,7 @@ const AstrologyForecast2026Page = () => {
     "@type": "Blog",
     "name": "The Cosmic Brief Journal",
     "description": "Vedic astrology decoded. Explore nakshatras, planetary transits, and the rhythms that shape your life. Ancient patterns, modern insight.",
-    "url": "https://cosmicbrief.com/blog",
+    "url": "https://www.cosmicbrief.com/blog",
     "publisher": {
       "@type": "Organization",
       "name": "Cosmic Brief"
@@ -119,7 +119,7 @@ const AstrologyForecast2026Page = () => {
       <Helmet>
         <title>The Cosmic Brief Journal | Vedic Astrology Decoded</title>
         <meta name="description" content="Vedic astrology decoded. Explore nakshatras, planetary transits, and the rhythms that shape your life. Ancient patterns, modern insight." />
-        <link rel="canonical" href="https://cosmicbrief.com/blog" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/blog" />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
       <StarField />
