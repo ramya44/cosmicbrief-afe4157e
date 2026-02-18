@@ -50,9 +50,9 @@ const ContactPage = () => {
             className="text-center text-sm text-muted-foreground mt-10 animate-fade-up"
             style={{ animationDelay: '200ms', animationFillMode: 'both' }}
           >
-            <a href="/#/privacy" className="text-gold hover:underline">Privacy Policy</a>
+            <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
             {' · '}
-            <a href="/#/terms" className="text-gold hover:underline">Terms of Service</a>
+            <a href="/terms" className="text-gold hover:underline">Terms of Service</a>
           </p>
         </div>
       </div>

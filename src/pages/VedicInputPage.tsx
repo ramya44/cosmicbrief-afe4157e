@@ -464,7 +464,7 @@ const VedicInputPage = () => {
               className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
               style={{ animationDelay: '300ms', animationFillMode: 'both' }}
             >
-              <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">
+              <a href="/vedic-astrology-explained" className="text-gold hover:underline">
                 What is Vedic Astrology?
               </a>
             </p>
@@ -508,15 +508,15 @@ const VedicInputPage = () => {
             className="text-center text-xs text-muted-foreground mt-3 animate-fade-up"
             style={{ animationDelay: '350ms', animationFillMode: 'both' }}
           >
-            <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">
+            <a href="/vedic-astrology-explained" className="text-gold hover:underline">
               What is Vedic Astrology?
             </a>
             {' · '}
-            <a href="/#/privacy" className="text-gold hover:underline">
+            <a href="/privacy" className="text-gold hover:underline">
               Privacy Policy
             </a>
             {' · '}
-            <a href="/#/terms" className="text-gold hover:underline">
+            <a href="/terms" className="text-gold hover:underline">
               Terms of Service
             </a>
           </p>

@@ -267,7 +267,7 @@ const VedicProfilePage = () => {
           <p className="text-cream-muted text-sm text-center mt-8 max-w-sm">
             Vedic signs are different from Western signs.{' '}
             <a
-              href="/#/vedic-astrology-explained"
+              href="/vedic-astrology-explained"
               className="text-gold hover:underline"
             >
               Read more here

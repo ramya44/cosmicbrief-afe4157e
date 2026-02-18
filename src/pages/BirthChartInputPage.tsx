@@ -188,9 +188,9 @@ const BirthChartInputPage = () => {
               className="text-center text-xs text-muted-foreground mt-3 animate-fade-up"
               style={{ animationDelay: '450ms', animationFillMode: 'both' }}
             >
-              <a href="/#/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology?</a>
+              <a href="/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology?</a>
               {' · '}
-              <a href="/#/privacy" className="text-gold hover:underline">Privacy Policy</a>
+              <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
             </p>
           </div>
         </div>

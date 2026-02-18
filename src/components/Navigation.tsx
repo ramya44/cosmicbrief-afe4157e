@@ -78,7 +78,7 @@ export const Navigation = () => {
     toast.success('Logged out successfully');
 
     // Force page reload to reset all state
-    window.location.href = '/#/';
+    window.location.href = '/';
   };
 
   const isBlogActive = location.pathname.startsWith('/blog');
