@@ -47,6 +47,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://www.cosmicbrief.com/blog/12-houses-vedic-astrology</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.cosmicbrief.com/blog/why-2026-is-a-turning-point</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -149,6 +154,16 @@
   </url>
   <url>
     <loc>https://www.cosmicbrief.com/blog/purva-bhadrapada-nakshatra</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.cosmicbrief.com/blog/jyeshtha-nakshatra</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.cosmicbrief.com/blog/mula-nakshatra</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
