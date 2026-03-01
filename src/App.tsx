@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoginModal } from "@/components/LoginModal";
@@ -18,6 +18,9 @@ import VedicResultsPage from "./pages/VedicResultsPage";
 import VedicPaymentSuccessPage from "./pages/VedicPaymentSuccessPage";
 import VedicAstrologyExplainedPage from "./pages/VedicAstrologyExplainedPage";
 import VedicProfilePage from "./pages/VedicProfilePage";
+import WeeklyInputPage from "./pages/WeeklyInputPage";
+import WeeklyResultsPage from "./pages/WeeklyResultsPage";
+import YearlyForecastPage from "./pages/YearlyForecastPage";
 import ContactPage from "./pages/ContactPage";
 import BackgroundPage from "./pages/BackgroundPage";
 import LifeArcPage from "./pages/LifeArcPage";
@@ -45,7 +48,10 @@ import SwatiNakshatraPage from "./pages/SwatiNakshatraPage";
 import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
 import VishakhaNakshatraPage from "./pages/VishakhaNakshatraPage";
 import AnuradhaNakshatraPage from "./pages/AnuradhaNakshatraPage";
+import JyeshthaNakshatraPage from "./pages/JyeshthaNakshatraPage";
+import MulaNakshatraPage from "./pages/MulaNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
+import TwelveHousesPage from "./pages/TwelveHousesPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { Navigation } from "./components/Navigation";
@@ -92,6 +98,9 @@ const App = () => (
           <div className="pt-14 md:pt-16 pb-16 md:pb-0">
           <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/weekly/input" element={<WeeklyInputPage />} />
+          <Route path="/weekly/results" element={<WeeklyResultsPage />} />
+          <Route path="/2026" element={<YearlyForecastPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/blog" element={<AstrologyForecast2026Page />} />
@@ -118,7 +127,10 @@ const App = () => (
           <Route path="/blog/purva-bhadrapada-nakshatra" element={<PurvaBhadrapadaNakshatraPage />} />
           <Route path="/blog/vishakha-nakshatra" element={<VishakhaNakshatraPage />} />
           <Route path="/blog/anuradha-nakshatra" element={<AnuradhaNakshatraPage />} />
+          <Route path="/blog/jyeshtha-nakshatra" element={<JyeshthaNakshatraPage />} />
+          <Route path="/blog/mula-nakshatra" element={<MulaNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
+          <Route path="/blog/12-houses-vedic-astrology" element={<TwelveHousesPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="/vedic/payment-success" element={<VedicPaymentSuccessPage />} />
@@ -131,7 +143,7 @@ const App = () => (
           )}
           <Route path="/how-to-read-vedic-chart" element={<HowToReadChartPage />} />
           <Route path="/vedic-vs-western-astrology" element={<VedicVsWesternPage />} />
-          <Route path="/get-birth-chart" element={<BirthChartInputPage />} />
+          <Route path="/get-birth-chart" element={<Navigate to="/" replace />} />
           <Route path="/birth-chart" element={<BirthChartPage />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
