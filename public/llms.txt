@@ -1,0 +1,66 @@
+# Cosmic Brief
+
+Personalized Vedic astrology forecasts and birth chart analysis using the sidereal zodiac, nakshatras, and dasha timing system.
+
+Cosmic Brief makes Vedic astrology (Jyotish) accessible to modern Western audiences. Unlike Western tropical astrology which focuses on personality traits, Vedic astrology emphasizes strategic timing through planetary periods (dashas) that reveal which areas of life are activated and for how long.
+
+## Core Offering
+
+- **2026 Cosmic Brief**: Personalized yearly forecast based on your Vedic birth chart — dasha periods, planetary transits, and monthly timing windows
+- **Free Vedic Birth Chart**: Generate your sidereal birth chart showing planetary positions, ascendant, moon sign, and nakshatra
+- **Educational Content**: In-depth guides on Vedic astrology concepts for Western audiences
+
+## Key Concepts Explained on This Site
+
+- **Sidereal Zodiac**: Vedic astrology uses actual star positions (not seasonal/tropical), creating a ~23° shift from Western charts
+- **Dashas (Planetary Periods)**: Multi-layered timing system — mahadasha (6-20 year chapters), antardasha (sub-periods), pratyantardasha (micro-periods)
+- **Nakshatras**: 27 lunar mansions that provide more precision than the 12 zodiac signs; your moon's nakshatra is considered more important than your sun sign
+- **Houses**: 12 life areas (career, relationships, health, etc.) calculated using whole sign house system
+
+## Guides
+
+- [What is Vedic Astrology? A Modern Guide](https://www.cosmicbrief.com/vedic-astrology-explained): Complete beginner's introduction to Jyotish — sidereal zodiac, dashas, nakshatras, houses, and how Vedic differs from Western astrology
+- [Vedic vs Western Astrology: Key Differences](https://www.cosmicbrief.com/vedic-vs-western-astrology): Side-by-side comparison — zodiac systems, focus areas, unique tools, and when to use each
+- [How to Read Your Vedic Birth Chart](https://www.cosmicbrief.com/how-to-read-vedic-chart): Step-by-step tutorial covering rising sign, houses, planets, planetary rulerships, and dasha periods
+
+## Tools
+
+- [Free Vedic Birth Chart Calculator](https://www.cosmicbrief.com/get-birth-chart): Generate your Vedic birth chart with planetary positions, ascendant, moon sign, and nakshatra
+- [2026 Forecast Generator](https://www.cosmicbrief.com/vedic/input): Personalized yearly outlook based on your birth moment
+
+## Blog — The Cosmic Brief Journal
+
+### Learn Vedic Astrology
+- [Nakshatra: Your True Cosmic DNA](https://www.cosmicbrief.com/blog/what-is-nakshatra): Introduction to the 27 lunar mansions and why your moon nakshatra matters most
+- [Planetary Periods (Dashas) Explained](https://www.cosmicbrief.com/blog/planetary-periods-dashas): The Vedic timing system that shapes your life in 6-20 year chapters
+
+### Cosmic Weather (2026)
+- [Why 2026 Is a Turning Point in Astrology](https://www.cosmicbrief.com/blog/why-2026-is-a-turning-point): Saturn and Neptune enter Aries permanently — what this rare double transit means
+- [Career Transits in 2026](https://www.cosmicbrief.com/blog/career-astrology-2026): Career predictions by moon sign — Jupiter exalted in Cancer, Saturn in Pisces, Rahu-Ketu shift
+- [2026 Political Astrology](https://www.cosmicbrief.com/blog/politics-and-global-events): What Aries energy means for global events, leadership, and movements
+
+### Nakshatra Deep Dives
+- [Ashwini Nakshatra](https://www.cosmicbrief.com/blog/ashwini-nakshatra): The Divine Healers — swift energy, healing powers, pioneering spirit
+- [Bharani Nakshatra](https://www.cosmicbrief.com/blog/bharani-nakshatra): The Cosmic Womb — transformation, life/death cycles, creative power
+- [Krittika Nakshatra](https://www.cosmicbrief.com/blog/krittika-nakshatra): The Blazing Flame — purification, cutting precision, leadership
+- [Rohini Nakshatra](https://www.cosmicbrief.com/blog/rohini-nakshatra): The Fertile Garden — beauty, abundance, creative manifestation
+- [Mrigashira Nakshatra](https://www.cosmicbrief.com/blog/mrigashira-nakshatra): The Eternal Seeker — curiosity, quest for knowledge, restless pursuit
+- [Ardra Nakshatra](https://www.cosmicbrief.com/blog/ardra-nakshatra): The Tempest — intense transformation, emotional depth, intellectual power
+- [Punarvasu Nakshatra](https://www.cosmicbrief.com/blog/punarvasu-nakshatra): The Star of Renewal — optimism, resilience, new beginnings
+- [Pushya Nakshatra](https://www.cosmicbrief.com/blog/pushya-nakshatra): The Nourisher — most auspicious nakshatra, nurturing, spiritual depth
+- [Ashlesha Nakshatra](https://www.cosmicbrief.com/blog/ashlesha-nakshatra): The Coiled Serpent — hypnotic energy, psychological insight, wisdom
+- [Magha Nakshatra](https://www.cosmicbrief.com/blog/magha-nakshatra): The Throne of Ancestral Power — royalty, leadership, lineage connection
+- [Purva Phalguni Nakshatra](https://www.cosmicbrief.com/blog/purva-phalguni-nakshatra): Creativity, enjoyment, and romantic energy
+- [Uttara Phalguni Nakshatra](https://www.cosmicbrief.com/blog/uttara-phalguni-nakshatra): Service, patronage, and commitment
+- [Hasta Nakshatra](https://www.cosmicbrief.com/blog/hasta-nakshatra): Skill, craftsmanship, and dexterity
+- [Chitra Nakshatra](https://www.cosmicbrief.com/blog/chitra-nakshatra): Artistry, brilliance, and cosmic architecture
+- [Swati Nakshatra](https://www.cosmicbrief.com/blog/swati-nakshatra): Independence, flexibility, and self-driven growth
+- [Vishakha Nakshatra](https://www.cosmicbrief.com/blog/vishakha-nakshatra): Determination, purpose, and goal-oriented power
+- [Anuradha Nakshatra](https://www.cosmicbrief.com/blog/anuradha-nakshatra): Devotion, friendship, and cosmic love
+- [Purva Bhadrapada Nakshatra](https://www.cosmicbrief.com/blog/purva-bhadrapada-nakshatra): Spiritual fire, transformation, and revolutionary energy
+
+## Optional
+
+- Contact: https://www.cosmicbrief.com/contact
+- Privacy Policy: https://www.cosmicbrief.com/privacy
+- Terms of Service: https://www.cosmicbrief.com/terms
