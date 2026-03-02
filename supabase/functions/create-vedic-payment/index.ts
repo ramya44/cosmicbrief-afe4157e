@@ -1,15 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
+import { getStripeConfig, getAppUrl } from "../_shared/lib/stripe-config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-const VEDIC_PRICE_ID = "price_1SrB51CxgYskbggmuf3HalJ3";
 
 const logStep = createLogger("CREATE-VEDIC-PAYMENT");
 
@@ -26,9 +24,6 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -36,6 +31,10 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { stripe, isTestMode, priceIds } = getStripeConfig();
+    const appUrl = getAppUrl();
+
+    logStep("Stripe mode", { isTestMode });
 
     // Parse and validate input
     let rawBody: unknown;
@@ -76,8 +75,6 @@ serve(async (req) => {
     const email = kundliData.email;
     logStep("Kundli data fetched", { birth_date: kundliData.birth_date, email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-
     // Check if customer exists
     let customerId: string | undefined;
     if (email) {
@@ -88,22 +85,20 @@ serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || "https://lovable.dev";
-
     // Create checkout session with metadata
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : email,
       line_items: [
         {
-          price: VEDIC_PRICE_ID,
+          price: priceIds.vedic,
           quantity: 1,
         },
       ],
       mode: "payment",
       allow_promotion_codes: true,
-      success_url: `${origin}/#/vedic/payment-success?session_id={CHECKOUT_SESSION_ID}&kundli_id=${kundli_id}`,
-      cancel_url: `${origin}/#/vedic/results?id=${kundli_id}`,
+      success_url: `${appUrl}/#/vedic/payment-success?session_id={CHECKOUT_SESSION_ID}&kundli_id=${kundli_id}`,
+      cancel_url: `${appUrl}/#/vedic/results?id=${kundli_id}`,
       metadata: {
         kundli_id,
         birth_date: kundliData.birth_date,

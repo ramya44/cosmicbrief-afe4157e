@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
+import { SEOBreadcrumbs } from '@/components/SEOBreadcrumbs';
 import { Sparkles } from 'lucide-react';
 
 const VedicVsWesternPage = () => {
@@ -69,6 +70,10 @@ const VedicVsWesternPage = () => {
         <StarField />
 
         <main className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
+          <SEOBreadcrumbs
+            items={[{ name: "Guides", href: "/blog" }]}
+            currentPage="Vedic vs Western Astrology"
+          />
           <article className="prose prose-invert prose-lg max-w-none text-lg">
             <h1 className="text-4xl md:text-5xl font-bold text-cream mb-6">
               Vedic vs Western Astrology: What's the Difference?

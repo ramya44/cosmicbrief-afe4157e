@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,8 +9,10 @@ import { BirthChartWheel } from '@/components/BirthChartWheel';
 import { NorthIndianChart } from '@/components/NorthIndianChart';
 import { SouthIndianChart } from '@/components/SouthIndianChart';
 import { useForecastStore } from '@/store/forecastStore';
-import { Sparkles, Calendar, Clock, MapPin, Share2 } from 'lucide-react';
+import { Sparkles, Calendar, Clock, MapPin, Share2, ImageDown } from 'lucide-react';
 import { toast } from 'sonner';
+import { shareOrDownloadChart, ShareResult } from '@/lib/chartExport';
+import { ChartSaveModal } from '@/components/ChartSaveModal';
 
 type ChartStyle = 'western' | 'north-indian' | 'south-indian';
 
@@ -119,6 +121,8 @@ const BirthChartPage = () => {
   const [loading, setLoading] = useState(true);
   const [chartStyle, setChartStyle] = useState<ChartStyle>('western');
   const { clearSession } = useForecastStore();
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [saveModalImageUrl, setSaveModalImageUrl] = useState<string | null>(null);
 
   const handleNewBirthDetails = () => {
     // Clear session storage
@@ -126,7 +130,7 @@ const BirthChartPage = () => {
     // Clear Zustand store
     clearSession();
     // Navigate to input page
-    navigate('/get-birth-chart');
+    navigate('/');
   };
 
   useEffect(() => {
@@ -192,10 +196,10 @@ const BirthChartPage = () => {
           const parsed = JSON.parse(storedData);
           setChartData(parsed);
         } catch {
-          navigate('/get-birth-chart');
+          navigate('/');
         }
       } else {
-        navigate('/get-birth-chart');
+        navigate('/');
       }
       setLoading(false);
     };
@@ -230,6 +234,56 @@ const BirthChartPage = () => {
       } catch {
         toast.error('Failed to copy link');
       }
+    }
+  };
+
+  const getChartDisplayName = () => {
+    switch (chartStyle) {
+      case 'western':
+        return 'Western Birth Chart';
+      case 'north-indian':
+        return 'North Indian Birth Chart';
+      case 'south-indian':
+        return 'South Indian Birth Chart';
+      default:
+        return 'Birth Chart';
+    }
+  };
+
+  const handleShareAsImage = async () => {
+    if (!chartContainerRef.current) {
+      toast.error('Chart not found');
+      return;
+    }
+
+    const svg = chartContainerRef.current.querySelector('svg');
+    if (!svg) {
+      toast.error('Chart not found');
+      return;
+    }
+
+    try {
+      const chartName = getChartDisplayName();
+      const fileName = `birth-chart-${chartStyle}.png`;
+      const result = await shareOrDownloadChart(svg, chartName, fileName);
+
+      switch (result.type) {
+        case 'shared':
+          toast.success('Chart shared!');
+          break;
+        case 'downloaded':
+          toast.success('Chart saved!');
+          break;
+        case 'save-prompt':
+          setSaveModalImageUrl(result.imageUrl);
+          break;
+        case 'cancelled':
+          // User cancelled, no toast needed
+          break;
+      }
+    } catch (err) {
+      console.error('Error exporting chart:', err);
+      toast.error('Failed to export chart');
     }
   };
 
@@ -274,9 +328,45 @@ const BirthChartPage = () => {
 
   return (
     <>
+      {/* Save Modal for iOS in-app browsers */}
+      {saveModalImageUrl && (
+        <ChartSaveModal
+          imageUrl={saveModalImageUrl}
+          onClose={() => setSaveModalImageUrl(null)}
+        />
+      )}
+
       <Helmet>
         <title>Your Vedic Birth Chart | Cosmic Brief</title>
         <meta name="description" content="View your personalized Vedic birth chart with planetary positions, houses, and astrological insights." />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Vedic Birth Chart Calculator",
+            "description": "Generate and view your personalized Vedic birth chart with planetary positions, houses, nakshatras, and astrological insights.",
+            "url": "https://www.cosmicbrief.com/birth-chart",
+            "applicationCategory": "LifestyleApplication",
+            "operatingSystem": "Any",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "provider": {
+              "@type": "Organization",
+              "name": "Cosmic Brief",
+              "url": "https://www.cosmicbrief.com"
+            },
+            "featureList": [
+              "Vedic birth chart generation",
+              "Planetary position calculations",
+              "Nakshatra identification",
+              "House placement analysis",
+              "Western, North Indian, and South Indian chart styles"
+            ]
+          })}
+        </script>
       </Helmet>
 
       <div className="relative min-h-screen bg-celestial">
@@ -343,21 +433,23 @@ const BirthChartPage = () => {
 
           {/* Birth Chart */}
           <section className="mb-16">
-            {chartStyle === 'western' && (
-              <BirthChartWheel chartData={kundliData} />
-            )}
-            {chartStyle === 'north-indian' && (
-              <NorthIndianChart
-                positions={planetary_positions}
-                ascendantSignId={ascendant_sign_id}
-              />
-            )}
-            {chartStyle === 'south-indian' && (
-              <SouthIndianChart
-                positions={planetary_positions}
-                ascendantSignId={ascendant_sign_id}
-              />
-            )}
+            <div ref={chartContainerRef}>
+              {chartStyle === 'western' && (
+                <BirthChartWheel chartData={kundliData} />
+              )}
+              {chartStyle === 'north-indian' && (
+                <NorthIndianChart
+                  positions={planetary_positions}
+                  ascendantSignId={ascendant_sign_id}
+                />
+              )}
+              {chartStyle === 'south-indian' && (
+                <SouthIndianChart
+                  positions={planetary_positions}
+                  ascendantSignId={ascendant_sign_id}
+                />
+              )}
+            </div>
           </section>
 
           {/* Action Buttons */}
@@ -369,7 +461,16 @@ const BirthChartPage = () => {
               className="border-gold/40 text-gold hover:bg-gold/10"
             >
               <Share2 className="w-5 h-5 mr-2" />
-              Share
+              Share Link
+            </Button>
+            <Button
+              onClick={handleShareAsImage}
+              variant="outline"
+              size="lg"
+              className="border-gold/40 text-gold hover:bg-gold/10"
+            >
+              <ImageDown className="w-5 h-5 mr-2" />
+              Share Chart
             </Button>
           </div>
           <div className="flex justify-center mb-16">

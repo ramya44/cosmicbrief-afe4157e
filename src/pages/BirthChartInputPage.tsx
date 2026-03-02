@@ -148,7 +148,35 @@ const BirthChartInputPage = () => {
       <Helmet>
         <title>Get Your Free Vedic Birth Chart | Cosmic Brief</title>
         <meta name="description" content="Generate your free Vedic birth chart (Kundali). See your planetary positions, houses, and astrological profile based on ancient Jyotish calculations." />
-        <link rel="canonical" href="https://www.cosmicbrief.com/get-birth-chart" />
+        <link rel="canonical" href="https://www.cosmicbrief.com/" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Vedic Birth Chart Calculator",
+            "description": "Generate your free Vedic birth chart (Kundali). See your planetary positions, houses, nakshatras, and astrological profile based on ancient Jyotish calculations.",
+            "url": "https://www.cosmicbrief.com/get-birth-chart",
+            "applicationCategory": "LifestyleApplication",
+            "operatingSystem": "Any",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "provider": {
+              "@type": "Organization",
+              "name": "Cosmic Brief",
+              "url": "https://www.cosmicbrief.com"
+            },
+            "featureList": [
+              "Vedic birth chart generation",
+              "Planetary position calculations",
+              "Nakshatra identification",
+              "House placement analysis",
+              "Western, North Indian, and South Indian chart styles"
+            ]
+          })}
+        </script>
       </Helmet>
 
       <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">

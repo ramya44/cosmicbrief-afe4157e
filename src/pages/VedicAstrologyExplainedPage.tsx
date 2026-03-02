@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
+import { SEOBreadcrumbs } from '@/components/SEOBreadcrumbs';
 import { Sparkles } from 'lucide-react';
 
 const VedicAstrologyExplainedPage = () => {
@@ -77,6 +78,10 @@ const VedicAstrologyExplainedPage = () => {
         <StarField />
 
         <main className="relative z-10 container mx-auto px-4 py-12 max-w-4xl">
+          <SEOBreadcrumbs
+            items={[{ name: "Guides", href: "/blog" }]}
+            currentPage="What is Vedic Astrology?"
+          />
           <article className="prose prose-invert prose-lg max-w-none text-lg">
             <h1 className="text-4xl md:text-5xl font-bold text-cream mb-6">
               What is Vedic Astrology? A Modern Guide
@@ -701,10 +706,10 @@ const VedicAstrologyExplainedPage = () => {
               <p className="text-cream-muted text-lg mb-6">
                 See your planetary positions, ascendant, moon sign, and nakshatra based on Vedic calculations—completely free.
               </p>
-              <Link to="/get-birth-chart">
+              <Link to="/">
                 <Button size="lg" variant="outline" className="border-gold/50 text-cream hover:bg-gold/10 font-semibold px-8 py-6 text-lg">
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Get Your Free Birth Chart
+                  Get your free Cosmic Brief
                 </Button>
               </Link>
             </div>

@@ -380,8 +380,10 @@ const VedicInputPage = () => {
 
     const handleEnterNewDetails = () => {
       clearKundli();
-      // Force re-render with input form
-      window.location.reload();
+      // Clear store data to show the input form
+      setKundliId(null);
+      setKundliData(null);
+      setFreeForecast(null);
     };
 
     return (

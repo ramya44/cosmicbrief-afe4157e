@@ -3,7 +3,42 @@ import { StarField } from "@/components/StarField";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
 import NakshatraWheel from "@/components/NakshatraWheel";
+
+// Mapping of nakshatra names to their URL slugs (for nakshatras with detail pages)
+const nakshatraSlugMap: Record<string, string> = {
+  "Ashwini": "ashwini-nakshatra",
+  "Bharani": "bharani-nakshatra",
+  "Krittika": "krittika-nakshatra",
+  "Rohini": "rohini-nakshatra",
+  "Mrigashira": "mrigashira-nakshatra",
+  "Ardra": "ardra-nakshatra",
+  "Punarvasu": "punarvasu-nakshatra",
+  "Pushya": "pushya-nakshatra",
+  "Ashlesha": "ashlesha-nakshatra",
+  "Magha": "magha-nakshatra",
+  "Purva Phalguni": "purva-phalguni-nakshatra",
+  "Uttara Phalguni": "uttara-phalguni-nakshatra",
+  "Hasta": "hasta-nakshatra",
+  "Chitra": "chitra-nakshatra",
+  "Swati": "swati-nakshatra",
+  "Vishakha": "vishakha-nakshatra",
+  "Anuradha": "anuradha-nakshatra",
+  "Jyeshtha": "jyeshtha-nakshatra",
+  "Mula": "mula-nakshatra",
+  "Purva Bhadrapada": "purva-bhadrapada-nakshatra",
+  "Uttara Bhadrapada": "uttara-bhadrapada-nakshatra",
+};
+
+// Extract nakshatra name from display text (e.g., "Krittika (1st quarter) — The Cutter" -> "Krittika")
+const getNakshatraName = (displayText: string): string | null => {
+  const match = displayText.match(/^([A-Za-z ]+)/);
+  if (match) {
+    return match[1].trim();
+  }
+  return null;
+};
 
 const WhatIsNakshatraPage = () => {
   const jsonLd = {
@@ -150,16 +185,13 @@ const WhatIsNakshatraPage = () => {
       <StarField />
 
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        {/* Breadcrumb */}
-        <div className="mb-8">
-          <Link to="/blog" className="text-cream/50 hover:text-cream text-sm">
-            Journal
-          </Link>
-          <span className="text-cream/30 mx-2">/</span>
-          <Link to="/blog/category/learn" className="text-cream/50 hover:text-cream text-sm">
-            Learn Vedic Astrology
-          </Link>
-        </div>
+        <SEOBreadcrumbs
+          items={[
+            { name: "Journal", href: "/blog" },
+            { name: "Learn Vedic Astrology", href: "/blog/category/learn" }
+          ]}
+          currentPage="What is Nakshatra?"
+        />
 
         {/* Title */}
         <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
@@ -247,9 +279,21 @@ const WhatIsNakshatraPage = () => {
               <div key={index} className="border-l-2 border-gold/30 pl-4 py-2">
                 <h3 className="text-gold font-medium mb-2 text-sm">{group.sign}</h3>
                 <ul className="space-y-0.5">
-                  {group.nakshatras.map((nakshatra, i) => (
-                    <li key={i} className="text-cream/70 text-xs">• {nakshatra}</li>
-                  ))}
+                  {group.nakshatras.map((nakshatra, i) => {
+                    const name = getNakshatraName(nakshatra);
+                    const slug = name ? nakshatraSlugMap[name] : null;
+                    return (
+                      <li key={i} className="text-xs">
+                        {slug ? (
+                          <Link to={`/blog/${slug}`} className="text-cream/70 hover:text-gold transition-colors">
+                            • {nakshatra}
+                          </Link>
+                        ) : (
+                          <span className="text-cream/70">• {nakshatra}</span>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}
@@ -278,6 +322,7 @@ const WhatIsNakshatraPage = () => {
               <Link to="/blog/uttara-phalguni-nakshatra" className="text-gold hover:underline">Uttara Phalguni — Noble Service →</Link>
               <Link to="/blog/hasta-nakshatra" className="text-gold hover:underline">Hasta — The Divine Hand →</Link>
               <Link to="/blog/purva-bhadrapada-nakshatra" className="text-gold hover:underline">Purva Bhadrapada — The Burning Pair →</Link>
+              <Link to="/blog/uttara-bhadrapada-nakshatra" className="text-gold hover:underline">Uttara Bhadrapada — The Cosmic Serpent →</Link>
             </div>
           </div>
 
@@ -377,9 +422,9 @@ const WhatIsNakshatraPage = () => {
           </p>
 
           <div className="my-8">
-            <Link to="/get-birth-chart">
+            <Link to="/">
               <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-6 py-5">
-                Get your free Vedic birth chart
+                Get your free Cosmic Brief
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -405,7 +450,7 @@ const WhatIsNakshatraPage = () => {
           </p>
 
           <div className="my-8">
-            <Link to="/get-birth-chart">
+            <Link to="/">
               <Button variant="outline" className="border-gold/40 text-gold hover:bg-gold/10 font-medium px-6 py-5">
                 Discover your nakshatra
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -432,7 +477,7 @@ const WhatIsNakshatraPage = () => {
           <h3 className="font-display text-lg text-cream mb-4">Go Deeper</h3>
           <div className="space-y-3 text-sm">
             <p className="text-cream/70">
-              <Link to="/get-birth-chart" className="text-gold hover:underline font-medium">Get Your Birth Chart</Link>
+              <Link to="/" className="text-gold hover:underline font-medium">Get your free Cosmic Brief</Link>
               {" "}— See your Moon nakshatra, planetary positions, and houses.
             </p>
             <p className="text-cream/70">

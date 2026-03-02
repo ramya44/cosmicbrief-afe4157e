@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Calendar, Circle, BookOpen, ChevronDown, LogIn, LogOut } from 'lucide-react';
+import { Menu, Calendar, Circle, BookOpen, ChevronDown, LogIn, LogOut, MessageCircle } from 'lucide-react';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { useAuthContext } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,8 +11,9 @@ import { toast } from 'sonner';
 
 // Primary nav items shown in bottom bar on mobile
 const primaryNavItems = [
-  { label: '2026 Forecast', path: '/', icon: Calendar },
-  { label: 'Birth Chart', path: '/get-birth-chart', icon: Circle },
+  { label: 'Free Cosmic Brief', path: '/', icon: Circle },
+  { label: 'Chat with Maya', path: '/chat', icon: MessageCircle },
+  // { label: '2026', path: '/2026', icon: Calendar }, // Hidden for now
   { label: 'Journal', path: '/blog', icon: BookOpen },
 ];
 
@@ -33,8 +34,9 @@ const secondaryNavItems = [
 
 // All nav items for desktop
 const allNavItems = [
-  { label: '2026 Forecast', path: '/' },
-  { label: 'Birth Chart', path: '/get-birth-chart' },
+  { label: 'Your FREE Cosmic Brief', path: '/' },
+  { label: 'Chat with Maya', path: '/chat' },
+  // { label: '2026 Forecast', path: '/2026' }, // Hidden for now
   ...(FEATURE_FLAGS.LIFE_ARC_ENABLED ? [{ label: 'Life Arc', path: '/life-arc' }] : []),
   { label: 'What is Vedic Astrology', path: '/vedic-astrology-explained' },
 ];
@@ -157,7 +159,7 @@ export const Navigation = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-cream-muted hover:text-cream hover:bg-gold/10"
+                className="text-cream-muted hover:text-cream hover:bg-gold/10 font-sans"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Log Out
@@ -168,7 +170,7 @@ export const Navigation = () => {
               variant="ghost"
               size="sm"
               onClick={handleLogin}
-              className="text-gold hover:text-gold-light hover:bg-gold/10"
+              className="text-gold hover:text-gold-light hover:bg-gold/10 font-sans"
             >
               <LogIn className="w-4 h-4 mr-2" />
               Log In

@@ -10,6 +10,8 @@ const VedicPaymentSuccessPage = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const kundliId = searchParams.get('kundli_id');
+  const forecastType = searchParams.get('type') || '2026'; // 'cosmic-brief' or '2026'
+  const isCosmicBrief = forecastType === 'cosmic-brief';
 
   const [status, setStatus] = useState<'generating' | 'success' | 'error' | 'manual' | 'timeout'>('generating');
   const [progress, setProgress] = useState(0);
@@ -34,7 +36,12 @@ const VedicPaymentSuccessPage = () => {
           setTimeout(() => resolve({ timeout: true }), 120000);
         });
 
-        const apiPromise = supabase.functions.invoke('generate-paid-vedic-forecast', {
+        // Call correct generation function based on product type
+        const generationFunction = isCosmicBrief
+          ? 'generate-paid-cosmic-brief'
+          : 'generate-paid-vedic-forecast';
+
+        const apiPromise = supabase.functions.invoke(generationFunction, {
           body: { session_id: sessionId, kundli_id: kundliId },
         });
 
@@ -108,12 +115,13 @@ const VedicPaymentSuccessPage = () => {
                 clearInterval(progressInterval);
                 setProgress(100);
                 setStatus('success');
-                toast.success('Your complete forecast is ready!');
-                trackPurchase({ value: 19.99, currency: 'USD' });
+                toast.success(isCosmicBrief ? 'Your expanded cosmic brief is ready!' : 'Your complete forecast is ready!');
+                trackPurchase({ value: isCosmicBrief ? 29 : 19.99, currency: 'USD' });
 
-                // Navigate after a short delay
+                // Navigate after a short delay (include type for cosmic-brief)
                 setTimeout(() => {
-                  navigate(`/vedic/results?id=${kundliId}&paid=true`);
+                  const typeParam = isCosmicBrief ? '&type=cosmic-brief' : '';
+                  navigate(`/vedic/results?id=${kundliId}&paid=true${typeParam}`);
                 }, 1000);
               } else if (pollCount >= maxPolls) {
                 clearInterval(pollInterval);
@@ -132,10 +140,10 @@ const VedicPaymentSuccessPage = () => {
         if (data?.forecast) {
           setProgress(100);
           setStatus('success');
-          toast.success('Your complete forecast is ready!');
+          toast.success(isCosmicBrief ? 'Your expanded cosmic brief is ready!' : 'Your complete forecast is ready!');
 
-          // Track successful purchase
-          trackPurchase({ value: 19.99, currency: 'USD' });
+          // Track successful purchase with correct value
+          trackPurchase({ value: isCosmicBrief ? 29 : 19.99, currency: 'USD' });
 
           // Fetch the full kundli data before navigating to avoid loading screen
           const deviceId = (await import('@/lib/deviceId')).getDeviceId();
@@ -179,7 +187,8 @@ const VedicPaymentSuccessPage = () => {
               forecastLength: stateData.paid_vedic_forecast?.length || 0
             });
 
-            navigate(`/vedic/results?id=${kundliId}&paid=true`, {
+            const typeParam = isCosmicBrief ? '&type=cosmic-brief' : '';
+            navigate(`/vedic/results?id=${kundliId}&paid=true${typeParam}`, {
               state: {
                 kundliData: stateData,
                 skipLoading: !!kundliData
@@ -198,7 +207,7 @@ const VedicPaymentSuccessPage = () => {
     };
 
     generateForecast();
-  }, [sessionId, kundliId, navigate]);
+  }, [sessionId, kundliId, navigate, isCosmicBrief]);
 
   const phrases = [
     "Mapping your cosmic blueprint...",
@@ -234,7 +243,7 @@ const VedicPaymentSuccessPage = () => {
               <div className="absolute inset-4 rounded-full bg-gold/10 animate-pulse"></div>
             </div>
             <h1 className="font-display text-3xl md:text-4xl text-cream mb-4">
-              Generating Your Detailed 2026 Cosmic Brief
+              {isCosmicBrief ? 'Generating Your Expanded Cosmic Brief' : 'Generating Your Detailed 2026 Cosmic Brief'}
             </h1>
             <p className="text-cream-muted text-lg mb-8 animate-fade-up">
               {phrases[phraseIndex]}
@@ -305,10 +314,13 @@ const VedicPaymentSuccessPage = () => {
             </p>
             <div className="flex flex-col gap-3">
               <button
-                onClick={() => navigate(`/vedic/results?id=${kundliId}&paid=true`)}
+                onClick={() => {
+                  const typeParam = isCosmicBrief ? '&type=cosmic-brief' : '';
+                  navigate(`/vedic/results?id=${kundliId}&paid=true${typeParam}`);
+                }}
                 className="px-6 py-2 bg-gold text-midnight rounded-lg font-medium hover:bg-gold-light transition-colors"
               >
-                Check My Forecast
+                {isCosmicBrief ? 'Check My Cosmic Brief' : 'Check My Forecast'}
               </button>
               <p className="text-cream-muted/60 text-sm">
                 If it's not ready yet, refresh the page in 30 seconds

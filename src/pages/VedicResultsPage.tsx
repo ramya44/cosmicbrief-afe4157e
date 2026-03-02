@@ -1,16 +1,20 @@
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { StarField } from '@/components/StarField';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Sparkles, Lock, ChevronRight, User, Share2, Check, Download, Plus } from 'lucide-react';
+import { Sparkles, Lock, ChevronRight, User, Share2, Check, Download, Plus, MessageCircle, ImageDown } from 'lucide-react';
 import { useForecastStore } from '@/store/forecastStore';
 import { supabase } from '@/integrations/supabase/client';
 import { getDeviceId } from '@/lib/deviceId';
 import { toast } from 'sonner';
 import { trackInitiateCheckout } from '@/lib/meta-pixel';
+import { shareOrDownloadChart, ShareResult } from '@/lib/chartExport';
+import { ChartSaveModal } from '@/components/ChartSaveModal';
 import { ForecastTableOfContents } from '@/components/ForecastTableOfContents';
 import { BirthChartWheel } from '@/components/BirthChartWheel';
+import { NorthIndianChart } from '@/components/NorthIndianChart';
+import { SouthIndianChart } from '@/components/SouthIndianChart';
 import {
   Popover,
   PopoverContent,
@@ -66,6 +70,14 @@ interface ForecastSection {
   content: ContentItem[];
 }
 
+interface TimelinePeriod {
+  period_name: string;
+  date_range: string;
+  duration: string;
+  themes: string;
+  is_current?: boolean;
+}
+
 interface ContentItem {
   type: string;
   text?: string;
@@ -80,6 +92,8 @@ interface ContentItem {
   quarter?: string;
   question?: string;
   guidance?: string;
+  periods?: TimelinePeriod[];
+  subtext?: string;
 }
 
 interface ForecastJson {
@@ -103,16 +117,19 @@ const VedicResultsPage = () => {
   const [searchParams] = useSearchParams();
   const kundliId = searchParams.get('id');
   const isPaidView = searchParams.get('paid') === 'true';
+  const forecastType = searchParams.get('type') || '2026'; // 'cosmic-brief' or '2026'
+  const isCosmicBrief = forecastType === 'cosmic-brief';
   const locationState = location.state as LocationState | null;
 
   const [kundli, setKundli] = useState<KundliDetails | null>(locationState?.kundliData || null);
   const [loading, setLoading] = useState(!locationState?.skipLoading);
   const [error, setError] = useState<string | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
-  const [isInlineCTAVisible, setIsInlineCTAVisible] = useState(false);
   const [isOwner, setIsOwner] = useState(locationState?.kundliData?.is_owner || false);
   const [zodiacLookup, setZodiacLookup] = useState<ZodiacLookup>({});
-  const inlineCTARef = useRef<HTMLDivElement>(null);
+  const [chartStyle, setChartStyle] = useState<'western' | 'north' | 'south'>('western');
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [saveModalImageUrl, setSaveModalImageUrl] = useState<string | null>(null);
 
   // Helper to get Western zodiac name
   const getWesternName = (sanskritName: string | null) => {
@@ -238,6 +255,56 @@ const VedicResultsPage = () => {
     }
   };
 
+  const getChartDisplayName = () => {
+    switch (chartStyle) {
+      case 'western':
+        return 'Western Birth Chart';
+      case 'north':
+        return 'North Indian Birth Chart';
+      case 'south':
+        return 'South Indian Birth Chart';
+      default:
+        return 'Birth Chart';
+    }
+  };
+
+  const handleShareChartAsImage = async () => {
+    if (!chartContainerRef.current) {
+      toast.error('Chart not found');
+      return;
+    }
+
+    const svg = chartContainerRef.current.querySelector('svg');
+    if (!svg) {
+      toast.error('Chart not found');
+      return;
+    }
+
+    try {
+      const chartName = getChartDisplayName();
+      const fileName = `birth-chart-${chartStyle}.png`;
+      const result = await shareOrDownloadChart(svg, chartName, fileName);
+
+      switch (result.type) {
+        case 'shared':
+          toast.success('Chart shared!');
+          break;
+        case 'downloaded':
+          toast.success('Chart saved!');
+          break;
+        case 'save-prompt':
+          setSaveModalImageUrl(result.imageUrl);
+          break;
+        case 'cancelled':
+          // User cancelled, no toast needed
+          break;
+      }
+    } catch (err) {
+      console.error('Error exporting chart:', err);
+      toast.error('Failed to export chart');
+    }
+  };
+
   const { setKundliId, setFreeForecast } = useForecastStore();
 
   const handleNewBirthDetails = () => {
@@ -247,21 +314,6 @@ const VedicResultsPage = () => {
     navigate('/vedic/input');
   };
 
-  // Track when inline CTA is visible to hide sticky CTA
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInlineCTAVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 }
-    );
-
-    if (inlineCTARef.current) {
-      observer.observe(inlineCTARef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     console.log('[ResultsPage] Effect triggered', {
@@ -364,7 +416,12 @@ const VedicResultsPage = () => {
 
     setIsUpgrading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-vedic-payment', {
+      // Route to correct payment function based on forecast type
+      const paymentFunction = isCosmicBrief
+        ? 'create-cosmic-brief-payment'
+        : 'create-vedic-payment';
+
+      const { data, error } = await supabase.functions.invoke(paymentFunction, {
         body: {
           kundli_id: kundli.id,
         },
@@ -384,8 +441,9 @@ const VedicResultsPage = () => {
         return;
       }
 
-      // Track checkout initiation
-      trackInitiateCheckout({ value: 19.99, currency: 'USD' });
+      // Track checkout initiation with correct price
+      const checkoutValue = isCosmicBrief ? 29 : 19.99;
+      trackInitiateCheckout({ value: checkoutValue, currency: 'USD' });
 
       window.location.href = data.url;
     } catch (err) {
@@ -416,7 +474,7 @@ const VedicResultsPage = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>${kundli?.name ? `${kundli.name}'s` : 'Your'} 2026 Cosmic Brief</title>
+          <title>${kundli?.name ? `${kundli.name}'s` : 'Your'} ${isCosmicBrief ? 'Cosmic Brief' : '2026 Cosmic Brief'}</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
             
@@ -550,7 +608,7 @@ const VedicResultsPage = () => {
         </head>
         <body>
           <div class="header">
-            <h1>${kundli?.name ? `${kundli.name}'s` : 'Your'} 2026 Cosmic Brief</h1>
+            <h1>${kundli?.name ? `${kundli.name}'s` : 'Your'} ${isCosmicBrief ? 'Cosmic Brief' : '2026 Cosmic Brief'}</h1>
             <p>
               ${(() => {
                 const [year, month, day] = (kundli?.birth_date || '').split('-').map(Number);
@@ -630,6 +688,42 @@ const VedicResultsPage = () => {
 
       const sectionId = generateSectionId(section.heading, sIdx);
 
+      // Check if this is the "Want More Depth?" upsell section
+      const isWantMoreDepth = section.heading.toLowerCase().includes('want more depth');
+
+      if (isWantMoreDepth && !isPaid) {
+        // Render with special box styling
+        elements.push(
+          <section
+            key={sIdx}
+            id={sectionId}
+            className="animate-fade-up scroll-mt-32 mt-12"
+            style={{ animationDelay: `${sIdx * 100}ms` }}
+          >
+            <div className="bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-6 md:p-8 text-center overflow-hidden">
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-gold" />
+                </div>
+              </div>
+
+              <h3 className="text-xl md:text-2xl font-display text-cream mb-4">
+                {section.heading}
+              </h3>
+
+              <div className="space-y-4 max-w-lg mx-auto">
+                {section.content?.map((item, iIdx) => renderContentItem(item, iIdx))}
+              </div>
+
+              <p className="text-cream-muted/60 text-sm mt-4">
+                One-time payment • Instant access
+              </p>
+            </div>
+          </section>
+        );
+        return;
+      }
+
       elements.push(
         <section
           key={sIdx}
@@ -655,7 +749,76 @@ const VedicResultsPage = () => {
             style={{ animationDelay: '150ms' }}
           >
             <h2 className="text-2xl font-bold text-gold mb-6 font-display text-center">Your Birth Chart</h2>
-            <BirthChartWheel chartData={birthChartData} hideDetailCards />
+
+            {/* Chart Style Tabs */}
+            <div className="flex justify-center gap-2 mb-6">
+              <button
+                onClick={() => setChartStyle('western')}
+                className={`px-4 py-2 rounded-lg text-sm font-sans transition-colors ${
+                  chartStyle === 'western'
+                    ? 'bg-gold/20 text-gold border border-gold/30'
+                    : 'text-cream-muted hover:text-cream hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                Western
+              </button>
+              <button
+                onClick={() => setChartStyle('north')}
+                className={`px-4 py-2 rounded-lg text-sm font-sans transition-colors ${
+                  chartStyle === 'north'
+                    ? 'bg-gold/20 text-gold border border-gold/30'
+                    : 'text-cream-muted hover:text-cream hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                North Indian
+              </button>
+              <button
+                onClick={() => setChartStyle('south')}
+                className={`px-4 py-2 rounded-lg text-sm font-sans transition-colors ${
+                  chartStyle === 'south'
+                    ? 'bg-gold/20 text-gold border border-gold/30'
+                    : 'text-cream-muted hover:text-cream hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                South Indian
+              </button>
+            </div>
+
+            {/* Chart Display */}
+            <div ref={chartContainerRef}>
+              {chartStyle === 'western' && (
+                <BirthChartWheel chartData={birthChartData} hideDetailCards />
+              )}
+              {chartStyle === 'north' && (
+                <div className="flex justify-center">
+                  <NorthIndianChart
+                    positions={birthChartData.planetary_positions}
+                    ascendantSignId={birthChartData.ascendant_sign_id}
+                  />
+                </div>
+              )}
+              {chartStyle === 'south' && (
+                <div className="flex justify-center">
+                  <SouthIndianChart
+                    positions={birthChartData.planetary_positions}
+                    ascendantSignId={birthChartData.ascendant_sign_id}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Share Chart as Image Button */}
+            <div className="flex justify-center mt-6">
+              <Button
+                onClick={handleShareChartAsImage}
+                variant="outline"
+                size="sm"
+                className="border-gold/40 text-gold hover:bg-gold/10"
+              >
+                <ImageDown className="w-4 h-4 mr-2" />
+                Share Chart
+              </Button>
+            </div>
           </section>
         );
       }
@@ -683,10 +846,10 @@ const VedicResultsPage = () => {
       
       case 'benefits_list':
         return (
-          <ul key={key} className="space-y-2 my-4">
+          <ul key={key} className="text-left space-y-3 my-6">
             {item.items?.map((listItem, i) => (
-              <li key={i} className="flex items-start gap-3 text-cream-muted">
-                <ChevronRight className="w-4 h-4 text-gold mt-1 flex-shrink-0" />
+              <li key={i} className="flex items-center gap-3 text-cream-muted text-sm md:text-base">
+                <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
                 <span>{renderMarkdownText(listItem)}</span>
               </li>
             ))}
@@ -785,7 +948,76 @@ const VedicResultsPage = () => {
             <p className="text-cream-muted font-serif">{renderMarkdownText(item.guidance || '')}</p>
           </div>
         );
-      
+
+      case 'timeline':
+        return (
+          <div key={key} className="space-y-3 my-6">
+            {item.periods?.map((period, i) => (
+              <div
+                key={i}
+                className={`bg-midnight/40 border rounded-xl p-5 ${
+                  period.is_current
+                    ? 'border-gold/50 ring-1 ring-gold/30'
+                    : 'border-border/30'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-lg font-semibold text-cream">{period.period_name}</h4>
+                  {period.is_current && (
+                    <span className="text-xs bg-gold/20 text-gold px-2 py-1 rounded-full font-medium">
+                      Current
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 text-sm text-cream-muted mb-3">
+                  <span className="text-gold font-medium">{period.date_range}</span>
+                  <span className="text-cream-muted/60">•</span>
+                  <span>{period.duration}</span>
+                </div>
+                <p className="text-cream-muted font-serif">{renderMarkdownText(period.themes)}</p>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'key_actions':
+        return (
+          <div key={key} className="bg-gold/10 border border-gold/30 rounded-lg p-5 my-4">
+            <p className="text-gold text-sm font-medium mb-3">Key Actions:</p>
+            <ul className="space-y-2">
+              {item.items?.map((action, i) => (
+                <li key={i} className="flex items-start gap-3 text-cream-muted">
+                  <Check className="w-4 h-4 text-gold mt-1 flex-shrink-0" />
+                  <span>{renderMarkdownText(action)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+
+      case 'cta':
+        return (
+          <div key={key} className="mt-6">
+            <Button
+              onClick={handleUpgrade}
+              disabled={isUpgrading}
+              className="bg-gold hover:bg-gold-light text-midnight font-semibold px-4 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-xl w-full md:w-auto min-w-0 font-sans"
+            >
+              {isUpgrading ? (
+                <span className="flex items-center justify-center">
+                  <span className="w-5 h-5 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin mr-2" />
+                  <span>Loading...</span>
+                </span>
+              ) : (
+                <span className="flex items-center justify-center">
+                  <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
+                  <span>{item.text || 'Unlock Full Access'}</span>
+                </span>
+              )}
+            </Button>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -881,6 +1113,14 @@ const VedicResultsPage = () => {
 
   return (
     <div className="relative min-h-screen bg-celestial">
+      {/* Save Modal for iOS in-app browsers */}
+      {saveModalImageUrl && (
+        <ChartSaveModal
+          imageUrl={saveModalImageUrl}
+          onClose={() => setSaveModalImageUrl(null)}
+        />
+      )}
+
       <StarField />
 
       <header className="relative z-20 border-b border-border/30 bg-midnight/80 backdrop-blur-md sticky top-0">
@@ -962,7 +1202,9 @@ const VedicResultsPage = () => {
             {kundli.name ? `${kundli.name}'s Personalized` : 'Your Personalized'}
           </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream mb-4">
-            {isPaidView && hasPaidForecast ? 'Detailed 2026 Cosmic Brief' : '2026 Cosmic Brief'}
+            {isCosmicBrief
+              ? (isPaidView && hasPaidForecast ? 'Expanded Cosmic Brief' : 'Your Cosmic Brief')
+              : (isPaidView && hasPaidForecast ? 'Detailed 2026 Cosmic Brief' : '2026 Cosmic Brief')}
           </h1>
           <p className="text-cream-muted font-sans text-sm">
             {(() => {
@@ -1080,63 +1322,6 @@ const VedicResultsPage = () => {
           </div>
         )}
 
-        {/* Upgrade CTA - Only show on free forecast for owners */}
-        {forecastToShow && !hasPaidForecast && isOwner && (
-          <div className="max-w-3xl mx-auto">
-              <div ref={inlineCTARef} className="mt-12 bg-gradient-to-br from-gold/10 to-gold/5 border border-gold/30 rounded-2xl p-6 md:p-8 text-center overflow-hidden mx-0">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-gold" />
-                  </div>
-                </div>
-                
-                <h3 className="text-xl md:text-2xl font-display text-cream mb-3">
-                  Want the Complete 2026 Roadmap?
-                </h3>
-                
-                <p className="text-cream-muted mb-6 max-w-lg mx-auto text-sm md:text-base">
-                  Get month-by-month guidance, specific timing for key decisions, 
-                  and detailed analysis of every transition point in your year ahead.
-                </p>
-
-                <ul className="text-left max-w-md mx-auto mb-8 space-y-3">
-                  {[
-                    "Month-by-month breakdown with exact dates",
-                    "8-12 key transition points explained",
-                    "Quarterly decision guidance",
-                    "Pivotal themes and action windows"
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 text-cream-muted text-sm md:text-base">
-                      <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button 
-                  onClick={handleUpgrade}
-                  disabled={isUpgrading}
-                  className="bg-gold hover:bg-gold-light text-midnight font-semibold px-4 md:px-8 py-5 md:py-6 text-base md:text-lg rounded-xl w-full md:w-auto min-w-0 font-sans"
-                >
-                  {isUpgrading ? (
-                    <span className="flex items-center justify-center">
-                      <span className="w-5 h-5 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin mr-2" />
-                      <span>Loading...</span>
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center">
-                      <Lock className="w-5 h-5 mr-2 flex-shrink-0" />
-                      <span>Unlock Full Cosmic Brief — $19</span>
-                    </span>
-                  )}
-                </Button>
-
-                <p className="text-cream-muted/60 text-sm mt-4">
-                  One-time payment • Instant access
-                </p>
-              </div>
-          </div>
-        )}
 
         {/* Share and Download CTAs - Show for paid forecasts */}
         {forecastToShow && hasPaidForecast && isOwner && (
@@ -1164,6 +1349,30 @@ const VedicResultsPage = () => {
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download as PDF
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Ask Maya CTA */}
+        {forecastToShow && (
+          <div className="max-w-3xl mx-auto mt-12">
+            <div className="bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 rounded-xl border border-gold/20 p-6 text-center">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-gold/20 flex items-center justify-center">
+                <MessageCircle className="w-6 h-6 text-gold" />
+              </div>
+              <h3 className="font-display text-xl text-cream mb-2">
+                Have questions about your chart?
+              </h3>
+              <p className="text-cream/70 text-sm mb-4 max-w-md mx-auto">
+                Chat with Maya, your personal AI Vedic astrologer. She knows your planetary placements and can answer any questions about your cosmic path.
+              </p>
+              <Button
+                onClick={() => navigate('/chat')}
+                className="bg-gold hover:bg-gold-light text-midnight font-semibold px-6 py-3 rounded-lg"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Ask Maya
               </Button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { StarField } from "@/components/StarField";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
 
 const CareerAstrology2026Page = () => {
   const jsonLd = {
@@ -220,16 +221,13 @@ From June, Jupiter enters Cancer (your 5th house) in exaltation. This is creativ
       <StarField />
 
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        {/* Breadcrumb */}
-        <div className="mb-8">
-          <Link to="/blog" className="text-cream/50 hover:text-cream text-sm">
-            Journal
-          </Link>
-          <span className="text-cream/30 mx-2">/</span>
-          <Link to="/blog/category/transits" className="text-cream/50 hover:text-cream text-sm">
-            Cosmic Weather
-          </Link>
-        </div>
+        <SEOBreadcrumbs
+          items={[
+            { name: "Journal", href: "/blog" },
+            { name: "Cosmic Weather", href: "/blog/category/transits" }
+          ]}
+          currentPage="Career Astrology 2026"
+        />
 
         {/* Title */}
         <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
@@ -263,8 +261,8 @@ From June, Jupiter enters Cancer (your 5th house) in exaltation. This is creativ
 
           <p>
             This isn't sun sign astrology. These predictions are based on your <strong className="text-cream">Moon sign</strong> (Rashi), which Vedic astrology considers far more relevant for timing and emotional experience. If you don't know your Moon sign,{" "}
-            <Link to="/get-birth-chart" className="text-gold hover:underline">
-              get your free birth chart first →
+            <Link to="/" className="text-gold hover:underline">
+              get your free Cosmic Brief first →
             </Link>
           </p>
 
@@ -449,7 +447,7 @@ From June, Jupiter enters Cancer (your 5th house) in exaltation. This is creativ
           <h3 className="font-display text-lg text-cream mb-4">Go Deeper</h3>
           <div className="space-y-3 text-sm">
             <p className="text-cream/70">
-              <Link to="/get-birth-chart" className="text-gold hover:underline font-medium">Get Your Birth Chart</Link>
+              <Link to="/" className="text-gold hover:underline font-medium">Get your free Cosmic Brief</Link>
               {" "}— Find your Moon sign, planetary positions, and current dasha period.
             </p>
             <p className="text-cream/70">

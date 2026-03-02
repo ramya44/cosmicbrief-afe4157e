@@ -29,6 +29,15 @@ export interface AntarDashaPeriod {
   maha_dasha_lord: string;
 }
 
+export interface PratyantardashaPeriod {
+  planet: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  maha_dasha_lord: string;
+  antar_dasha_lord: string;
+}
+
 export interface CurrentDashaInfo {
   maha_dasha: string;
   antar_dasha: string;
@@ -324,5 +333,204 @@ export function calculateDashaPeriods(
   return {
     dasha_periods: dashas,
     current_dasha: currentDasha
+  };
+}
+
+/**
+ * Helper function to add days to a date
+ */
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setTime(result.getTime() + days * 24 * 60 * 60 * 1000);
+  return result;
+}
+
+/**
+ * Calculate Pratyantardasha (sub-sub-periods) for a given Antar Dasha
+ * Pratyantardasha duration = (Antar dasha days × Pratyantardasha lord period) / 120
+ */
+export function calculatePratyantardashas(
+  antarDashaStartDate: Date,
+  antarDashaDays: number,
+  mahaDashaLord: string,
+  antarDashaLord: string
+): PratyantardashaPeriod[] {
+  // Find starting index for pratyantardasha (starts with antar dasha lord)
+  const startIndex = DASHA_SEQUENCE.indexOf(antarDashaLord);
+
+  const pratyantardashas: PratyantardashaPeriod[] = [];
+  let currentDate = new Date(antarDashaStartDate);
+
+  // Calculate each pratyantardasha
+  for (let i = 0; i < DASHA_SEQUENCE.length; i++) {
+    const pratyantarPlanetIndex = (startIndex + i) % DASHA_SEQUENCE.length;
+    const pratyantarPlanet = DASHA_SEQUENCE[pratyantarPlanetIndex];
+    const pratyantarPlanetPeriod = DASHA_PERIODS[pratyantarPlanet];
+
+    // Pratyantardasha duration = (Antar dasha days × Pratyantardasha lord period) / 120
+    const pratyantarDays = (antarDashaDays * pratyantarPlanetPeriod) / 120;
+    const endDate = addDays(currentDate, pratyantarDays);
+
+    pratyantardashas.push({
+      planet: pratyantarPlanet,
+      start_date: formatDate(currentDate),
+      end_date: formatDate(endDate),
+      days: pratyantarDays,
+      maha_dasha_lord: mahaDashaLord,
+      antar_dasha_lord: antarDashaLord
+    });
+
+    currentDate = endDate;
+  }
+
+  return pratyantardashas;
+}
+
+/**
+ * Get the active pratyantardasha for a specific date
+ */
+export function getCurrentPratyantardasha(
+  birthDate: Date,
+  moonLongitude: number,
+  targetDate: Date = new Date()
+): PratyantardashaPeriod | null {
+  const dashas = calculateMahaDashas(birthDate, moonLongitude);
+  const mahaDasha = getCurrentMahaDasha(dashas, targetDate);
+  if (!mahaDasha) return null;
+
+  const antarDashas = calculateAntarDashas(
+    new Date(mahaDasha.start_date),
+    mahaDasha.years,
+    mahaDasha.planet
+  );
+
+  const antarDasha = antarDashas.find(d => {
+    const start = new Date(d.start_date);
+    const end = new Date(d.end_date);
+    return targetDate >= start && targetDate <= end;
+  });
+
+  if (!antarDasha) return null;
+
+  // Calculate antar dasha duration in days
+  const antarStart = new Date(antarDasha.start_date);
+  const antarEnd = new Date(antarDasha.end_date);
+  const antarDashaDays = (antarEnd.getTime() - antarStart.getTime()) / (24 * 60 * 60 * 1000);
+
+  const pratyantardashas = calculatePratyantardashas(
+    antarStart,
+    antarDashaDays,
+    mahaDasha.planet,
+    antarDasha.planet
+  );
+
+  return pratyantardashas.find(p => {
+    const start = new Date(p.start_date);
+    const end = new Date(p.end_date);
+    return targetDate >= start && targetDate <= end;
+  }) || null;
+}
+
+/**
+ * Get all pratyantardashas active during a specific week
+ * Returns all pratyantardashas that overlap with the week period
+ */
+export function getPratyantardashasForWeek(
+  birthDate: Date,
+  moonLongitude: number,
+  weekStart: Date,
+  weekEnd: Date
+): PratyantardashaPeriod[] {
+  const dashas = calculateMahaDashas(birthDate, moonLongitude);
+
+  // Find maha dashas that could overlap with the week
+  const relevantMahaDashas = dashas.filter(d => {
+    const start = new Date(d.start_date);
+    const end = new Date(d.end_date);
+    return start <= weekEnd && end >= weekStart;
+  });
+
+  const weekPratyantardashas: PratyantardashaPeriod[] = [];
+
+  for (const mahaDasha of relevantMahaDashas) {
+    const antarDashas = calculateAntarDashas(
+      new Date(mahaDasha.start_date),
+      mahaDasha.years,
+      mahaDasha.planet
+    );
+
+    // Find antar dashas that overlap with the week
+    const relevantAntarDashas = antarDashas.filter(d => {
+      const start = new Date(d.start_date);
+      const end = new Date(d.end_date);
+      return start <= weekEnd && end >= weekStart;
+    });
+
+    for (const antarDasha of relevantAntarDashas) {
+      const antarStart = new Date(antarDasha.start_date);
+      const antarEnd = new Date(antarDasha.end_date);
+      const antarDashaDays = (antarEnd.getTime() - antarStart.getTime()) / (24 * 60 * 60 * 1000);
+
+      const pratyantardashas = calculatePratyantardashas(
+        antarStart,
+        antarDashaDays,
+        mahaDasha.planet,
+        antarDasha.planet
+      );
+
+      // Filter pratyantardashas that overlap with the week
+      for (const p of pratyantardashas) {
+        const pStart = new Date(p.start_date);
+        const pEnd = new Date(p.end_date);
+        if (pStart <= weekEnd && pEnd >= weekStart) {
+          weekPratyantardashas.push(p);
+        }
+      }
+    }
+  }
+
+  // Remove duplicates and sort by start date
+  const uniquePratyantardashas = weekPratyantardashas.filter(
+    (p, index, self) =>
+      index === self.findIndex(t => t.start_date === p.start_date && t.planet === p.planet)
+  );
+
+  return uniquePratyantardashas.sort(
+    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+  );
+}
+
+/**
+ * Format pratyantardasha info for display (using accessible language)
+ */
+export function formatPratyantardashaForDisplay(p: PratyantardashaPeriod): string {
+  return `${p.maha_dasha_lord}-${p.antar_dasha_lord}-${p.planet} sub-period`;
+}
+
+/**
+ * Get a summary of the week's pratyantardasha influences
+ */
+export function getWeeklyDashaSummary(
+  birthDate: Date,
+  moonLongitude: number,
+  weekStart: Date,
+  weekEnd: Date
+): {
+  mahaDasha: string;
+  antarDasha: string;
+  pratyantardashas: PratyantardashaPeriod[];
+  hasTransition: boolean;
+} {
+  const pratyantardashas = getPratyantardashasForWeek(birthDate, moonLongitude, weekStart, weekEnd);
+
+  // Get the current dasha info for the middle of the week
+  const midWeek = new Date(weekStart.getTime() + (weekEnd.getTime() - weekStart.getTime()) / 2);
+  const currentInfo = getCurrentDashaInfo(birthDate, moonLongitude, midWeek);
+
+  return {
+    mahaDasha: currentInfo?.maha_dasha || 'Unknown',
+    antarDasha: currentInfo?.antar_dasha || 'Unknown',
+    pratyantardashas,
+    hasTransition: pratyantardashas.length > 1
   };
 }

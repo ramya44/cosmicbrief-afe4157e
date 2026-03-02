@@ -114,6 +114,23 @@ export interface StrategicForecast {
   operating_principles: OperatingPrinciple[];
 }
 
+export interface WeeklyForecast {
+  forecast: unknown; // JSON content from LLM
+  week_start: string;
+  week_end: string;
+  dasha_summary: {
+    maha_dasha: string;
+    antar_dasha: string;
+    has_transition: boolean;
+  } | null;
+}
+
+export interface WeeklySubscription {
+  status: 'trial' | 'active' | 'canceled' | 'past_due';
+  trial_ends_at?: string;
+  current_period_end?: string;
+}
+
 export interface ForecastState {
   birthData: BirthData | null;
   freeForecast: FreeForecast | null;
@@ -131,6 +148,10 @@ export interface ForecastState {
   // Session kundli data for cross-page sharing
   kundliId: string | null;
   kundliData: KundliData | null;
+  // Weekly forecast state
+  weeklyForecast: WeeklyForecast | null;
+  weeklySubscription: WeeklySubscription | null;
+  isWeeklyLoading: boolean;
   setBirthData: (data: BirthData) => void;
   setFreeForecast: (forecast: FreeForecast) => void;
   setForecast: (free: FreeForecast, paid: PaidForecast) => void;
@@ -145,6 +166,10 @@ export interface ForecastState {
   setPaidForecastId: (id: string | null) => void;
   setKundliId: (id: string | null) => void;
   setKundliData: (data: KundliData | null) => void;
+  // Weekly forecast actions
+  setWeeklyForecast: (forecast: WeeklyForecast | null) => void;
+  setWeeklySubscription: (subscription: WeeklySubscription | null) => void;
+  setIsWeeklyLoading: (loading: boolean) => void;
   clearSession: () => void;
   reset: () => void;
 }
@@ -166,6 +191,9 @@ export const useForecastStore = create<ForecastState>()(
       paidForecastId: null,
       kundliId: null,
       kundliData: null,
+      weeklyForecast: null,
+      weeklySubscription: null,
+      isWeeklyLoading: false,
       setBirthData: (data) => set({ birthData: data }),
       setFreeForecast: (forecast) => set({ freeForecast: forecast }),
       setForecast: (free, paid) => set({ freeForecast: free, paidForecast: paid }),
@@ -180,10 +208,14 @@ export const useForecastStore = create<ForecastState>()(
       setPaidForecastId: (id) => set({ paidForecastId: id }),
       setKundliId: (id) => set({ kundliId: id }),
       setKundliData: (data) => set({ kundliData: data }),
+      setWeeklyForecast: (forecast) => set({ weeklyForecast: forecast }),
+      setWeeklySubscription: (subscription) => set({ weeklySubscription: subscription }),
+      setIsWeeklyLoading: (loading) => set({ isWeeklyLoading: loading }),
       clearSession: () => set({
         kundliId: null,
         kundliData: null,
         birthData: null,
+        weeklyForecast: null,
       }),
       reset: () => set({
         birthData: null,
@@ -200,6 +232,9 @@ export const useForecastStore = create<ForecastState>()(
         paidForecastId: null,
         kundliId: null,
         kundliData: null,
+        weeklyForecast: null,
+        weeklySubscription: null,
+        isWeeklyLoading: false,
       }),
     }),
     {
@@ -216,6 +251,8 @@ export const useForecastStore = create<ForecastState>()(
         paidForecastId: state.paidForecastId,
         kundliId: state.kundliId,
         kundliData: state.kundliData,
+        weeklyForecast: state.weeklyForecast,
+        weeklySubscription: state.weeklySubscription,
       }),
     }
   )

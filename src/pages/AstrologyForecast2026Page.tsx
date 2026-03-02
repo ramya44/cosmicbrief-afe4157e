@@ -174,8 +174,8 @@ const AstrologyForecast2026Page = () => {
 
           <p className="text-cream/60">
             Or skip straight to your chart:{" "}
-            <Link to="/get-birth-chart" className="text-gold hover:underline font-medium">
-              Get Your Free Birth Chart →
+            <Link to="/" className="text-gold hover:underline font-medium">
+              Get your free Cosmic Brief →
             </Link>
           </p>
         </div>
@@ -245,26 +245,6 @@ const AstrologyForecast2026Page = () => {
           </div>
         </div>
 
-        {/* Your 2026 Cosmic Brief CTA */}
-        <div className="mb-16 p-8 bg-gold/5 rounded-lg border border-gold/20 text-center">
-          <h2 className="font-display text-2xl md:text-3xl text-cream mb-4 flex items-center justify-center gap-3">
-            <Sparkles className="w-6 h-6 text-gold" />
-            Your 2026 Cosmic Brief
-          </h2>
-          <p className="text-cream/70 mb-2 max-w-xl mx-auto">
-            A personalized yearly outlook based on your birth moment — your dasha periods, planetary transits, and the themes shaping your year ahead.
-          </p>
-          <p className="text-gold font-medium mb-6">
-            Not your sun sign. Your actual sky.
-          </p>
-          <Link to="/vedic/input">
-            <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-8 py-6 text-lg">
-              Get Your 2026 Forecast
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </Link>
-        </div>
-
         {/* Why Vedic? */}
         <div className="mb-16 p-6 bg-cream/5 rounded-lg border border-cream/10">
           <h2 className="font-display text-2xl text-cream mb-4">Why Vedic?</h2>
@@ -284,18 +264,34 @@ const AstrologyForecast2026Page = () => {
           </Link>
         </div>
 
-        {/* Stay in the Loop */}
-        <div className="mb-16 p-6 border border-cream/20 rounded-lg text-center">
-          <h2 className="font-display text-2xl text-cream mb-4">Stay in the Loop</h2>
-          <p className="text-cream/70 mb-6 max-w-lg mx-auto">
-            Get weekly insights based on your birth chart — planetary transits, nakshatra forecasts, and cosmic weather that actually applies to you.
+        {/* Monthly Subscription CTA */}
+        <div className="mb-16 p-8 bg-gradient-to-br from-gold/10 to-gold/5 rounded-xl border border-gold/30 text-center">
+          <h2 className="font-display text-2xl md:text-3xl text-cream mb-4 flex items-center justify-center gap-3">
+            <Users className="w-6 h-6 text-gold" />
+            Go Deeper with Cosmic Brief
+          </h2>
+          <p className="text-cream/70 mb-6 max-w-xl mx-auto leading-relaxed">
+            Get a detailed personalized reading of your Vedic birth chart, plus unlimited access to <span className="text-gold font-medium">Maya</span> — our AI Vedic astrologer who knows your chart and can answer your questions anytime.
           </p>
-          <Link to="/weekly-horoscope">
-            <Button variant="outline" className="border-gold/40 text-gold hover:bg-gold/10 font-medium px-6 py-5">
-              Get Your Weekly Horoscope
-              <ArrowRight className="w-4 h-4 ml-2" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <div className="flex items-center gap-2 text-cream/60 text-sm">
+              <Sparkles className="w-4 h-4 text-gold" />
+              <span>Detailed birth chart reading</span>
+            </div>
+            <div className="flex items-center gap-2 text-cream/60 text-sm">
+              <Sparkles className="w-4 h-4 text-gold" />
+              <span>Unlimited chat with Maya</span>
+            </div>
+          </div>
+          <Link to="/vedic/input">
+            <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-8 py-6 text-lg">
+              Start Your Journey
+              <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
+          <p className="text-cream/40 text-sm mt-4">
+            $9/month · Cancel anytime
+          </p>
         </div>
 
         {/* Footer tagline */}

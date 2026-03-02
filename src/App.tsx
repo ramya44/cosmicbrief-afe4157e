@@ -28,6 +28,7 @@ import HowToReadChartPage from "./pages/HowToReadChartPage";
 import VedicVsWesternPage from "./pages/VedicVsWesternPage";
 import BirthChartInputPage from "./pages/BirthChartInputPage";
 import BirthChartPage from "./pages/BirthChartPage";
+import ChatPage from "./pages/ChatPage";
 import BlogCategoryPage from "./pages/BlogCategoryPage";
 import WhatIsNakshatraPage from "./pages/WhatIsNakshatraPage";
 import RohiniNakshatraPage from "./pages/RohiniNakshatraPage";
@@ -46,10 +47,12 @@ import HastaNakshatraPage from "./pages/HastaNakshatraPage";
 import ChitraNakshatraPage from "./pages/ChitraNakshatraPage";
 import SwatiNakshatraPage from "./pages/SwatiNakshatraPage";
 import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
+import UttaraBhadrapadaNakshatraPage from "./pages/UttaraBhadrapadaNakshatraPage";
 import VishakhaNakshatraPage from "./pages/VishakhaNakshatraPage";
 import AnuradhaNakshatraPage from "./pages/AnuradhaNakshatraPage";
 import JyeshthaNakshatraPage from "./pages/JyeshthaNakshatraPage";
 import MulaNakshatraPage from "./pages/MulaNakshatraPage";
+import RevatiNakshatraPage from "./pages/RevatiNakshatraPage";
 import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
 import TwelveHousesPage from "./pages/TwelveHousesPage";
 import NotFound from "./pages/NotFound";
@@ -125,16 +128,19 @@ const App = () => (
           <Route path="/blog/chitra-nakshatra" element={<ChitraNakshatraPage />} />
           <Route path="/blog/swati-nakshatra" element={<SwatiNakshatraPage />} />
           <Route path="/blog/purva-bhadrapada-nakshatra" element={<PurvaBhadrapadaNakshatraPage />} />
+          <Route path="/blog/uttara-bhadrapada-nakshatra" element={<UttaraBhadrapadaNakshatraPage />} />
           <Route path="/blog/vishakha-nakshatra" element={<VishakhaNakshatraPage />} />
           <Route path="/blog/anuradha-nakshatra" element={<AnuradhaNakshatraPage />} />
           <Route path="/blog/jyeshtha-nakshatra" element={<JyeshthaNakshatraPage />} />
           <Route path="/blog/mula-nakshatra" element={<MulaNakshatraPage />} />
+          <Route path="/blog/revati-nakshatra" element={<RevatiNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/blog/12-houses-vedic-astrology" element={<TwelveHousesPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
           <Route path="/vedic/results" element={<VedicResultsPage />} />
           <Route path="/vedic/payment-success" element={<VedicPaymentSuccessPage />} />
           <Route path="/vedic/profile" element={<VedicProfilePage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route path="/vedic-astrology-explained" element={<VedicAstrologyExplainedPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/background" element={<BackgroundPage />} />

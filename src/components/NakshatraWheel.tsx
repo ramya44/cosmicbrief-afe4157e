@@ -1,39 +1,41 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface NakshatraData {
   name: string;
   symbol: string;
   ruler: string;
   zodiac: string;
+  slug?: string; // URL slug if page exists
 }
 
 const nakshatras: NakshatraData[] = [
-  { name: "Ashwini", symbol: "🐴", ruler: "Ketu", zodiac: "Aries" },
-  { name: "Bharani", symbol: "△", ruler: "Venus", zodiac: "Aries" },
-  { name: "Krittika", symbol: "🔥", ruler: "Sun", zodiac: "Aries/Taurus" },
-  { name: "Rohini", symbol: "◎", ruler: "Moon", zodiac: "Taurus" },
-  { name: "Mrigashira", symbol: "🦌", ruler: "Mars", zodiac: "Taurus/Gemini" },
-  { name: "Ardra", symbol: "💧", ruler: "Rahu", zodiac: "Gemini" },
-  { name: "Punarvasu", symbol: "🏹", ruler: "Jupiter", zodiac: "Gemini/Cancer" },
-  { name: "Pushya", symbol: "❀", ruler: "Saturn", zodiac: "Cancer" },
-  { name: "Ashlesha", symbol: "🐍", ruler: "Mercury", zodiac: "Cancer" },
-  { name: "Magha", symbol: "👑", ruler: "Ketu", zodiac: "Leo" },
-  { name: "Purva Phalguni", symbol: "🛏", ruler: "Venus", zodiac: "Leo" },
-  { name: "Uttara Phalguni", symbol: "☀", ruler: "Sun", zodiac: "Leo/Virgo" },
-  { name: "Hasta", symbol: "✋", ruler: "Moon", zodiac: "Virgo" },
-  { name: "Chitra", symbol: "💎", ruler: "Mars", zodiac: "Virgo/Libra" },
-  { name: "Swati", symbol: "🌬", ruler: "Rahu", zodiac: "Libra" },
-  { name: "Vishakha", symbol: "⚡", ruler: "Jupiter", zodiac: "Libra/Scorpio" },
-  { name: "Anuradha", symbol: "🪷", ruler: "Saturn", zodiac: "Scorpio" },
-  { name: "Jyeshtha", symbol: "☂", ruler: "Mercury", zodiac: "Scorpio" },
-  { name: "Mula", symbol: "🌱", ruler: "Ketu", zodiac: "Sagittarius" },
+  { name: "Ashwini", symbol: "🐴", ruler: "Ketu", zodiac: "Aries", slug: "ashwini-nakshatra" },
+  { name: "Bharani", symbol: "△", ruler: "Venus", zodiac: "Aries", slug: "bharani-nakshatra" },
+  { name: "Krittika", symbol: "🔥", ruler: "Sun", zodiac: "Aries/Taurus", slug: "krittika-nakshatra" },
+  { name: "Rohini", symbol: "◎", ruler: "Moon", zodiac: "Taurus", slug: "rohini-nakshatra" },
+  { name: "Mrigashira", symbol: "🦌", ruler: "Mars", zodiac: "Taurus/Gemini", slug: "mrigashira-nakshatra" },
+  { name: "Ardra", symbol: "💧", ruler: "Rahu", zodiac: "Gemini", slug: "ardra-nakshatra" },
+  { name: "Punarvasu", symbol: "🏹", ruler: "Jupiter", zodiac: "Gemini/Cancer", slug: "punarvasu-nakshatra" },
+  { name: "Pushya", symbol: "❀", ruler: "Saturn", zodiac: "Cancer", slug: "pushya-nakshatra" },
+  { name: "Ashlesha", symbol: "🐍", ruler: "Mercury", zodiac: "Cancer", slug: "ashlesha-nakshatra" },
+  { name: "Magha", symbol: "👑", ruler: "Ketu", zodiac: "Leo", slug: "magha-nakshatra" },
+  { name: "Purva Phalguni", symbol: "🛏", ruler: "Venus", zodiac: "Leo", slug: "purva-phalguni-nakshatra" },
+  { name: "Uttara Phalguni", symbol: "☀", ruler: "Sun", zodiac: "Leo/Virgo", slug: "uttara-phalguni-nakshatra" },
+  { name: "Hasta", symbol: "✋", ruler: "Moon", zodiac: "Virgo", slug: "hasta-nakshatra" },
+  { name: "Chitra", symbol: "💎", ruler: "Mars", zodiac: "Virgo/Libra", slug: "chitra-nakshatra" },
+  { name: "Swati", symbol: "🌬", ruler: "Rahu", zodiac: "Libra", slug: "swati-nakshatra" },
+  { name: "Vishakha", symbol: "⚡", ruler: "Jupiter", zodiac: "Libra/Scorpio", slug: "vishakha-nakshatra" },
+  { name: "Anuradha", symbol: "🪷", ruler: "Saturn", zodiac: "Scorpio", slug: "anuradha-nakshatra" },
+  { name: "Jyeshtha", symbol: "☂", ruler: "Mercury", zodiac: "Scorpio", slug: "jyeshtha-nakshatra" },
+  { name: "Mula", symbol: "🌱", ruler: "Ketu", zodiac: "Sagittarius", slug: "mula-nakshatra" },
   { name: "Purva Ashadha", symbol: "🌊", ruler: "Venus", zodiac: "Sagittarius" },
   { name: "Uttara Ashadha", symbol: "🐘", ruler: "Sun", zodiac: "Sagittarius/Capricorn" },
   { name: "Shravana", symbol: "👂", ruler: "Moon", zodiac: "Capricorn" },
   { name: "Dhanishta", symbol: "🥁", ruler: "Mars", zodiac: "Capricorn/Aquarius" },
   { name: "Shatabhisha", symbol: "○", ruler: "Rahu", zodiac: "Aquarius" },
-  { name: "Purva Bhadrapada", symbol: "⚔", ruler: "Jupiter", zodiac: "Aquarius/Pisces" },
-  { name: "Uttara Bhadrapada", symbol: "☿", ruler: "Saturn", zodiac: "Pisces" },
+  { name: "Purva Bhadrapada", symbol: "⚔", ruler: "Jupiter", zodiac: "Aquarius/Pisces", slug: "purva-bhadrapada-nakshatra" },
+  { name: "Uttara Bhadrapada", symbol: "☿", ruler: "Saturn", zodiac: "Pisces", slug: "uttara-bhadrapada-nakshatra" },
   { name: "Revati", symbol: "🐟", ruler: "Mercury", zodiac: "Pisces" },
 ];
 
@@ -47,6 +49,7 @@ const getSegmentColor = (index: number, isHovered: boolean) => {
 
 const NakshatraWheel = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const navigate = useNavigate();
 
   const size = 400;
   const center = size / 2;
@@ -106,6 +109,7 @@ const NakshatraWheel = () => {
           {/* Nakshatra segments */}
           {nakshatras.map((nakshatra, index) => {
             const isHovered = hoveredIndex === index;
+            const hasPage = !!nakshatra.slug;
             return (
               <g key={nakshatra.name}>
                 <path
@@ -121,6 +125,7 @@ const NakshatraWheel = () => {
                   }}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onMouseLeave={() => setHoveredIndex(null)}
+                  onClick={() => hasPage && navigate(`/blog/${nakshatra.slug}`)}
                 />
                 {/* Symbol */}
                 <text
@@ -179,7 +184,7 @@ const NakshatraWheel = () => {
       </div>
 
       {/* Tooltip / Info display */}
-      <div className="h-16 flex items-center justify-center">
+      <div className="h-20 flex items-center justify-center">
         {hoveredNakshatra ? (
           <div className="text-center animate-in fade-in duration-200">
             <p className="text-cream font-display text-xl">
@@ -188,6 +193,9 @@ const NakshatraWheel = () => {
             <p className="text-cream/60 text-sm">
               Ruled by {hoveredNakshatra.ruler} · {hoveredNakshatra.zodiac}
             </p>
+            {hoveredNakshatra.slug && (
+              <p className="text-gold text-xs mt-1">Click to learn more</p>
+            )}
           </div>
         ) : (
           <p className="text-cream/40 text-sm">Hover over a segment to explore</p>

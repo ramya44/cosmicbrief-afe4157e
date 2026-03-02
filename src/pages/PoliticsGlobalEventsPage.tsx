@@ -3,6 +3,7 @@ import { StarField } from "@/components/StarField";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
 
 const PoliticsGlobalEventsPage = () => {
   const jsonLd = {
@@ -78,6 +79,14 @@ const PoliticsGlobalEventsPage = () => {
       <StarField />
       
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
+        <SEOBreadcrumbs
+          items={[
+            { name: "Journal", href: "/blog" },
+            { name: "Cosmic Weather", href: "/blog/category/transits" }
+          ]}
+          currentPage="2026 Political Astrology"
+        />
+
         {/* Title */}
         <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
           2026 Political Astrology

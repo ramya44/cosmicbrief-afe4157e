@@ -8,6 +8,14 @@
     }
   ],
   "rewrites": [
+    { "source": "/vedic/:path*", "destination": "/index.html" },
+    { "source": "/weekly/:path*", "destination": "/index.html" },
+    { "source": "/get-birth-chart", "destination": "/index.html" },
+    { "source": "/birth-chart", "destination": "/index.html" },
+    { "source": "/compatibility", "destination": "/index.html" },
+    { "source": "/life-arc", "destination": "/index.html" },
+    { "source": "/yearly-forecast", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/$1/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

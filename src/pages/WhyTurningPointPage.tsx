@@ -3,6 +3,7 @@ import { StarField } from "@/components/StarField";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
+import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
 
 const WhyTurningPointPage = () => {
   const jsonLd = {
@@ -38,16 +39,13 @@ const WhyTurningPointPage = () => {
       <StarField />
 
       <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        {/* Breadcrumb */}
-        <div className="mb-8">
-          <Link to="/blog" className="text-cream/50 hover:text-cream text-sm">
-            Journal
-          </Link>
-          <span className="text-cream/30 mx-2">/</span>
-          <Link to="/blog/category/transits" className="text-cream/50 hover:text-cream text-sm">
-            Cosmic Weather
-          </Link>
-        </div>
+        <SEOBreadcrumbs
+          items={[
+            { name: "Journal", href: "/blog" },
+            { name: "Cosmic Weather", href: "/blog/category/transits" }
+          ]}
+          currentPage="Why 2026 is a Turning Point"
+        />
 
         {/* Category Badge */}
         <span className="inline-block px-3 py-1 text-xs bg-gold/10 text-gold rounded mb-4">
@@ -360,7 +358,7 @@ const WhyTurningPointPage = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 my-8">
             <Link
-              to="/get-birth-chart"
+              to="/"
               className="flex-1 p-4 border border-cream/20 rounded-lg hover:bg-cream/5 transition-colors text-center"
             >
               <p className="text-gold font-medium">Find your Moon sign and current dasha →</p>
@@ -416,8 +414,8 @@ const WhyTurningPointPage = () => {
         <div className="mt-12 p-8 bg-gold/5 rounded-lg border border-gold/20">
           <h3 className="text-gold font-display text-xl mb-6 text-center">✦ Go Deeper</h3>
           <div className="grid sm:grid-cols-3 gap-4 text-center">
-            <Link to="/get-birth-chart" className="p-4 hover:bg-gold/10 rounded-lg transition-colors">
-              <p className="text-cream font-medium mb-1">Get Your Birth Chart</p>
+            <Link to="/" className="p-4 hover:bg-gold/10 rounded-lg transition-colors">
+              <p className="text-cream font-medium mb-1">Get your free Cosmic Brief</p>
               <p className="text-cream/60 text-sm">See where Cancer, Capricorn, and Aquarius fall in your chart.</p>
             </Link>
             <Link to="/vedic/input" className="p-4 hover:bg-gold/10 rounded-lg transition-colors">

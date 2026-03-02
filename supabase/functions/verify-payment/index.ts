@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createLogger } from "../_shared/lib/logger.ts";
+import { getStripeConfig } from "../_shared/lib/stripe-config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,15 +18,12 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key verified");
+    const { stripe, isTestMode } = getStripeConfig();
+    logStep("Stripe mode", { isTestMode });
 
     const { sessionId } = await req.json();
     if (!sessionId) throw new Error("Session ID is required");
     logStep("Received session ID", { sessionId });
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Retrieve the checkout session
     const session = await stripe.checkout.sessions.retrieve(sessionId);

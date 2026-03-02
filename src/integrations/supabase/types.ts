@@ -676,6 +676,159 @@ export type Database = {
         }
         Relationships: []
       }
+      chatbot_subscriptions: {
+        Row: {
+          id: string
+          kundli_id: string
+          email: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          status: string
+          subscription_started_at: string | null
+          current_period_end: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          kundli_id: string
+          email: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          status?: string
+          subscription_started_at?: string | null
+          current_period_end?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          kundli_id?: string
+          email?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          status?: string
+          subscription_started_at?: string | null
+          current_period_end?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_subscriptions_kundli_id_fkey"
+            columns: ["kundli_id"]
+            isOneToOne: true
+            referencedRelation: "user_kundli_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          id: string
+          kundli_id: string
+          created_at: string
+          last_message_at: string
+          message_count: number
+        }
+        Insert: {
+          id?: string
+          kundli_id: string
+          created_at?: string
+          last_message_at?: string
+          message_count?: number
+        }
+        Update: {
+          id?: string
+          kundli_id?: string
+          created_at?: string
+          last_message_at?: string
+          message_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_sessions_kundli_id_fkey"
+            columns: ["kundli_id"]
+            isOneToOne: false
+            referencedRelation: "user_kundli_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          id: string
+          session_id: string
+          kundli_id: string
+          role: string
+          content: string
+          tokens_used: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          kundli_id: string
+          role: string
+          content: string
+          tokens_used?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          session_id?: string
+          kundli_id?: string
+          role?: string
+          content?: string
+          tokens_used?: number | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_kundli_id_fkey"
+            columns: ["kundli_id"]
+            isOneToOne: false
+            referencedRelation: "user_kundli_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_rate_limits: {
+        Row: {
+          id: string
+          kundli_id: string
+          hour_bucket: string
+          message_count: number
+        }
+        Insert: {
+          id?: string
+          kundli_id: string
+          hour_bucket: string
+          message_count?: number
+        }
+        Update: {
+          id?: string
+          kundli_id?: string
+          hour_bucket?: string
+          message_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_rate_limits_kundli_id_fkey"
+            columns: ["kundli_id"]
+            isOneToOne: false
+            referencedRelation: "user_kundli_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_horoscope_subscribers: {
         Row: {
           email: string

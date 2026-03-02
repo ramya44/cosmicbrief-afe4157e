@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { StarField } from "@/components/StarField";
 import { Helmet } from "react-helmet-async";
+import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
 
 const PurvaBhadrapadaNakshatraPage = () => {
   return (
@@ -14,18 +15,13 @@ const PurvaBhadrapadaNakshatraPage = () => {
       <StarField />
 
       <article className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        {/* Breadcrumb */}
-        <div className="mb-8">
-          <Link to="/blog" className="text-cream/50 hover:text-cream text-sm">
-            Journal
-          </Link>
-          <span className="text-cream/30 mx-2">/</span>
-          <Link to="/blog/category/nakshatras" className="text-cream/50 hover:text-cream text-sm">
-            Nakshatras
-          </Link>
-          <span className="text-cream/30 mx-2">/</span>
-          <span className="text-gold text-sm">Purva Bhadrapada</span>
-        </div>
+        <SEOBreadcrumbs
+          items={[
+            { name: "Journal", href: "/blog" },
+            { name: "Nakshatras", href: "/blog/category/nakshatras" }
+          ]}
+          currentPage="Purva Bhadrapada Nakshatra"
+        />
 
         {/* Header */}
         <header className="mb-12">
