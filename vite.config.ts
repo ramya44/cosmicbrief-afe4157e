@@ -331,8 +331,8 @@ const prerenderRoutes = [
 ];
 
 // https://vitejs.dev/config/
-// Disable prerendering on Vercel (no Puppeteer/Chrome available)
-const isVercel = process.env.VERCEL === '1';
+// Only prerender when PRERENDER=true (GitHub Actions sets this)
+const shouldPrerender = process.env.PRERENDER === 'true';
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -346,7 +346,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       plugins: [
-        mode === "production" && !isVercel && prerender({
+        mode === "production" && shouldPrerender && prerender({
           routes: prerenderRoutes,
           renderer: puppeteerRenderer,
           rendererOptions: {
