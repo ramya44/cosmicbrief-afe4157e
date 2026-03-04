@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StarField } from '@/components/StarField';
@@ -14,6 +15,35 @@ import { supabase } from '@/integrations/supabase/client';
 import { Sparkles, Calendar, Clock, MapPin, Loader2, User, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackLead, generateEventId } from '@/lib/meta-pixel';
+
+// Structured data for homepage SEO
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Cosmic Brief",
+  "url": "https://www.cosmicbrief.com",
+  "logo": "https://www.cosmicbrief.com/og-image.png",
+  "description": "Personalized Vedic astrology forecasts based on your exact birth details.",
+  "sameAs": [
+    "https://twitter.com/CosmicBrief"
+  ]
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Cosmic Brief",
+  "url": "https://www.cosmicbrief.com",
+  "description": "Discover who you are and what's emerging next with personalized Vedic astrology.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://www.cosmicbrief.com/blog?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+};
 
 const FORM_STORAGE_KEY = 'cosmic_brief_form_data';
 
@@ -470,6 +500,10 @@ const Index = () => {
   // Main input form view
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden font-sans">
+      <Helmet>
+        <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
+      </Helmet>
       <StarField />
 
       {/* Subtle gradient orbs */}
