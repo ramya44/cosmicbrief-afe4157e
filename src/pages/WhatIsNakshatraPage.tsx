@@ -29,6 +29,7 @@ const nakshatraSlugMap: Record<string, string> = {
   "Mula": "mula-nakshatra",
   "Purva Bhadrapada": "purva-bhadrapada-nakshatra",
   "Uttara Bhadrapada": "uttara-bhadrapada-nakshatra",
+  "Revati": "revati-nakshatra",
 };
 
 // Extract nakshatra name from display text (e.g., "Krittika (1st quarter) — The Cutter" -> "Krittika")
@@ -323,6 +324,7 @@ const WhatIsNakshatraPage = () => {
               <Link to="/blog/hasta-nakshatra" className="text-gold hover:underline">Hasta — The Divine Hand →</Link>
               <Link to="/blog/purva-bhadrapada-nakshatra" className="text-gold hover:underline">Purva Bhadrapada — The Burning Pair →</Link>
               <Link to="/blog/uttara-bhadrapada-nakshatra" className="text-gold hover:underline">Uttara Bhadrapada — The Cosmic Serpent →</Link>
+              <Link to="/blog/revati-nakshatra" className="text-gold hover:underline">Revati — The Wealthy →</Link>
             </div>
           </div>
 
