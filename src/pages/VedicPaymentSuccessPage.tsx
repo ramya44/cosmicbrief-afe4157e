@@ -51,7 +51,6 @@ const VedicPaymentSuccessPage = () => {
 
         // Check if we hit the timeout
         if ('timeout' in result) {
-          console.log('[PaymentSuccess] Request timed out after 120s');
           setProgress(100);
           setStatus('timeout');
           return;
@@ -60,7 +59,6 @@ const VedicPaymentSuccessPage = () => {
         const { data, error } = result;
 
         if (error) {
-          console.log('[PaymentSuccess] Error from edge function:', error);
           setStatus('error');
           toast.error('Failed to generate your forecast');
           return;
@@ -75,15 +73,12 @@ const VedicPaymentSuccessPage = () => {
 
         // NEW: Handle "processing" status - poll for completion
         if (data?.status === 'processing') {
-          console.log('[PaymentSuccess] Generation started in background, polling for completion');
-
           // Poll every 5 seconds for up to 3 minutes
           const maxPolls = 36; // 36 * 5s = 180s = 3 minutes
           let pollCount = 0;
 
           const pollForCompletion = async (): Promise<boolean> => {
             pollCount++;
-            console.log(`[PaymentSuccess] Polling attempt ${pollCount}/${maxPolls}`);
 
             const deviceId = (await import('@/lib/deviceId')).getDeviceId();
             let { data: kundliData } = await supabase.functions.invoke('get-vedic-kundli-details', {
@@ -99,7 +94,6 @@ const VedicPaymentSuccessPage = () => {
             }
 
             if (kundliData?.paid_vedic_forecast) {
-              console.log('[PaymentSuccess] Forecast ready!', { length: kundliData.paid_vedic_forecast.length });
               return true;
             }
 
@@ -129,8 +123,8 @@ const VedicPaymentSuccessPage = () => {
                 setProgress(100);
                 setStatus('timeout');
               }
-            } catch (pollError) {
-              console.error('[PaymentSuccess] Polling error:', pollError);
+            } catch {
+              // Silently handle polling errors
             }
           }, 5000);
 
@@ -147,29 +141,17 @@ const VedicPaymentSuccessPage = () => {
 
           // Fetch the full kundli data before navigating to avoid loading screen
           const deviceId = (await import('@/lib/deviceId')).getDeviceId();
-          console.log('[PaymentSuccess] Fetching kundli with device_id:', deviceId);
 
-          let { data: kundliData, error: ownerError } = await supabase.functions.invoke('get-vedic-kundli-details', {
+          let { data: kundliData } = await supabase.functions.invoke('get-vedic-kundli-details', {
             body: { kundli_id: kundliId, device_id: deviceId },
-          });
-
-          console.log('[PaymentSuccess] Owner access result:', {
-            hasData: !!kundliData,
-            error: ownerError?.message,
-            hasPaidForecast: !!kundliData?.paid_vedic_forecast
           });
 
           // If owner access failed (device_id mismatch), fall back to shared access
           if (!kundliData) {
-            console.log('[PaymentSuccess] Owner access failed, trying shared access');
             const sharedResult = await supabase.functions.invoke('get-vedic-kundli-details', {
               body: { kundli_id: kundliId, shared: true },
             });
             kundliData = sharedResult.data;
-            console.log('[PaymentSuccess] Shared access result:', {
-              hasData: !!kundliData,
-              hasPaidForecast: !!kundliData?.paid_vedic_forecast
-            });
           }
 
           // Navigate to results with paid flag and pass full data via state
@@ -179,13 +161,6 @@ const VedicPaymentSuccessPage = () => {
             const stateData = kundliData
               ? { ...kundliData, paid_vedic_forecast: data.forecast }
               : { id: kundliId, paid_vedic_forecast: data.forecast };
-
-            console.log('[PaymentSuccess] Navigating with state:', {
-              hasKundliData: !!kundliData,
-              skipLoading: !!kundliData,
-              hasPaidForecast: !!stateData.paid_vedic_forecast,
-              forecastLength: stateData.paid_vedic_forecast?.length || 0
-            });
 
             const typeParam = isCosmicBrief ? '&type=cosmic-brief' : '';
             navigate(`/vedic/results?id=${kundliId}&paid=true${typeParam}`, {

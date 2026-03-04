@@ -115,36 +115,50 @@ Deno.serve(async (req) => {
 
         if (!subscriptionId) break;
 
-        // Get subscription details from Stripe to determine type
+        // Get subscription details from Stripe
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-        const subscriptionType = getSubscriptionType(subscription.metadata as Record<string, string> | null);
-        const tableName = getTableName(subscriptionType);
 
-        // Get subscription to find kundli_id
-        const { data: subData } = await supabase
-          .from(tableName)
-          .select("kundli_id")
-          .eq("stripe_subscription_id", subscriptionId)
-          .single();
+        // Extract metadata - try subscription first, then invoice parent
+        let kundliId = subscription.metadata?.kundli_id;
+        let subscriptionType = getSubscriptionType(subscription.metadata as Record<string, string> | null);
 
-        if (!subData) {
-          logStep("Subscription not found for invoice", { subscription_id: subscriptionId, table: tableName });
-          break;
+        // Fallback: check invoice parent metadata (for first invoice)
+        if (!kundliId && (invoice as any).parent?.subscription_details?.metadata?.kundli_id) {
+          kundliId = (invoice as any).parent.subscription_details.metadata.kundli_id;
+          subscriptionType = getSubscriptionType((invoice as any).parent.subscription_details.metadata);
         }
 
-        // Update period end
+        const tableName = getTableName(subscriptionType);
+
+        if (!kundliId) {
+          // Try database lookup as last resort
+          const { data: subData } = await supabase
+            .from(tableName)
+            .select("kundli_id")
+            .eq("stripe_subscription_id", subscriptionId)
+            .single();
+
+          if (!subData) {
+            logStep("Subscription not found for invoice", { subscription_id: subscriptionId, table: tableName });
+            break;
+          }
+          kundliId = subData.kundli_id;
+        }
+
+        // Update subscription - use kundli_id which is more reliable than stripe_subscription_id
         const { error } = await supabase
           .from(tableName)
           .update({
             status: 'active',
+            stripe_subscription_id: subscriptionId,
             current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
           })
-          .eq("stripe_subscription_id", subscriptionId);
+          .eq("kundli_id", kundliId);
 
         if (error) {
           logStep("Failed to update subscription period", { error: error.message });
         } else {
-          logStep("Subscription renewed", { kundli_id: subData.kundli_id, type: subscriptionType });
+          logStep("Subscription renewed", { kundli_id: kundliId, type: subscriptionType });
         }
         break;
       }

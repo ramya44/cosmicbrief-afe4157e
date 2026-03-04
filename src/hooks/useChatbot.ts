@@ -176,24 +176,38 @@ export function useChatbot({ kundliId }: UseChatbotOptions) {
       return;
     }
 
+    // Prevent double-clicks
+    if (isCreatingSubscription) {
+      return;
+    }
+
     try {
       setIsCreatingSubscription(true);
       const { data, error } = await supabase.functions.invoke('create-chatbot-subscription', {
         body: { kundli_id: kundliId },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Subscription error:', error);
+        throw error;
+      }
 
-      if (data.checkout_url) {
+      if (data?.checkout_url) {
+        // Save kundliId before redirect so it can be restored after Stripe
+        localStorage.setItem('stripe_redirect_kundli', kundliId);
         window.location.href = data.checkout_url;
+      } else {
+        console.error('No checkout URL in response:', data);
+        toast.error('Unable to start checkout. Please try again.');
       }
     } catch (err) {
       console.error('Failed to create subscription:', err);
-      toast.error('Failed to start subscription. Please try again.');
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      toast.error(`Failed to start subscription: ${message}`);
     } finally {
       setIsCreatingSubscription(false);
     }
-  }, [kundliId]);
+  }, [kundliId, isCreatingSubscription]);
 
   // Open billing portal for subscription management
   const openBillingPortal = useCallback(async () => {

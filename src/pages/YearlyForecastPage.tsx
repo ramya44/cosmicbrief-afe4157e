@@ -20,26 +20,12 @@ const YearlyForecastPage = () => {
   // Get auth state
   const { isAuthenticated, isLoading, kundli, hasKundli, isKundliLoading } = useAuthContext();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('YearlyForecastPage state:', {
-      isAuthenticated,
-      isLoading,
-      hasKundli,
-      isKundliLoading,
-      kundliId,
-      hasFreeForecast: !!freeForecast,
-      hasRedirected: hasRedirected.current,
-    });
-  }, [isAuthenticated, isLoading, hasKundli, isKundliLoading, kundliId, freeForecast]);
-
   // Handle redirects based on existing data
   useEffect(() => {
     if (hasRedirected.current) return;
 
     // Case 1: Session store already has kundliId and forecast - redirect immediately
     if (kundliId && freeForecast) {
-      console.log('Redirecting: session has kundliId and forecast');
       hasRedirected.current = true;
       navigate(`/vedic/results?id=${kundliId}`, { replace: true });
       return;
@@ -50,7 +36,6 @@ const YearlyForecastPage = () => {
 
     // Case 2: Authenticated user with saved kundli AND forecast - load and redirect
     if (isAuthenticated && hasKundli && kundli && kundli.free_vedic_forecast) {
-      console.log('Redirecting: authenticated user with saved kundli and forecast');
       hasRedirected.current = true;
 
       setBirthData({

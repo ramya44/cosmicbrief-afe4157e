@@ -211,9 +211,6 @@ const WeeklyInputPage = () => {
         body: { kundli_id: sessionKundliId },
       });
 
-      console.log('generate-weekly-forecast data:', data);
-      console.log('generate-weekly-forecast error:', error);
-
       if (error) {
         // Try to get the response body from FunctionsHttpError
         let errorMessage = error.message || 'Unknown error';

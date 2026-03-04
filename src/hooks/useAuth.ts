@@ -28,13 +28,9 @@ export function useAuth() {
 
   // Fetch user's kundli from database with timeout
   const fetchKundli = useCallback(async (userId: string): Promise<UserKundli | null> => {
-    console.log('fetchKundli called for user:', userId);
     try {
       const timeoutPromise = new Promise<null>((resolve) =>
-        setTimeout(() => {
-          console.warn('fetchKundli timed out after 5s');
-          resolve(null);
-        }, 5000)
+        setTimeout(() => resolve(null), 5000)
       );
 
       const fetchPromise = supabase
@@ -43,19 +39,12 @@ export function useAuth() {
         .eq('user_id', userId)
         .maybeSingle()
         .then(({ data, error }) => {
-          console.log('fetchKundli result:', { data: data ? 'found' : 'null', error });
-          if (error) {
-            console.error('Error fetching kundli:', error);
-            return null;
-          }
+          if (error) return null;
           return data;
         });
 
-      const result = await Promise.race([fetchPromise, timeoutPromise]);
-      console.log('fetchKundli final result:', result ? 'kundli found' : 'no kundli');
-      return result;
-    } catch (err) {
-      console.error('Exception fetching kundli:', err);
+      return await Promise.race([fetchPromise, timeoutPromise]);
+    } catch {
       return null;
     }
   }, []);

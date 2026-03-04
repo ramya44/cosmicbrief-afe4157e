@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -49,6 +50,7 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 type ModalMode = 'login' | 'signup' | 'forgot-password';
 
 export const LoginModal = () => {
+  const navigate = useNavigate();
   const {
     isLoginModalOpen,
     closeLoginModal,
@@ -61,7 +63,7 @@ export const LoginModal = () => {
     user,
   } = useAuthContext();
 
-  const [mode, setMode] = useState<ModalMode>('login');
+  const [mode, setMode] = useState<ModalMode>('signup');
   const [isLoading, setIsLoading] = useState(false);
   const [showConflictDialog, setShowConflictDialog] = useState(false);
   const [pendingSavedKundli, setPendingSavedKundli] = useState<UserKundli | null>(null);
@@ -94,12 +96,21 @@ export const LoginModal = () => {
   // Reset forms when modal closes
   useEffect(() => {
     if (!isLoginModalOpen) {
-      setMode('login');
+      setMode('signup');
       loginForm.reset();
       signupForm.reset();
       forgotPasswordForm.reset();
     }
   }, [isLoginModalOpen, loginForm, signupForm, forgotPasswordForm]);
+
+  // Helper to close modal and handle redirect
+  const completeLogin = useCallback(() => {
+    closeLoginModal();
+    loginModalOptions?.onSuccess?.();
+    if (loginModalOptions?.redirectAfterLogin) {
+      navigate(loginModalOptions.redirectAfterLogin);
+    }
+  }, [closeLoginModal, loginModalOptions, navigate]);
 
   // Handle post-login kundli logic
   useEffect(() => {
@@ -108,22 +119,8 @@ export const LoginModal = () => {
     const handlePostLoginKundli = async () => {
       const hasSessionKundli = !!(sessionKundliId && sessionBirthData);
 
-      console.log('handlePostLoginKundli called:', {
-        hasSavedKundli,
-        hasSessionKundli,
-        sessionKundliId,
-        hasSessionBirthData: !!sessionBirthData,
-        userId: user?.id,
-        savedKundliId: savedKundli?.id,
-      });
-
       if (!hasSavedKundli && hasSessionKundli && user) {
         // No saved kundli, but has session kundli -> auto-link to account
-        console.log('Auto-linking session kundli to user account:', {
-          kundliId: sessionKundliId,
-          userId: user.id,
-          email: user.email,
-        });
         try {
           const { data, error } = await supabase.functions.invoke('update-kundli-details', {
             body: {
@@ -135,19 +132,15 @@ export const LoginModal = () => {
             },
           });
 
-          console.log('Auto-link result:', { data, error });
           if (!error) {
             toast.success('Birth details saved to your account');
             await refreshKundli();
-          } else {
-            console.error('Error from link_user:', error);
           }
-        } catch (err) {
-          console.error('Error auto-linking kundli:', err);
+        } catch {
+          // Silently handle auto-link errors
         }
 
-        closeLoginModal();
-        loginModalOptions?.onSuccess?.();
+        completeLogin();
       } else if (hasSavedKundli && !hasSessionKundli) {
         // Has saved kundli, no session kundli -> load saved into store
         if (savedKundli) {
@@ -172,14 +165,12 @@ export const LoginModal = () => {
           }
         }
 
-        closeLoginModal();
-        loginModalOptions?.onSuccess?.();
+        completeLogin();
       } else if (hasSavedKundli && hasSessionKundli && savedKundli) {
         // Both exist - check if they're the same
         if (savedKundli.id === sessionKundliId) {
           // Same kundli, no action needed
-          closeLoginModal();
-          loginModalOptions?.onSuccess?.();
+          completeLogin();
         } else {
           // Different kundli - show conflict dialog
           setPendingSavedKundli(savedKundli);
@@ -187,8 +178,7 @@ export const LoginModal = () => {
         }
       } else {
         // No saved and no session kundli - just close
-        closeLoginModal();
-        loginModalOptions?.onSuccess?.();
+        completeLogin();
       }
     };
 
@@ -202,8 +192,7 @@ export const LoginModal = () => {
     sessionKundliId,
     sessionBirthData,
     user,
-    closeLoginModal,
-    loginModalOptions,
+    completeLogin,
     refreshKundli,
     setBirthData,
     setKundliId,
@@ -291,7 +280,7 @@ export const LoginModal = () => {
       }
 
       toast.success('Check your email for the password reset link');
-      setMode('login');
+      setMode('signup');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to send reset email';
       toast.error(message);
@@ -337,8 +326,7 @@ export const LoginModal = () => {
 
     setShowConflictDialog(false);
     setPendingSavedKundli(null);
-    closeLoginModal();
-    loginModalOptions?.onSuccess?.();
+    completeLogin();
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -586,10 +574,10 @@ export const LoginModal = () => {
 
                 <button
                   type="button"
-                  onClick={() => setMode('login')}
+                  onClick={() => setMode('signup')}
                   className="text-sm text-cream-muted hover:text-cream transition-colors"
                 >
-                  Back to login
+                  Back to create account
                 </button>
               </div>
             </form>

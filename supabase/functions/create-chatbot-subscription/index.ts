@@ -135,12 +135,16 @@ Deno.serve(async (req) => {
 
     // Update or create subscription record
     if (existingSub) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("chatbot_subscriptions")
         .update({ stripe_customer_id: stripeCustomerId })
         .eq("id", existingSub.id);
+
+      if (updateError) {
+        logStep("Failed to update subscription record", { error: updateError.message });
+      }
     } else {
-      await supabase
+      const { error: insertError } = await supabase
         .from("chatbot_subscriptions")
         .insert({
           kundli_id,
@@ -148,6 +152,13 @@ Deno.serve(async (req) => {
           stripe_customer_id: stripeCustomerId,
           status: 'inactive',
         });
+
+      if (insertError) {
+        logStep("Failed to create subscription record", { error: insertError.message });
+        // Don't fail the whole flow - checkout can still work, webhook will create record
+      } else {
+        logStep("Subscription record created");
+      }
     }
 
     return jsonResponse({

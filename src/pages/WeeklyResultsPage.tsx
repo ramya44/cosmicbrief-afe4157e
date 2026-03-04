@@ -323,15 +323,11 @@ const WeeklyResultsPage = () => {
             { body: { kundli_id: kundliId } }
           );
 
-          console.log('generate-weekly-forecast response:', { genResult, genError });
-
           if (genError) {
-            console.error('Edge function error:', genError);
             throw new Error(genError.message);
           }
 
           if (genResult?.error) {
-            console.error('Response error:', genResult.error);
             throw new Error(genResult.error);
           }
 
