@@ -91,9 +91,13 @@ const pageMetadata: Record<string, { title: string; description: string; canonic
     title: "Mula Nakshatra: The Root Star | Cosmic Brief",
     description: "Explore Mula nakshatra in Vedic astrology. Discover its transformative power, root-seeking nature, and influence on investigation and truth."
   },
-  "/blog/purva-ashadha-nakshatra": {
-    title: "Purva Ashadha Nakshatra: The Invincible Star | Cosmic Brief",
-    description: "Explore Purva Ashadha nakshatra in Vedic astrology. Discover its victorious energy, purifying power, and influence on conviction."
+  "/blog/purva-bhadrapada-nakshatra": {
+    title: "Purva Bhadrapada Nakshatra: The Bridge Between Worlds | Cosmic Brief",
+    description: "Explore Purva Bhadrapada nakshatra, the intense star of spiritual fire and transformation in Vedic astrology. Discover its dual nature, mystical power, and revolutionary energy."
+  },
+  "/blog/uttara-bhadrapada-nakshatra": {
+    title: "Uttara Bhadrapada Nakshatra: The Cosmic Serpent Rising | Cosmic Brief",
+    description: "Discover Uttara Bhadrapada nakshatra, the star of depth, wisdom, and grounded spirituality in Vedic astrology. Learn about its stabilizing power and cosmic rain."
   },
   "/blog/revati-nakshatra": {
     title: "Revati Nakshatra: The Star of Completion and Transcendence | Cosmic Brief",
@@ -118,6 +122,22 @@ const pageMetadata: Record<string, { title: string; description: string; canonic
   "/blog/career-astrology-2026": {
     title: "Career Astrology 2026: Your Professional Year Ahead",
     description: "Discover your career outlook for 2026 using Vedic astrology. Learn which planetary periods favor job changes, promotions, and new ventures."
+  },
+  "/blog/politics-and-global-events": {
+    title: "2026 Political Astrology: What Aries Energy Means for Global Events",
+    description: "Explore how Saturn and Neptune in Aries may shape global politics in 2026. Political astrology analysis of nationalism, leadership shifts, and grassroots movements."
+  },
+  "/blog/what-is-nakshatra": {
+    title: "Nakshatra: Your True Cosmic DNA | Cosmic Brief",
+    description: "Discover the 27 lunar mansions of Vedic astrology. Learn why your Moon nakshatra reveals more about you than your zodiac sign ever could."
+  },
+  "/blog/planetary-periods-dashas": {
+    title: "Planetary Periods (Dasha System) Explained | Cosmic Brief",
+    description: "Understand the Vedic dasha system - how planetary periods shape your life in cycles of 6-20 years. Learn which period you're in and what it means."
+  },
+  "/blog/12-houses-vedic-astrology": {
+    title: "The 12 Houses in Vedic Astrology: A Complete Guide | Cosmic Brief",
+    description: "Discover the 12 houses in Vedic astrology and what they reveal about your life. Learn how each house shapes different areas of your existence and personal journey."
   },
   "/terms": {
     title: "Terms of Service | Cosmic Brief",
@@ -277,7 +297,7 @@ function postProcessHtml(renderedRoute: { route: string; html: string }): string
   return processedHtml;
 }
 
-// Static routes to prerender for SEO (35 pages)
+// Static routes to prerender for SEO (41 pages)
 const prerenderRoutes = [
   // Homepage
   "/",
@@ -288,7 +308,7 @@ const prerenderRoutes = [
   "/blog/category/cosmic-updates",
   "/blog/category/practical-guidance",
 
-  // Nakshatra pages (20)
+  // Nakshatra pages (22)
   "/blog/ashwini-nakshatra",
   "/blog/bharani-nakshatra",
   "/blog/krittika-nakshatra",
@@ -308,12 +328,17 @@ const prerenderRoutes = [
   "/blog/anuradha-nakshatra",
   "/blog/jyeshtha-nakshatra",
   "/blog/mula-nakshatra",
-  "/blog/purva-ashadha-nakshatra",
+  "/blog/purva-bhadrapada-nakshatra",
+  "/blog/uttara-bhadrapada-nakshatra",
   "/blog/revati-nakshatra",
 
   // Blog articles
   "/blog/why-2026-is-a-turning-point",
   "/blog/career-astrology-2026",
+  "/blog/politics-and-global-events",
+  "/blog/what-is-nakshatra",
+  "/blog/planetary-periods-dashas",
+  "/blog/12-houses-vedic-astrology",
 
   // Guides
   "/vedic-astrology-explained",
