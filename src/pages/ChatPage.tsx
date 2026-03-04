@@ -146,21 +146,27 @@ export default function ChatPage() {
     }
   };
 
-  // Auto-recover kundli for authenticated users who lost their kundliId
+  // Auto-recover kundli for authenticated users who lost their kundliId or birthData
   useEffect(() => {
-    if (isAuthenticated && !kundliId && user && savedKundli) {
-      // User is logged in and has a saved kundli but store doesn't have it
-      setBirthData({
-        birthDate: savedKundli.birth_date,
-        birthTime: savedKundli.birth_time,
-        birthPlace: savedKundli.birth_place,
-        name: savedKundli.name || undefined,
-        email: savedKundli.email || undefined,
-        lat: savedKundli.latitude ?? undefined,
-        lon: savedKundli.longitude ?? undefined,
-      });
-      setKundliId(savedKundli.id);
-      if (savedKundli.free_vedic_forecast) {
+    if (isAuthenticated && user && savedKundli) {
+      // Recover kundliId if missing
+      if (!kundliId) {
+        setKundliId(savedKundli.id);
+      }
+      // Recover birthData if missing (even if kundliId exists)
+      if (!birthData) {
+        setBirthData({
+          birthDate: savedKundli.birth_date,
+          birthTime: savedKundli.birth_time,
+          birthPlace: savedKundli.birth_place,
+          name: savedKundli.name || undefined,
+          email: savedKundli.email || undefined,
+          lat: savedKundli.latitude ?? undefined,
+          lon: savedKundli.longitude ?? undefined,
+        });
+      }
+      // Recover forecast if missing
+      if (!kundliId && savedKundli.free_vedic_forecast) {
         setFreeForecast({
           forecast: savedKundli.free_vedic_forecast,
           id: savedKundli.id,
@@ -168,7 +174,7 @@ export default function ChatPage() {
         });
       }
     }
-  }, [isAuthenticated, kundliId, user, savedKundli, setBirthData, setKundliId, setFreeForecast]);
+  }, [isAuthenticated, kundliId, birthData, user, savedKundli, setBirthData, setKundliId, setFreeForecast]);
 
   // Show loading while checking auth, recovering session, or loading kundli
   if (isAuthLoading || isRecoveringSession || isKundliLoading) {
