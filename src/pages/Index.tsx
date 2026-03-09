@@ -343,6 +343,15 @@ const Index = () => {
                 {isNavigating ? 'Please wait...' : 'Skip for now'}
               </button>
             </div>
+
+            {/* Footer links */}
+            <div className="mt-8 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-xs text-muted-foreground font-sans animate-fade-up" style={{
+              animationDelay: '400ms',
+              animationFillMode: 'both'
+            }}>
+              <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
+              <a href="/terms" className="text-gold hover:underline">Terms of Service</a>
+            </div>
           </div>
         </div>
       </div>
@@ -483,14 +492,16 @@ const Index = () => {
               </button>
             </div>
 
-            <p
-              className="text-center text-xs text-muted-foreground mt-8 animate-fade-up"
+            {/* Footer links */}
+            <div
+              className="mt-8 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-xs text-muted-foreground font-sans animate-fade-up"
               style={{ animationDelay: '300ms', animationFillMode: 'both' }}
             >
-              <a href="/vedic-astrology-explained" className="text-gold hover:underline">
-                What is Vedic Astrology?
-              </a>
-            </p>
+              <a href="/vedic-astrology-explained" className="text-gold hover:underline">What is Vedic Astrology</a>
+              <a href="/privacy" className="text-gold hover:underline">Privacy Policy</a>
+              <a href="/terms" className="text-gold hover:underline">Terms of Service</a>
+              <a href="/contact" className="text-gold hover:underline">Contact</a>
+            </div>
           </div>
         </div>
       </div>
@@ -574,7 +585,7 @@ const Index = () => {
           </p>
 
           {/* Footer links */}
-          <div className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground font-sans animate-fade-up" style={{
+          <div className="mt-6 flex flex-col md:flex-row items-center gap-2 md:gap-4 text-xs text-muted-foreground font-sans animate-fade-up" style={{
             animationDelay: '600ms',
             animationFillMode: 'both'
           }}>
