@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:calc": "npx tsx scripts/verify-calculations.ts"
+    "test:calc": "npx tsx scripts/verify-calculations.ts",
+    "test:pre-deploy": "npx tsx scripts/pre-deploy.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -44,6 +45,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/supabase-js": "^2.89.0",
     "@tanstack/react-query": "^5.83.0",
+    "@vercel/og": "^0.11.1",
     "astronomy-engine": "^2.1.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

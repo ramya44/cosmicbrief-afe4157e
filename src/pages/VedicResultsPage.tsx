@@ -242,17 +242,25 @@ const VedicResultsPage = () => {
     }
   };
 
-  const handleShare = async () => {
-    const shareUrl = kundliId
-      ? `${window.location.origin}/#/vedic/results?id=${kundliId}`
+  const getShareUrl = () => {
+    return kundliId
+      ? `${window.location.origin}/vedic/results?id=${kundliId}`
       : window.location.href;
+  };
 
+  const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(getShareUrl());
       toast.success('Link copied to clipboard!');
     } catch {
       toast.error('Failed to copy link');
     }
+  };
+
+  const handleWhatsAppShare = () => {
+    const url = getShareUrl();
+    const text = `Check out my 2026 Cosmic Brief — a personalized Vedic astrology forecast!\n${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const getChartDisplayName = () => {
@@ -1275,16 +1283,24 @@ const VedicResultsPage = () => {
           </div>
         )}
 
-        {/* Share button for free forecast */}
+        {/* Share buttons for free forecast */}
         {forecastToShow && !hasPaidForecast && isOwner && (
-          <div className="max-w-3xl mx-auto flex justify-center mt-8">
+          <div className="max-w-3xl mx-auto flex justify-center gap-3 mt-8">
             <Button
               onClick={handleShare}
               variant="outline"
               className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
             >
               <Share2 className="w-4 h-4 mr-2" />
-              Share my Cosmic Brief
+              Copy Link
+            </Button>
+            <Button
+              onClick={handleWhatsAppShare}
+              variant="outline"
+              className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 font-sans"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              WhatsApp
             </Button>
           </div>
         )}
@@ -1295,19 +1311,32 @@ const VedicResultsPage = () => {
           <div className="max-w-3xl mx-auto">
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
               {kundli.shareable_link && (
-                <Button
-                  onClick={() => {
-                    navigator.clipboard.writeText(kundli.shareable_link!);
-                    toast.success('Link copied to clipboard!', {
-                      description: 'Share your Cosmic Brief with friends and family.',
-                    });
-                  }}
-                  variant="outline"
-                  className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
-                >
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share my Cosmic Brief
-                </Button>
+                <>
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(kundli.shareable_link!);
+                      toast.success('Link copied to clipboard!', {
+                        description: 'Share your Cosmic Brief with friends and family.',
+                      });
+                    }}
+                    variant="outline"
+                    className="border-gold/50 text-gold hover:bg-gold/10 font-sans"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Copy Link
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const text = `Check out my 2026 Cosmic Brief — a personalized Vedic astrology forecast!\n${kundli.shareable_link}`;
+                      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                    }}
+                    variant="outline"
+                    className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10 font-sans"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    WhatsApp
+                  </Button>
+                </>
               )}
               <Button
                 onClick={() => handleDownloadPdf()}

@@ -9,7 +9,7 @@ import { BirthChartWheel } from '@/components/BirthChartWheel';
 import { NorthIndianChart } from '@/components/NorthIndianChart';
 import { SouthIndianChart } from '@/components/SouthIndianChart';
 import { useForecastStore } from '@/store/forecastStore';
-import { Sparkles, Calendar, Clock, MapPin, Share2, ImageDown } from 'lucide-react';
+import { Sparkles, Calendar, Clock, MapPin, Share2, ImageDown, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { shareOrDownloadChart, ShareResult } from '@/lib/chartExport';
 import { ChartSaveModal } from '@/components/ChartSaveModal';
@@ -207,15 +207,26 @@ const BirthChartPage = () => {
     loadData();
   }, [navigate, kundliIdFromUrl]);
 
-  const handleShare = async () => {
-    // Build shareable URL with kundliId
-    const shareUrl = chartData?.kundliId
-      ? `${window.location.origin}/#/birth-chart?id=${chartData.kundliId}`
+  const getShareUrl = () => {
+    return chartData?.kundliId
+      ? `${window.location.origin}/birth-chart?id=${chartData.kundliId}`
       : window.location.href;
+  };
 
+  const getShareText = () => {
+    const parts = [];
+    if (kundliData?.ascendant_sign) parts.push(`${kundliData.ascendant_sign} Ascendant`);
+    if (kundliData?.moon_sign) parts.push(`${kundliData.moon_sign} Moon`);
+    return parts.length > 0
+      ? `Check out my Vedic birth chart — ${parts.join(', ')}!`
+      : 'Check out my Vedic birth chart!';
+  };
+
+  const handleShare = async () => {
+    const shareUrl = getShareUrl();
     const shareData = {
       title: 'My Vedic Birth Chart | Cosmic Brief',
-      text: `Check out my Vedic birth chart - ${kundliData?.ascendant_sign} Ascendant, ${kundliData?.moon_sign} Moon`,
+      text: getShareText(),
       url: shareUrl,
     };
 
@@ -235,6 +246,11 @@ const BirthChartPage = () => {
         toast.error('Failed to copy link');
       }
     }
+  };
+
+  const handleWhatsAppShare = () => {
+    const text = `${getShareText()}\n${getShareUrl()}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   const getChartDisplayName = () => {
@@ -462,6 +478,15 @@ const BirthChartPage = () => {
             >
               <Share2 className="w-5 h-5 mr-2" />
               Share Link
+            </Button>
+            <Button
+              onClick={handleWhatsAppShare}
+              variant="outline"
+              size="lg"
+              className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              WhatsApp
             </Button>
             <Button
               onClick={handleShareAsImage}

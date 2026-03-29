@@ -8,6 +8,40 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/vedic/results",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|TelegramBot|Discordbot|Pinterestbot|vkShare).*"
+        }
+      ],
+      "destination": "/api/og-meta?path=/vedic/results"
+    },
+    {
+      "source": "/birth-chart",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|TelegramBot|Discordbot|Pinterestbot|vkShare).*"
+        }
+      ],
+      "destination": "/api/og-meta?path=/birth-chart"
+    },
+    {
+      "source": "/weekly/results",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|TelegramBot|Discordbot|Pinterestbot|vkShare).*"
+        }
+      ],
+      "destination": "/api/og-meta?path=/weekly/results"
+    },
+    { "source": "/api/:path*", "destination": "/api/:path*" },
     { "source": "/vedic/:path*", "destination": "/index.html" },
     { "source": "/weekly/:path*", "destination": "/index.html" },
     { "source": "/get-birth-chart", "destination": "/index.html" },
