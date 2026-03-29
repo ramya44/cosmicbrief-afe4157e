@@ -1,90 +1,39 @@
-import { Link } from "react-router-dom";
-import { StarField } from "@/components/StarField";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet-async";
-import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
+import { NakshatraPageTemplate } from "@/components/NakshatraPageTemplate";
 
 const PunarvasuNakshatraPage = () => {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "Punarvasu Nakshatra: The Star of Infinite Renewal",
-    "description": "Discover Punarvasu nakshatra, the star of renewal and restoration in Vedic astrology. Learn about its optimistic nature, resilience, and capacity for new beginnings.",
-    "datePublished": "2025-01-29",
-    "dateModified": "2025-01-29",
-    "author": {
-      "@type": "Person",
-      "name": "Maya G."
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Cosmic Brief"
-    },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://www.cosmicbrief.com/blog/punarvasu-nakshatra"
-    },
-    "keywords": ["Punarvasu nakshatra", "Vedic astrology", "Aditi", "Jupiter", "nakshatras", "lunar mansions", "birth stars", "renewal", "Castor and Pollux"]
-  };
-
   return (
-    <div className="min-h-screen bg-midnight text-cream relative overflow-hidden">
-      <Helmet>
-        <title>Punarvasu Nakshatra: The Star of Renewal and Return | Cosmic Brief</title>
-        <meta name="description" content="Discover Punarvasu nakshatra, the star of renewal and restoration in Vedic astrology. Learn about its optimistic nature, resilience, and capacity for new beginnings." />
-        <link rel="canonical" href="https://www.cosmicbrief.com/blog/punarvasu-nakshatra" />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
-      <StarField />
-
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        <SEOBreadcrumbs
-          items={[
-            { name: "Journal", href: "/blog" },
-            { name: "Nakshatras", href: "/blog/category/nakshatras" }
-          ]}
-          currentPage="Punarvasu Nakshatra"
-        />
-
-        {/* Title */}
-        <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
-          Punarvasu Nakshatra: The Star of Infinite Renewal
-        </h1>
-
-        {/* Category & Read Time */}
-        <div className="flex items-center gap-3 mb-4">
-          <span className="px-2 py-1 text-xs bg-gold/10 text-gold rounded">
-            Nakshatras
-          </span>
-          <span className="text-cream/40 text-sm">9 min read</span>
-        </div>
-
-        {/* Author and Date */}
-        <div className="flex items-center gap-3 mb-8">
-          <img src="/maya.png" alt="Maya G." className="w-8 h-8 rounded-full" />
-          <p className="text-cream/50 text-sm">
-            By Maya G. · January 29, 2025
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="prose prose-invert max-w-none space-y-6 text-cream/80 leading-relaxed">
-
-          {/* Quick Facts */}
-          <div className="my-8 p-6 bg-cream/5 rounded-lg border border-cream/10">
-            <h2 className="font-display text-xl text-cream mb-4">Quick Facts About Punarvasu</h2>
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-              <p><span className="text-gold">Position:</span> 20°00' Gemini to 3°20' Cancer</p>
-              <p><span className="text-gold">Ruling Planet:</span> Jupiter (Guru)</p>
-              <p><span className="text-gold">Deity:</span> Aditi (Mother of the Gods)</p>
-              <p><span className="text-gold">Symbol:</span> Quiver of arrows, house, bow</p>
-              <p><span className="text-gold">Element:</span> Water</p>
-              <p><span className="text-gold">Quality:</span> Movable, changeable</p>
-              <p><span className="text-gold">Western Stars:</span> Castor and Pollux</p>
-            </div>
-          </div>
-
+    <NakshatraPageTemplate
+      name="Punarvasu"
+      title="Punarvasu Nakshatra: The Star of Infinite Renewal"
+      seoTitle="Punarvasu Nakshatra: The Star of Renewal and Return | Cosmic Brief"
+      metaDescription="Discover Punarvasu nakshatra, the star of renewal and restoration in Vedic astrology. Learn about its optimistic nature, resilience, and capacity for new beginnings."
+      slug="punarvasu-nakshatra"
+      readTime="9 min read"
+      authorDate="January 29, 2025"
+      quickFacts={[
+        { label: "Position", value: "20°00' Gemini to 3°20' Cancer" },
+        { label: "Ruling Planet", value: "Jupiter (Guru)" },
+        { label: "Deity", value: "Aditi (Mother of the Gods)" },
+        { label: "Symbol", value: "Quiver of arrows, house, bow" },
+        { label: "Element", value: "Water" },
+        { label: "Quality", value: "Movable, changeable" },
+        { label: "Western Stars", value: "Castor and Pollux" },
+      ]}
+      jsonLd={{
+        headline: "Punarvasu Nakshatra: The Star of Infinite Renewal",
+        description: "Discover Punarvasu nakshatra, the star of renewal and restoration in Vedic astrology. Learn about its optimistic nature, resilience, and capacity for new beginnings.",
+        datePublished: "2025-01-29",
+        dateModified: "2025-01-29",
+        keywords: ["Punarvasu nakshatra", "Vedic astrology", "Aditi", "Jupiter", "nakshatras", "lunar mansions", "birth stars", "renewal", "Castor and Pollux"],
+        url: "https://www.cosmicbrief.com/blog/punarvasu-nakshatra",
+      }}
+      ctaDescription="Discover your Moon nakshatra and see how Punarvasu's renewing energy influences your chart."
+      relatedPosts={[
+        { href: "/blog/ardra-nakshatra", text: "Ardra Nakshatra: The Tempest of Transformation" },
+        { href: "/blog/mrigashira-nakshatra", text: "Mrigashira Nakshatra: The Searching Star" },
+        { href: "/blog/what-is-nakshatra", text: "Nakshatra: Your True Cosmic DNA" },
+      ]}
+    >
           {/* The Meaning of Punarvasu */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             The Meaning of Punarvasu
@@ -287,20 +236,6 @@ const PunarvasuNakshatraPage = () => {
             <li>Renewal is our birthright, available in every moment</li>
           </ul>
 
-          {/* CTA */}
-          <div className="my-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-            <h3 className="font-display text-xl text-cream mb-3">Is Punarvasu Your Nakshatra?</h3>
-            <p className="text-cream/70 mb-4">
-              Discover your Moon nakshatra and see how Punarvasu's renewing energy influences your chart.
-            </p>
-            <Link to="/">
-              <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-6 py-5">
-                Get your free Cosmic Brief
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
           {/* Conclusion */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             Conclusion
@@ -309,46 +244,7 @@ const PunarvasuNakshatraPage = () => {
           <p>
             Punarvasu nakshatra embodies the eternal promise of renewal — the return of light after darkness, hope after despair, home after wandering. It represents the unconditional love that always welcomes us back and the infinite possibilities that emerge from fresh starts. Whether you were born under this nakshatra or are experiencing its influence, understanding Punarvasu helps you embrace life's cycles with optimism, learn from the past while trusting in new beginnings, and recognize that renewal is always available.
           </p>
-
-        </div>
-
-        {/* Related Posts */}
-        <div className="mt-16 pt-12 border-t border-cream/10">
-          <h2 className="font-display text-xl text-cream mb-6">Related Posts</h2>
-          <div className="space-y-3">
-            <Link to="/blog/ardra-nakshatra" className="block text-gold hover:underline">
-              Ardra Nakshatra: The Tempest of Transformation →
-            </Link>
-            <Link to="/blog/mrigashira-nakshatra" className="block text-gold hover:underline">
-              Mrigashira Nakshatra: The Searching Star →
-            </Link>
-            <Link to="/blog/what-is-nakshatra" className="block text-gold hover:underline">
-              Nakshatra: Your True Cosmic DNA →
-            </Link>
-          </div>
-        </div>
-
-        {/* Go Deeper CTA */}
-        <div className="mt-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-          <h3 className="font-display text-lg text-cream mb-4">Go Deeper</h3>
-          <div className="space-y-3 text-sm">
-            <p className="text-cream/70">
-              <Link to="/" className="text-gold hover:underline font-medium">Get your free Cosmic Brief</Link>
-              {" "}— See your Moon nakshatra, planetary positions, and houses.
-            </p>
-            <p className="text-cream/70">
-              <Link to="/vedic/input" className="text-gold hover:underline font-medium">2026 Cosmic Brief</Link>
-              {" "}— Your personalized year ahead, based on your dasha and transits.
-            </p>
-          </div>
-        </div>
-
-        {/* Footer tagline */}
-        <p className="text-cream/40 text-sm text-center mt-12 italic">
-          Cosmic Brief is Vedic astrology for the modern seeker. No guilt. No fate. Just ancient wisdom, translated.
-        </p>
-      </div>
-    </div>
+    </NakshatraPageTemplate>
   );
 };
 

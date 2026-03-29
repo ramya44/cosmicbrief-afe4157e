@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PlanetPosition {
@@ -76,7 +76,7 @@ const calculateHouse = (planetSignId: number, ascendantSignId: number): number =
   return house;
 };
 
-export const BirthChartWheel = ({ chartData, hideDetailCards = false }: BirthChartWheelProps) => {
+export const BirthChartWheel = memo(({ chartData, hideDetailCards = false }: BirthChartWheelProps) => {
   const [selectedPlanet, setSelectedPlanet] = useState<PlanetPosition | null>(null);
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetPosition | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
@@ -911,4 +911,4 @@ export const BirthChartWheel = ({ chartData, hideDetailCards = false }: BirthCha
       )}
     </div>
   );
-};
+});

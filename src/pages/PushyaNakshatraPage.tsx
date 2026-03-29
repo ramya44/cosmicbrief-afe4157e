@@ -1,90 +1,39 @@
-import { Link } from "react-router-dom";
-import { StarField } from "@/components/StarField";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet-async";
-import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
+import { NakshatraPageTemplate } from "@/components/NakshatraPageTemplate";
 
 const PushyaNakshatraPage = () => {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "Pushya Nakshatra: The Nourisher of the Zodiac",
-    "description": "Explore Pushya nakshatra, the most auspicious and nourishing star in Vedic astrology. Discover its nurturing power, spiritual depth, and capacity to provide.",
-    "datePublished": "2025-01-29",
-    "dateModified": "2025-01-29",
-    "author": {
-      "@type": "Person",
-      "name": "Maya G."
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Cosmic Brief"
-    },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://www.cosmicbrief.com/blog/pushya-nakshatra"
-    },
-    "keywords": ["Pushya nakshatra", "Vedic astrology", "Brihaspati", "Saturn", "nakshatras", "lunar mansions", "birth stars", "most auspicious nakshatra"]
-  };
-
   return (
-    <div className="min-h-screen bg-midnight text-cream relative overflow-hidden">
-      <Helmet>
-        <title>Pushya Nakshatra: The Most Auspicious Star in Vedic Astrology | Cosmic Brief</title>
-        <meta name="description" content="Explore Pushya nakshatra, the most auspicious and nourishing star in Vedic astrology. Discover its nurturing power, spiritual depth, and capacity to provide." />
-        <link rel="canonical" href="https://www.cosmicbrief.com/blog/pushya-nakshatra" />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
-      <StarField />
-
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        <SEOBreadcrumbs
-          items={[
-            { name: "Journal", href: "/blog" },
-            { name: "Nakshatras", href: "/blog/category/nakshatras" }
-          ]}
-          currentPage="Pushya Nakshatra"
-        />
-
-        {/* Title */}
-        <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
-          Pushya Nakshatra: The Nourisher of the Zodiac
-        </h1>
-
-        {/* Category & Read Time */}
-        <div className="flex items-center gap-3 mb-4">
-          <span className="px-2 py-1 text-xs bg-gold/10 text-gold rounded">
-            Nakshatras
-          </span>
-          <span className="text-cream/40 text-sm">10 min read</span>
-        </div>
-
-        {/* Author and Date */}
-        <div className="flex items-center gap-3 mb-8">
-          <img src="/maya.png" alt="Maya G." className="w-8 h-8 rounded-full" />
-          <p className="text-cream/50 text-sm">
-            By Maya G. · January 29, 2025
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="prose prose-invert max-w-none space-y-6 text-cream/80 leading-relaxed">
-
-          {/* Quick Facts */}
-          <div className="my-8 p-6 bg-cream/5 rounded-lg border border-cream/10">
-            <h2 className="font-display text-xl text-cream mb-4">Quick Facts About Pushya</h2>
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-              <p><span className="text-gold">Position:</span> 3°20' to 16°40' Cancer</p>
-              <p><span className="text-gold">Ruling Planet:</span> Saturn (Shani)</p>
-              <p><span className="text-gold">Deity:</span> Brihaspati (Jupiter as priest)</p>
-              <p><span className="text-gold">Symbol:</span> Cow's udder, lotus, arrow</p>
-              <p><span className="text-gold">Element:</span> Water</p>
-              <p><span className="text-gold">Quality:</span> Light, swift</p>
-              <p><span className="text-gold">Status:</span> Most auspicious nakshatra</p>
-            </div>
-          </div>
-
+    <NakshatraPageTemplate
+      name="Pushya"
+      title="Pushya Nakshatra: The Nourisher of the Zodiac"
+      seoTitle="Pushya Nakshatra: The Most Auspicious Star in Vedic Astrology | Cosmic Brief"
+      metaDescription="Explore Pushya nakshatra, the most auspicious and nourishing star in Vedic astrology. Discover its nurturing power, spiritual depth, and capacity to provide."
+      slug="pushya-nakshatra"
+      readTime="10 min read"
+      authorDate="January 29, 2025"
+      quickFacts={[
+        { label: "Position", value: "3°20' to 16°40' Cancer" },
+        { label: "Ruling Planet", value: "Saturn (Shani)" },
+        { label: "Deity", value: "Brihaspati (Jupiter as priest)" },
+        { label: "Symbol", value: "Cow's udder, lotus, arrow" },
+        { label: "Element", value: "Water" },
+        { label: "Quality", value: "Light, swift" },
+        { label: "Status", value: "Most auspicious nakshatra" },
+      ]}
+      jsonLd={{
+        headline: "Pushya Nakshatra: The Nourisher of the Zodiac",
+        description: "Explore Pushya nakshatra, the most auspicious and nourishing star in Vedic astrology. Discover its nurturing power, spiritual depth, and capacity to provide.",
+        datePublished: "2025-01-29",
+        dateModified: "2025-01-29",
+        keywords: ["Pushya nakshatra", "Vedic astrology", "Brihaspati", "Saturn", "nakshatras", "lunar mansions", "birth stars", "most auspicious nakshatra"],
+        url: "https://www.cosmicbrief.com/blog/pushya-nakshatra",
+      }}
+      ctaDescription="Discover your Moon nakshatra and see how Pushya's nourishing energy influences your chart."
+      relatedPosts={[
+        { href: "/blog/punarvasu-nakshatra", text: "Punarvasu Nakshatra: The Star of Infinite Renewal" },
+        { href: "/blog/rohini-nakshatra", text: "Rohini Nakshatra: The Fertile Garden of Creation" },
+        { href: "/blog/what-is-nakshatra", text: "Nakshatra: Your True Cosmic DNA" },
+      ]}
+    >
           {/* The Meaning of Pushya */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             The Meaning of Pushya
@@ -309,20 +258,6 @@ const PushyaNakshatraPage = () => {
             Sun in Pushya indicates a life path centered on service, teaching, or spiritual work. These individuals shine through their ability to nourish and guide others.
           </p>
 
-          {/* CTA */}
-          <div className="my-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-            <h3 className="font-display text-xl text-cream mb-3">Is Pushya Your Nakshatra?</h3>
-            <p className="text-cream/70 mb-4">
-              Discover your Moon nakshatra and see how Pushya's nourishing energy influences your chart.
-            </p>
-            <Link to="/">
-              <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-6 py-5">
-                Get your free Cosmic Brief
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
           {/* Conclusion */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             Conclusion
@@ -331,46 +266,7 @@ const PushyaNakshatraPage = () => {
           <p>
             Pushya nakshatra embodies divine nourishment in its purest form — the combination of material care and spiritual wisdom that truly sustains life. As the most auspicious nakshatra, it represents the blessing of having both discipline and grace, duty and devotion, structure and expansion. Whether you were born under this nakshatra or are experiencing its influence, understanding Pushya helps you embrace your capacity to nourish others while ensuring you remain nourished yourself, creating a sustainable cycle of care and abundance.
           </p>
-
-        </div>
-
-        {/* Related Posts */}
-        <div className="mt-16 pt-12 border-t border-cream/10">
-          <h2 className="font-display text-xl text-cream mb-6">Related Posts</h2>
-          <div className="space-y-3">
-            <Link to="/blog/punarvasu-nakshatra" className="block text-gold hover:underline">
-              Punarvasu Nakshatra: The Star of Infinite Renewal →
-            </Link>
-            <Link to="/blog/rohini-nakshatra" className="block text-gold hover:underline">
-              Rohini Nakshatra: The Fertile Garden of Creation →
-            </Link>
-            <Link to="/blog/what-is-nakshatra" className="block text-gold hover:underline">
-              Nakshatra: Your True Cosmic DNA →
-            </Link>
-          </div>
-        </div>
-
-        {/* Go Deeper CTA */}
-        <div className="mt-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-          <h3 className="font-display text-lg text-cream mb-4">Go Deeper</h3>
-          <div className="space-y-3 text-sm">
-            <p className="text-cream/70">
-              <Link to="/" className="text-gold hover:underline font-medium">Get your free Cosmic Brief</Link>
-              {" "}— See your Moon nakshatra, planetary positions, and houses.
-            </p>
-            <p className="text-cream/70">
-              <Link to="/vedic/input" className="text-gold hover:underline font-medium">2026 Cosmic Brief</Link>
-              {" "}— Your personalized year ahead, based on your dasha and transits.
-            </p>
-          </div>
-        </div>
-
-        {/* Footer tagline */}
-        <p className="text-cream/40 text-sm text-center mt-12 italic">
-          Cosmic Brief is Vedic astrology for the modern seeker. No guilt. No fate. Just ancient wisdom, translated.
-        </p>
-      </div>
-    </div>
+    </NakshatraPageTemplate>
   );
 };
 

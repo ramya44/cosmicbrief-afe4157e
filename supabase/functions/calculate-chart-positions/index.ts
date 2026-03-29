@@ -4,7 +4,7 @@
  */
 
 import { corsHeaders, jsonResponse, errorResponse, handleCors } from "../_shared/lib/http.ts";
-import { calculateBirthChart } from "../_shared/lib/vedic-calculator-v2.ts";
+import { calculateBirthChart } from "../_shared/lib/vedic-calculator.ts";
 
 Deno.serve(async (req) => {
   const corsResponse = handleCors(req);

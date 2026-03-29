@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { PlanetPosition } from '@/types/kundli';
 
 interface NorthIndianChartProps {
@@ -57,7 +58,7 @@ const ZODIAC_SYMBOLS: Record<string, string> = {
   Sagittarius: '♐', Capricorn: '♑', Aquarius: '♒', Pisces: '♓'
 };
 
-export const NorthIndianChart = ({ positions, ascendantSignId }: NorthIndianChartProps) => {
+export const NorthIndianChart = memo(({ positions, ascendantSignId }: NorthIndianChartProps) => {
   const houses = groupPlanetsByHouse(positions, ascendantSignId);
 
   return (
@@ -156,7 +157,7 @@ export const NorthIndianChart = ({ positions, ascendantSignId }: NorthIndianChar
       </svg>
     </div>
   );
-};
+});
 
 // Helper component for house content in SVG
 const HouseContent = ({

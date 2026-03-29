@@ -1,90 +1,38 @@
-import { Link } from "react-router-dom";
-import { StarField } from "@/components/StarField";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet-async";
-import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
+import { NakshatraPageTemplate } from "@/components/NakshatraPageTemplate";
 
 const MaghaNakshatraPage = () => {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "Magha Nakshatra: The Throne of Ancestral Power",
-    "description": "Discover Magha nakshatra, the star of royal authority and ancestral connection in Vedic astrology. Learn about its regal nature, tradition, and leadership power.",
-    "datePublished": "2025-01-31",
-    "dateModified": "2025-01-31",
-    "author": {
-      "@type": "Person",
-      "name": "Maya G."
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Cosmic Brief"
-    },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://www.cosmicbrief.com/blog/magha-nakshatra"
-    },
-    "keywords": ["Magha nakshatra", "Vedic astrology", "Pitris", "royal star", "nakshatras", "lunar mansions", "ancestors", "Regulus"]
-  };
-
   return (
-    <div className="min-h-screen bg-midnight text-cream relative overflow-hidden">
-      <Helmet>
-        <title>Magha Nakshatra: The Throne of Ancestral Power | Cosmic Brief</title>
-        <meta name="description" content="Discover Magha nakshatra, the star of royal authority and ancestral connection in Vedic astrology. Learn about its regal nature, tradition, and leadership power." />
-        <link rel="canonical" href="https://www.cosmicbrief.com/blog/magha-nakshatra" />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
-      <StarField />
-
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        <SEOBreadcrumbs
-          items={[
-            { name: "Journal", href: "/blog" },
-            { name: "Nakshatras", href: "/blog/category/nakshatras" }
-          ]}
-          currentPage="Magha Nakshatra"
-        />
-
-        {/* Title */}
-        <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
-          Magha Nakshatra: The Throne of Ancestral Power
-        </h1>
-
-        {/* Category & Read Time */}
-        <div className="flex items-center gap-3 mb-4">
-          <span className="px-2 py-1 text-xs bg-gold/10 text-gold rounded">
-            Nakshatras
-          </span>
-          <span className="text-cream/40 text-sm">9 min read</span>
-        </div>
-
-        {/* Author and Date */}
-        <div className="flex items-center gap-3 mb-8">
-          <img src="/maya.png" alt="Maya G." className="w-8 h-8 rounded-full" />
-          <p className="text-cream/50 text-sm">
-            By Maya G. · January 31, 2025
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="prose prose-invert max-w-none space-y-6 text-cream/80 leading-relaxed">
-
-          {/* Quick Facts */}
-          <div className="my-8 p-6 bg-cream/5 rounded-lg border border-cream/10">
-            <h2 className="font-display text-xl text-cream mb-4">Quick Facts About Magha</h2>
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-              <p><span className="text-gold">Position:</span> 0°00' to 13°20' Leo</p>
-              <p><span className="text-gold">Ruling Planet:</span> Ketu (South Node)</p>
-              <p><span className="text-gold">Deity:</span> Pitris (Ancestral Fathers)</p>
-              <p><span className="text-gold">Symbol:</span> Royal throne, palanquin</p>
-              <p><span className="text-gold">Element:</span> Water</p>
-              <p><span className="text-gold">Quality:</span> Fierce, sharp</p>
-              <p><span className="text-gold">Western Star:</span> Regulus</p>
-            </div>
-          </div>
-
+    <NakshatraPageTemplate
+      name="Magha"
+      title="Magha Nakshatra: The Throne of Ancestral Power"
+      seoTitle="Magha Nakshatra: The Throne of Ancestral Power | Cosmic Brief"
+      metaDescription="Discover Magha nakshatra, the star of royal authority and ancestral connection in Vedic astrology. Learn about its regal nature, tradition, and leadership power."
+      slug="magha-nakshatra"
+      readTime="9 min read"
+      authorDate="January 31, 2025"
+      quickFacts={[
+        { label: "Position", value: "0°00' to 13°20' Leo" },
+        { label: "Ruling Planet", value: "Ketu (South Node)" },
+        { label: "Deity", value: "Pitris (Ancestral Fathers)" },
+        { label: "Symbol", value: "Royal throne, palanquin" },
+        { label: "Element", value: "Water" },
+        { label: "Quality", value: "Fierce, sharp" },
+        { label: "Western Star", value: "Regulus" },
+      ]}
+      jsonLd={{
+        headline: "Magha Nakshatra: The Throne of Ancestral Power",
+        description: "Discover Magha nakshatra, the star of royal authority and ancestral connection in Vedic astrology. Learn about its regal nature, tradition, and leadership power.",
+        datePublished: "2025-01-31",
+        dateModified: "2025-01-31",
+        keywords: ["Magha nakshatra", "Vedic astrology", "Pitris", "royal star", "nakshatras", "lunar mansions", "ancestors", "Regulus"],
+        url: "https://www.cosmicbrief.com/blog/magha-nakshatra",
+      }}
+      ctaDescription="Discover your Moon nakshatra and see how Magha's royal ancestral energy influences your chart."
+      relatedPosts={[
+        { href: "/blog/ashlesha-nakshatra", text: "Ashlesha Nakshatra: The Coiled Serpent of Wisdom" },
+        { href: "/blog/what-is-nakshatra", text: "Nakshatra: Your True Cosmic DNA" },
+      ]}
+    >
           {/* The Meaning of Magha */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             The Meaning of Magha
@@ -319,20 +267,6 @@ const MaghaNakshatraPage = () => {
             This reinforces Magha's themes while adding the caution that royal power must be wielded justly, without vengeance or arrogance, lest it lead to downfall.
           </p>
 
-          {/* CTA */}
-          <div className="my-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-            <h3 className="font-display text-xl text-cream mb-3">Is Magha Your Nakshatra?</h3>
-            <p className="text-cream/70 mb-4">
-              Discover your Moon nakshatra and see how Magha's royal ancestral energy influences your chart.
-            </p>
-            <Link to="/">
-              <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-6 py-5">
-                Get your free Cosmic Brief
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
           {/* Conclusion */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             Conclusion
@@ -341,43 +275,7 @@ const MaghaNakshatraPage = () => {
           <p>
             Magha nakshatra embodies the principle of royal authority rooted in ancestral continuity. It represents the throne passed down through generations, the responsibilities of leadership, and the dignity that comes from honoring those who came before. Whether you were born under this nakshatra or are experiencing its influence, understanding Magha helps you embrace your natural authority while remaining humble, honor tradition while allowing evolution, and lead with the generosity and nobility that befits true royalty.
           </p>
-
-        </div>
-
-        {/* Related Posts */}
-        <div className="mt-16 pt-12 border-t border-cream/10">
-          <h2 className="font-display text-xl text-cream mb-6">Related Posts</h2>
-          <div className="space-y-3">
-            <Link to="/blog/ashlesha-nakshatra" className="block text-gold hover:underline">
-              Ashlesha Nakshatra: The Coiled Serpent of Wisdom →
-            </Link>
-            <Link to="/blog/what-is-nakshatra" className="block text-gold hover:underline">
-              Nakshatra: Your True Cosmic DNA →
-            </Link>
-          </div>
-        </div>
-
-        {/* Go Deeper CTA */}
-        <div className="mt-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-          <h3 className="font-display text-lg text-cream mb-4">Go Deeper</h3>
-          <div className="space-y-3 text-sm">
-            <p className="text-cream/70">
-              <Link to="/" className="text-gold hover:underline font-medium">Get your free Cosmic Brief</Link>
-              {" "}— See your Moon nakshatra, planetary positions, and houses.
-            </p>
-            <p className="text-cream/70">
-              <Link to="/vedic/input" className="text-gold hover:underline font-medium">2026 Cosmic Brief</Link>
-              {" "}— Your personalized year ahead, based on your dasha and transits.
-            </p>
-          </div>
-        </div>
-
-        {/* Footer tagline */}
-        <p className="text-cream/40 text-sm text-center mt-12 italic">
-          Cosmic Brief is Vedic astrology for the modern seeker. No guilt. No fate. Just ancient wisdom, translated.
-        </p>
-      </div>
-    </div>
+    </NakshatraPageTemplate>
   );
 };
 

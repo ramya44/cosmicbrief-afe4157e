@@ -1,8 +1,14 @@
 import { StarField } from '@/components/StarField';
+import { Helmet } from 'react-helmet-async';
 
 const PrivacyPage = () => {
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">
+      <Helmet>
+        <title>Privacy Policy | Cosmic Brief</title>
+        <meta name="description" content="Cosmic Brief's privacy policy. Learn how we collect, use, and protect your personal information when using our Vedic astrology services." />
+        <link rel="canonical" href="https://www.cosmicbrief.com/privacy" />
+      </Helmet>
       <StarField />
 
       <div className="relative z-10 flex flex-col items-center min-h-screen px-4 py-20">

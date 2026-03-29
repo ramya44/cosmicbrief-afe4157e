@@ -1,90 +1,38 @@
-import { Link } from "react-router-dom";
-import { StarField } from "@/components/StarField";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet-async";
-import { SEOBreadcrumbs } from "@/components/SEOBreadcrumbs";
+import { NakshatraPageTemplate } from "@/components/NakshatraPageTemplate";
 
 const AshleshaNakshatraPage = () => {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": "Ashlesha Nakshatra: The Coiled Serpent of Wisdom",
-    "description": "Explore Ashlesha nakshatra, the powerful serpent star in Vedic astrology. Discover its hypnotic energy, transformative wisdom, and penetrating insight.",
-    "datePublished": "2025-01-31",
-    "dateModified": "2025-01-31",
-    "author": {
-      "@type": "Person",
-      "name": "Maya G."
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Cosmic Brief"
-    },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://www.cosmicbrief.com/blog/ashlesha-nakshatra"
-    },
-    "keywords": ["Ashlesha nakshatra", "Vedic astrology", "serpent star", "Nagas", "nakshatras", "lunar mansions", "kundalini"]
-  };
-
   return (
-    <div className="min-h-screen bg-midnight text-cream relative overflow-hidden">
-      <Helmet>
-        <title>Ashlesha Nakshatra: The Coiled Serpent of Wisdom | Cosmic Brief</title>
-        <meta name="description" content="Explore Ashlesha nakshatra, the powerful serpent star in Vedic astrology. Discover its hypnotic energy, transformative wisdom, and penetrating insight." />
-        <link rel="canonical" href="https://www.cosmicbrief.com/blog/ashlesha-nakshatra" />
-        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      </Helmet>
-      <StarField />
-
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-16">
-        <SEOBreadcrumbs
-          items={[
-            { name: "Journal", href: "/blog" },
-            { name: "Nakshatras", href: "/blog/category/nakshatras" }
-          ]}
-          currentPage="Ashlesha Nakshatra"
-        />
-
-        {/* Title */}
-        <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-cream mb-4 leading-tight">
-          Ashlesha Nakshatra: The Coiled Serpent of Wisdom
-        </h1>
-
-        {/* Category & Read Time */}
-        <div className="flex items-center gap-3 mb-4">
-          <span className="px-2 py-1 text-xs bg-gold/10 text-gold rounded">
-            Nakshatras
-          </span>
-          <span className="text-cream/40 text-sm">9 min read</span>
-        </div>
-
-        {/* Author and Date */}
-        <div className="flex items-center gap-3 mb-8">
-          <img src="/maya.png" alt="Maya G." className="w-8 h-8 rounded-full" />
-          <p className="text-cream/50 text-sm">
-            By Maya G. · January 31, 2025
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="prose prose-invert max-w-none space-y-6 text-cream/80 leading-relaxed">
-
-          {/* Quick Facts */}
-          <div className="my-8 p-6 bg-cream/5 rounded-lg border border-cream/10">
-            <h2 className="font-display text-xl text-cream mb-4">Quick Facts About Ashlesha</h2>
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
-              <p><span className="text-gold">Position:</span> 16°40' to 30°00' Cancer</p>
-              <p><span className="text-gold">Ruling Planet:</span> Mercury (Budha)</p>
-              <p><span className="text-gold">Deity:</span> Nagas (Serpent Deities)</p>
-              <p><span className="text-gold">Symbol:</span> Coiled serpent, wheel</p>
-              <p><span className="text-gold">Element:</span> Water</p>
-              <p><span className="text-gold">Quality:</span> Sharp, fierce</p>
-              <p><span className="text-gold">Power:</span> Poisoning and healing</p>
-            </div>
-          </div>
-
+    <NakshatraPageTemplate
+      name="Ashlesha"
+      title="Ashlesha Nakshatra: The Coiled Serpent of Wisdom"
+      seoTitle="Ashlesha Nakshatra: The Coiled Serpent of Wisdom | Cosmic Brief"
+      metaDescription="Explore Ashlesha nakshatra, the powerful serpent star in Vedic astrology. Discover its hypnotic energy, transformative wisdom, and penetrating insight."
+      slug="ashlesha-nakshatra"
+      readTime="9 min read"
+      authorDate="January 31, 2025"
+      quickFacts={[
+        { label: "Position", value: "16°40' to 30°00' Cancer" },
+        { label: "Ruling Planet", value: "Mercury (Budha)" },
+        { label: "Deity", value: "Nagas (Serpent Deities)" },
+        { label: "Symbol", value: "Coiled serpent, wheel" },
+        { label: "Element", value: "Water" },
+        { label: "Quality", value: "Sharp, fierce" },
+        { label: "Power", value: "Poisoning and healing" },
+      ]}
+      jsonLd={{
+        headline: "Ashlesha Nakshatra: The Coiled Serpent of Wisdom",
+        description: "Explore Ashlesha nakshatra, the powerful serpent star in Vedic astrology. Discover its hypnotic energy, transformative wisdom, and penetrating insight.",
+        datePublished: "2025-01-31",
+        dateModified: "2025-01-31",
+        keywords: ["Ashlesha nakshatra", "Vedic astrology", "serpent star", "Nagas", "nakshatras", "lunar mansions", "kundalini"],
+        url: "https://www.cosmicbrief.com/blog/ashlesha-nakshatra",
+      }}
+      ctaDescription="Discover your Moon nakshatra and see how Ashlesha's serpent wisdom influences your chart."
+      relatedPosts={[
+        { href: "/blog/pushya-nakshatra", text: "Pushya Nakshatra: The Nourisher of the Zodiac" },
+        { href: "/blog/what-is-nakshatra", text: "Nakshatra: Your True Cosmic DNA" },
+      ]}
+    >
           {/* The Meaning of Ashlesha */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             The Meaning of Ashlesha
@@ -300,20 +248,6 @@ const AshleshaNakshatraPage = () => {
             However, this gift requires ethical use. The question for every Ashlesha native is: Will you use your penetrating insight to heal or to harm? To empower or to control? The answer determines whether you embody the serpent's medicine or its poison.
           </p>
 
-          {/* CTA */}
-          <div className="my-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-            <h3 className="font-display text-xl text-cream mb-3">Is Ashlesha Your Nakshatra?</h3>
-            <p className="text-cream/70 mb-4">
-              Discover your Moon nakshatra and see how Ashlesha's serpent wisdom influences your chart.
-            </p>
-            <Link to="/">
-              <Button className="bg-gold hover:bg-gold/90 text-midnight font-medium px-6 py-5">
-                Get your free Cosmic Brief
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-
           {/* Conclusion */}
           <h2 className="font-display text-2xl md:text-3xl text-cream mt-16 mb-4">
             Conclusion
@@ -322,43 +256,7 @@ const AshleshaNakshatraPage = () => {
           <p>
             Ashlesha nakshatra embodies the serpent's dual nature — the power to poison or to heal, to constrict or to protect, to manipulate or to transform. It represents the profound psychological insight and transformative wisdom that comes from understanding the hidden depths of human nature. Whether you were born under this nakshatra or are experiencing its influence, understanding Ashlesha helps you embrace your penetrating insight wisely, using the serpent's power to heal rather than harm, to transform rather than control, to serve wisdom rather than ego.
           </p>
-
-        </div>
-
-        {/* Related Posts */}
-        <div className="mt-16 pt-12 border-t border-cream/10">
-          <h2 className="font-display text-xl text-cream mb-6">Related Posts</h2>
-          <div className="space-y-3">
-            <Link to="/blog/pushya-nakshatra" className="block text-gold hover:underline">
-              Pushya Nakshatra: The Nourisher of the Zodiac →
-            </Link>
-            <Link to="/blog/what-is-nakshatra" className="block text-gold hover:underline">
-              Nakshatra: Your True Cosmic DNA →
-            </Link>
-          </div>
-        </div>
-
-        {/* Go Deeper CTA */}
-        <div className="mt-12 p-6 bg-gold/5 rounded-lg border border-gold/20">
-          <h3 className="font-display text-lg text-cream mb-4">Go Deeper</h3>
-          <div className="space-y-3 text-sm">
-            <p className="text-cream/70">
-              <Link to="/" className="text-gold hover:underline font-medium">Get your free Cosmic Brief</Link>
-              {" "}— See your Moon nakshatra, planetary positions, and houses.
-            </p>
-            <p className="text-cream/70">
-              <Link to="/vedic/input" className="text-gold hover:underline font-medium">2026 Cosmic Brief</Link>
-              {" "}— Your personalized year ahead, based on your dasha and transits.
-            </p>
-          </div>
-        </div>
-
-        {/* Footer tagline */}
-        <p className="text-cream/40 text-sm text-center mt-12 italic">
-          Cosmic Brief is Vedic astrology for the modern seeker. No guilt. No fate. Just ancient wisdom, translated.
-        </p>
-      </div>
-    </div>
+    </NakshatraPageTemplate>
   );
 };
 

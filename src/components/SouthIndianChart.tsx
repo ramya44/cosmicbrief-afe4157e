@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { PlanetPosition } from '@/types/kundli';
 
 interface SouthIndianChartProps {
@@ -57,7 +58,7 @@ const getSignForHouse = (houseNumber: number, ascendantSignId: number): string =
   return signs[signIndex];
 };
 
-export const SouthIndianChart = ({ positions, ascendantSignId }: SouthIndianChartProps) => {
+export const SouthIndianChart = memo(({ positions, ascendantSignId }: SouthIndianChartProps) => {
   const houses = groupPlanetsByHouse(positions, ascendantSignId);
 
   // South Indian chart SVG-based layout
@@ -248,6 +249,6 @@ export const SouthIndianChart = ({ positions, ascendantSignId }: SouthIndianChar
       </svg>
     </div>
   );
-};
+});
 
 export default SouthIndianChart;

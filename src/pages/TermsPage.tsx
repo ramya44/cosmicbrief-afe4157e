@@ -1,8 +1,14 @@
 import { StarField } from '@/components/StarField';
+import { Helmet } from 'react-helmet-async';
 
 const TermsPage = () => {
   return (
     <div className="relative min-h-screen bg-celestial overflow-hidden">
+      <Helmet>
+        <title>Terms of Service | Cosmic Brief</title>
+        <meta name="description" content="Cosmic Brief's terms of service. Read the terms governing your use of our Vedic astrology forecasts, birth charts, and related services." />
+        <link rel="canonical" href="https://www.cosmicbrief.com/terms" />
+      </Helmet>
       <StarField />
 
       <div className="relative z-10 flex flex-col items-center min-h-screen px-4 py-20">

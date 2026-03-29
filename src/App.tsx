@@ -3,62 +3,70 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { AuthProvider } from "@/context/AuthContext";
 import { LoginModal } from "@/components/LoginModal";
 import Index from "./pages/Index";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import AstrologyForecast2026Page from "./pages/AstrologyForecast2026Page";
-import WhyTurningPointPage from "./pages/WhyTurningPointPage";
-import PoliticsGlobalEventsPage from "./pages/PoliticsGlobalEventsPage";
-import CareerAstrology2026Page from "./pages/CareerAstrology2026Page";
-import VedicInputPage from "./pages/VedicInputPage";
-import VedicResultsPage from "./pages/VedicResultsPage";
-import VedicPaymentSuccessPage from "./pages/VedicPaymentSuccessPage";
-import VedicAstrologyExplainedPage from "./pages/VedicAstrologyExplainedPage";
-import VedicProfilePage from "./pages/VedicProfilePage";
-import WeeklyInputPage from "./pages/WeeklyInputPage";
-import WeeklyResultsPage from "./pages/WeeklyResultsPage";
-import YearlyForecastPage from "./pages/YearlyForecastPage";
-import ContactPage from "./pages/ContactPage";
-import BackgroundPage from "./pages/BackgroundPage";
-import LifeArcPage from "./pages/LifeArcPage";
-import HowToReadChartPage from "./pages/HowToReadChartPage";
-import VedicVsWesternPage from "./pages/VedicVsWesternPage";
-import BirthChartInputPage from "./pages/BirthChartInputPage";
-import BirthChartPage from "./pages/BirthChartPage";
-import ChatPage from "./pages/ChatPage";
-import BlogCategoryPage from "./pages/BlogCategoryPage";
-import WhatIsNakshatraPage from "./pages/WhatIsNakshatraPage";
-import RohiniNakshatraPage from "./pages/RohiniNakshatraPage";
-import MrigashiraNakshatraPage from "./pages/MrigashiraNakshatraPage";
-import AshwiniNakshatraPage from "./pages/AshwiniNakshatraPage";
-import BharaniNakshatraPage from "./pages/BharaniNakshatraPage";
-import KrittikaNakshatraPage from "./pages/KrittikaNakshatraPage";
-import ArdraNakshatraPage from "./pages/ArdraNakshatraPage";
-import PunarvasuNakshatraPage from "./pages/PunarvasuNakshatraPage";
-import PushyaNakshatraPage from "./pages/PushyaNakshatraPage";
-import AshleshaNakshatraPage from "./pages/AshleshaNakshatraPage";
-import MaghaNakshatraPage from "./pages/MaghaNakshatraPage";
-import PurvaPhalguniNakshatraPage from "./pages/PurvaPhalguniNakshatraPage";
-import UttaraPhalguniNakshatraPage from "./pages/UttaraPhalguniNakshatraPage";
-import HastaNakshatraPage from "./pages/HastaNakshatraPage";
-import ChitraNakshatraPage from "./pages/ChitraNakshatraPage";
-import SwatiNakshatraPage from "./pages/SwatiNakshatraPage";
-import PurvaBhadrapadaNakshatraPage from "./pages/PurvaBhadrapadaNakshatraPage";
-import UttaraBhadrapadaNakshatraPage from "./pages/UttaraBhadrapadaNakshatraPage";
-import VishakhaNakshatraPage from "./pages/VishakhaNakshatraPage";
-import AnuradhaNakshatraPage from "./pages/AnuradhaNakshatraPage";
-import JyeshthaNakshatraPage from "./pages/JyeshthaNakshatraPage";
-import MulaNakshatraPage from "./pages/MulaNakshatraPage";
-import RevatiNakshatraPage from "./pages/RevatiNakshatraPage";
-import PlanetaryPeriodsDashasPage from "./pages/PlanetaryPeriodsDashasPage";
-import TwelveHousesPage from "./pages/TwelveHousesPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 import { Navigation } from "./components/Navigation";
 import { FEATURE_FLAGS } from "./config/feature-flags";
+
+// Lazy-loaded pages
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const AstrologyForecast2026Page = lazy(() => import("./pages/AstrologyForecast2026Page"));
+const WhyTurningPointPage = lazy(() => import("./pages/WhyTurningPointPage"));
+const PoliticsGlobalEventsPage = lazy(() => import("./pages/PoliticsGlobalEventsPage"));
+const CareerAstrology2026Page = lazy(() => import("./pages/CareerAstrology2026Page"));
+const VedicInputPage = lazy(() => import("./pages/VedicInputPage"));
+const VedicResultsPage = lazy(() => import("./pages/VedicResultsPage"));
+const VedicPaymentSuccessPage = lazy(() => import("./pages/VedicPaymentSuccessPage"));
+const VedicAstrologyExplainedPage = lazy(() => import("./pages/VedicAstrologyExplainedPage"));
+const VedicProfilePage = lazy(() => import("./pages/VedicProfilePage"));
+const WeeklyInputPage = lazy(() => import("./pages/WeeklyInputPage"));
+const WeeklyResultsPage = lazy(() => import("./pages/WeeklyResultsPage"));
+const YearlyForecastPage = lazy(() => import("./pages/YearlyForecastPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const BackgroundPage = lazy(() => import("./pages/BackgroundPage"));
+const LifeArcPage = lazy(() => import("./pages/LifeArcPage"));
+const HowToReadChartPage = lazy(() => import("./pages/HowToReadChartPage"));
+const VedicVsWesternPage = lazy(() => import("./pages/VedicVsWesternPage"));
+const BirthChartPage = lazy(() => import("./pages/BirthChartPage"));
+const ChatPage = lazy(() => import("./pages/ChatPage"));
+const BlogCategoryPage = lazy(() => import("./pages/BlogCategoryPage"));
+
+// Blog / Nakshatra pages
+const WhatIsNakshatraPage = lazy(() => import("./pages/WhatIsNakshatraPage"));
+const RohiniNakshatraPage = lazy(() => import("./pages/RohiniNakshatraPage"));
+const MrigashiraNakshatraPage = lazy(() => import("./pages/MrigashiraNakshatraPage"));
+const AshwiniNakshatraPage = lazy(() => import("./pages/AshwiniNakshatraPage"));
+const BharaniNakshatraPage = lazy(() => import("./pages/BharaniNakshatraPage"));
+const KrittikaNakshatraPage = lazy(() => import("./pages/KrittikaNakshatraPage"));
+const ArdraNakshatraPage = lazy(() => import("./pages/ArdraNakshatraPage"));
+const PunarvasuNakshatraPage = lazy(() => import("./pages/PunarvasuNakshatraPage"));
+const PushyaNakshatraPage = lazy(() => import("./pages/PushyaNakshatraPage"));
+const AshleshaNakshatraPage = lazy(() => import("./pages/AshleshaNakshatraPage"));
+const MaghaNakshatraPage = lazy(() => import("./pages/MaghaNakshatraPage"));
+const PurvaPhalguniNakshatraPage = lazy(() => import("./pages/PurvaPhalguniNakshatraPage"));
+const UttaraPhalguniNakshatraPage = lazy(() => import("./pages/UttaraPhalguniNakshatraPage"));
+const HastaNakshatraPage = lazy(() => import("./pages/HastaNakshatraPage"));
+const ChitraNakshatraPage = lazy(() => import("./pages/ChitraNakshatraPage"));
+const SwatiNakshatraPage = lazy(() => import("./pages/SwatiNakshatraPage"));
+const PurvaBhadrapadaNakshatraPage = lazy(() => import("./pages/PurvaBhadrapadaNakshatraPage"));
+const UttaraBhadrapadaNakshatraPage = lazy(() => import("./pages/UttaraBhadrapadaNakshatraPage"));
+const VishakhaNakshatraPage = lazy(() => import("./pages/VishakhaNakshatraPage"));
+const AnuradhaNakshatraPage = lazy(() => import("./pages/AnuradhaNakshatraPage"));
+const JyeshthaNakshatraPage = lazy(() => import("./pages/JyeshthaNakshatraPage"));
+const MulaNakshatraPage = lazy(() => import("./pages/MulaNakshatraPage"));
+const RevatiNakshatraPage = lazy(() => import("./pages/RevatiNakshatraPage"));
+const ShravanaNakshatraPage = lazy(() => import("./pages/ShravanaNakshatraPage"));
+const DhanishtaNakshatraPage = lazy(() => import("./pages/DhanishtaNakshatraPage"));
+const ShatabhishaNakshatraPage = lazy(() => import("./pages/ShatabhishaNakshatraPage"));
+const PurvaAshadhaNakshatraPage = lazy(() => import("./pages/PurvaAshadhaNakshatraPage"));
+const UttaraAshadhaNakshatraPage = lazy(() => import("./pages/UttaraAshadhaNakshatraPage"));
+const PlanetaryPeriodsDashasPage = lazy(() => import("./pages/PlanetaryPeriodsDashasPage"));
+const TwelveHousesPage = lazy(() => import("./pages/TwelveHousesPage"));
 
 const queryClient = new QueryClient();
 
@@ -87,6 +95,12 @@ const RedirectHelper = () => {
   return null;
 };
 
+const PageLoader = () => (
+  <div className="min-h-screen bg-midnight flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+  </div>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -99,6 +113,7 @@ const App = () => (
           <Navigation />
           <LoginModal />
           <div className="pt-14 md:pt-16 pb-16 md:pb-0">
+          <Suspense fallback={<PageLoader />}>
           <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/weekly/input" element={<WeeklyInputPage />} />
@@ -134,6 +149,11 @@ const App = () => (
           <Route path="/blog/jyeshtha-nakshatra" element={<JyeshthaNakshatraPage />} />
           <Route path="/blog/mula-nakshatra" element={<MulaNakshatraPage />} />
           <Route path="/blog/revati-nakshatra" element={<RevatiNakshatraPage />} />
+          <Route path="/blog/shravana-nakshatra" element={<ShravanaNakshatraPage />} />
+          <Route path="/blog/dhanishta-nakshatra" element={<DhanishtaNakshatraPage />} />
+          <Route path="/blog/shatabhisha-nakshatra" element={<ShatabhishaNakshatraPage />} />
+          <Route path="/blog/purva-ashadha-nakshatra" element={<PurvaAshadhaNakshatraPage />} />
+          <Route path="/blog/uttara-ashadha-nakshatra" element={<UttaraAshadhaNakshatraPage />} />
           <Route path="/blog/planetary-periods-dashas" element={<PlanetaryPeriodsDashasPage />} />
           <Route path="/blog/12-houses-vedic-astrology" element={<TwelveHousesPage />} />
           <Route path="/vedic/input" element={<VedicInputPage />} />
@@ -153,6 +173,7 @@ const App = () => (
           <Route path="/birth-chart" element={<BirthChartPage />} />
           <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
           </div>
         </BrowserRouter>
       </AuthProvider>

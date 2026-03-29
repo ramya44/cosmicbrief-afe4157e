@@ -322,6 +322,17 @@ const WhatIsNakshatraPage = () => {
               <Link to="/blog/purva-phalguni-nakshatra" className="text-gold hover:underline">Purva Phalguni — The Bed of Pleasure →</Link>
               <Link to="/blog/uttara-phalguni-nakshatra" className="text-gold hover:underline">Uttara Phalguni — Noble Service →</Link>
               <Link to="/blog/hasta-nakshatra" className="text-gold hover:underline">Hasta — The Divine Hand →</Link>
+              <Link to="/blog/chitra-nakshatra" className="text-gold hover:underline">Chitra — The Jewel of Creation →</Link>
+              <Link to="/blog/swati-nakshatra" className="text-gold hover:underline">Swati — The Sword in the Wind →</Link>
+              <Link to="/blog/vishakha-nakshatra" className="text-gold hover:underline">Vishakha — The Forked Branch →</Link>
+              <Link to="/blog/anuradha-nakshatra" className="text-gold hover:underline">Anuradha — The Lotus in the Mud →</Link>
+              <Link to="/blog/jyeshtha-nakshatra" className="text-gold hover:underline">Jyeshtha — The Eldest Star →</Link>
+              <Link to="/blog/mula-nakshatra" className="text-gold hover:underline">Mula — The Root of All Things →</Link>
+              <Link to="/blog/purva-ashadha-nakshatra" className="text-gold hover:underline">Purva Ashadha — The Invincible One →</Link>
+              <Link to="/blog/uttara-ashadha-nakshatra" className="text-gold hover:underline">Uttara Ashadha — The Universal Victory →</Link>
+              <Link to="/blog/shravana-nakshatra" className="text-gold hover:underline">Shravana — The Ear That Hears All →</Link>
+              <Link to="/blog/dhanishta-nakshatra" className="text-gold hover:underline">Dhanishta — The Drum of Prosperity →</Link>
+              <Link to="/blog/shatabhisha-nakshatra" className="text-gold hover:underline">Shatabhisha — The Hundred Physicians →</Link>
               <Link to="/blog/purva-bhadrapada-nakshatra" className="text-gold hover:underline">Purva Bhadrapada — The Burning Pair →</Link>
               <Link to="/blog/uttara-bhadrapada-nakshatra" className="text-gold hover:underline">Uttara Bhadrapada — The Cosmic Serpent →</Link>
               <Link to="/blog/revati-nakshatra" className="text-gold hover:underline">Revati — The Wealthy →</Link>
