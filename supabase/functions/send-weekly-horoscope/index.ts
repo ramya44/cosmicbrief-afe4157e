@@ -8,14 +8,10 @@ import {
   WeeklyHoroscopeContent,
 } from "../_shared/lib/email-templates.ts";
 
+import { corsHeaders } from "../_shared/lib/http.ts";
+
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const logStep = createLogger("SEND-WEEKLY-HOROSCOPE");
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
 
 // Map Vedic sign names to match what's stored in the database
 const VEDIC_SIGN_MAP: Record<string, string> = {

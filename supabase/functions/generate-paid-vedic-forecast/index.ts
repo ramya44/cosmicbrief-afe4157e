@@ -5,15 +5,11 @@ import { buildVedicPaidEmailHtml } from "../_shared/lib/email-templates.ts";
 import { generateForecastPdf } from "../_shared/lib/pdf-generator.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
 import { trackPurchase } from "../_shared/lib/meta-capi.ts";
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 // Declare EdgeRuntime for background processing
 declare const EdgeRuntime: {
   waitUntil: (promise: Promise<unknown>) => void;
-};
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 const logStep = createLogger("GENERATE-PAID-VEDIC-FORECAST");

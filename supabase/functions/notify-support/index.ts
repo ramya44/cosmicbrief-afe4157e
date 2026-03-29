@@ -1,13 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createLogger } from "../_shared/lib/logger.ts";
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 const logStep = createLogger("NOTIFY-SUPPORT");
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 // Rate limiting: 5 requests per minute per IP
 const rateLimiter = new Map<string, { count: number; resetAt: number }>();

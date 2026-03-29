@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
 import { getStripeConfig } from "../_shared/lib/stripe-config.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 const logStep = createLogger("VERIFY-PAYMENT");
 

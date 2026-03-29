@@ -1,13 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://esm.sh/zod@3.22.4";
 import { createLogger } from "../_shared/lib/logger.ts";
-import { calculateBirthChart, formatAsProkeralaResponse } from "../_shared/lib/vedic-calculator-v2.ts";
+import { calculateBirthChart, formatAsProkeralaResponse } from "../_shared/lib/vedic-calculator.ts";
 import { calculateDashaPeriods, type DashaPeriod, type CurrentDashaInfo } from "../_shared/lib/dasha-calculator.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 const logStep = createLogger("GET-KUNDLI-DATA");
 

@@ -1,12 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
-import { calculateBirthChart } from "../_shared/lib/vedic-calculator-v2.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { calculateBirthChart } from "../_shared/lib/vedic-calculator.ts";
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 const logStep = createLogger("GET-BIRTH-CHART");
 

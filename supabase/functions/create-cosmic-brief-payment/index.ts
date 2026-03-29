@@ -3,11 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
 import { getStripeConfig, getAppUrl } from "../_shared/lib/stripe-config.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 const logStep = createLogger("CREATE-COSMIC-BRIEF-PAYMENT");
 

@@ -8,11 +8,7 @@ import {
   type PlanetPositionsForLifeArc,
   type TimelineEntry,
 } from "../_shared/lib/life-arc-calculations.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 const logStep = createLogger("GET-LIFE-ARC");
 

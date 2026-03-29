@@ -27,11 +27,7 @@ import {
   type PratyantardashaInfo,
 } from "../_shared/lib/dasha-helpers.ts";
 import { createLogger } from "../_shared/lib/logger.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "../_shared/lib/http.ts";
 
 const logStep = createLogger("DEBUG-LLM-PAYLOAD");
 
