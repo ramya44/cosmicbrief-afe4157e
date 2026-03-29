@@ -1,12 +1,10 @@
 /**
- * Vercel Edge Function that serves HTML with personalized OG meta tags
+ * Vercel Serverless Function that serves HTML with personalized OG meta tags
  * for social media crawlers. Regular users never hit this — they're
  * routed to the SPA via vercel.json rewrites.
  */
 
-export const config = {
-  runtime: "edge",
-};
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 interface KundliData {
   name?: string;
@@ -70,17 +68,16 @@ function buildOgDescription(data: KundliData | null): string {
   return `${parts.join(" | ")} — See what Vedic astrology reveals in this personalized cosmic reading.`;
 }
 
-export default async function handler(req: Request): Promise<Response> {
-  const url = new URL(req.url);
-  const path = url.searchParams.get("path") ?? "/vedic/results";
-  const kundliId = url.searchParams.get("id");
-  const type = url.searchParams.get("type");
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const path = (req.query.path as string) ?? "/vedic/results";
+  const kundliId = req.query.id as string | undefined;
+  const type = req.query.type as string | undefined;
 
   // Reconstruct the canonical user-facing URL
   const canonicalParams = new URLSearchParams();
   if (kundliId) canonicalParams.set("id", kundliId);
   if (type) canonicalParams.set("type", type);
-  const paid = url.searchParams.get("paid");
+  const paid = req.query.paid as string | undefined;
   if (paid) canonicalParams.set("paid", paid);
   const canonicalUrl = `https://www.cosmicbrief.com${path}${canonicalParams.toString() ? "?" + canonicalParams.toString() : ""}`;
 
@@ -125,11 +122,7 @@ export default async function handler(req: Request): Promise<Response> {
 <body></body>
 </html>`;
 
-  return new Response(html, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
-    },
-  });
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+  res.status(200).send(html);
 }

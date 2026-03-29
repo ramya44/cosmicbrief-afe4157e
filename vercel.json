@@ -41,8 +41,7 @@
       ],
       "destination": "/api/og-meta?path=/weekly/results"
     },
-    { "source": "/api/:path*", "destination": "/api/:path*" },
-    { "source": "/vedic/:path*", "destination": "/index.html" },
+{ "source": "/vedic/:path*", "destination": "/index.html" },
     { "source": "/weekly/:path*", "destination": "/index.html" },
     { "source": "/get-birth-chart", "destination": "/index.html" },
     { "source": "/birth-chart", "destination": "/index.html" },
