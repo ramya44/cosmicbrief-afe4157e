@@ -13,6 +13,7 @@ import { Sparkles, Calendar, Clock, MapPin, Share2, ImageDown, MessageCircle } f
 import { toast } from 'sonner';
 import { shareOrDownloadChart, ShareResult } from '@/lib/chartExport';
 import { ChartSaveModal } from '@/components/ChartSaveModal';
+import { buildShareUrl, type ShareMedium } from '@/lib/shareUrl';
 
 type ChartStyle = 'western' | 'north-indian' | 'south-indian';
 
@@ -207,10 +208,11 @@ const BirthChartPage = () => {
     loadData();
   }, [navigate, kundliIdFromUrl]);
 
-  const getShareUrl = () => {
-    return chartData?.kundliId
-      ? `${window.location.origin}/birth-chart?id=${chartData.kundliId}`
-      : window.location.href;
+  const getShareUrl = (medium: ShareMedium = 'copy_link') => {
+    const basePath = chartData?.kundliId
+      ? `/birth-chart?id=${chartData.kundliId}`
+      : window.location.pathname + window.location.search;
+    return buildShareUrl(basePath, 'birth_chart', medium);
   };
 
   const getShareText = () => {
@@ -223,7 +225,7 @@ const BirthChartPage = () => {
   };
 
   const handleShare = async () => {
-    const shareUrl = getShareUrl();
+    const shareUrl = getShareUrl('native_share');
     const shareData = {
       title: 'My Vedic Birth Chart | Cosmic Brief',
       text: getShareText(),
@@ -240,7 +242,7 @@ const BirthChartPage = () => {
     } else {
       // Fallback: copy link to clipboard
       try {
-        await navigator.clipboard.writeText(shareUrl);
+        await navigator.clipboard.writeText(getShareUrl('copy_link'));
         toast.success('Link copied to clipboard!');
       } catch {
         toast.error('Failed to copy link');
@@ -249,7 +251,7 @@ const BirthChartPage = () => {
   };
 
   const handleWhatsAppShare = () => {
-    const text = `${getShareText()}\n${getShareUrl()}`;
+    const text = `${getShareText()}\n${getShareUrl('whatsapp')}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 

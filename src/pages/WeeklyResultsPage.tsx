@@ -308,13 +308,14 @@ const WeeklyResultsPage = () => {
     // Otherwise, fetch from database
     const fetchForecast = async () => {
       try {
-        const { data, error } = await supabase
-          .from('personalized_weekly_forecasts')
+        // Table not yet in generated Supabase types — cast to work around
+        const { data, error } = await (supabase
+          .from('personalized_weekly_forecasts' as any)
           .select('*')
           .eq('kundli_id', kundliId)
           .order('week_start', { ascending: false })
           .limit(1)
-          .single();
+          .single() as unknown as Promise<{ data: any; error: any }>);
 
         if (error || !data) {
           // No forecast found, generate one

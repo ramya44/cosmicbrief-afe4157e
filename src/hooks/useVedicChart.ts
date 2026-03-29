@@ -173,5 +173,3 @@ export async function getBirthDateTimeUtc(birthDetails: BirthInput): Promise<str
     return undefined;
   }
 }
-
-export type { BirthInput, VedicChartData, PlanetPosition, DashaPeriod, AntarDashaPeriod };

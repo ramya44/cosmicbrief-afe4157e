@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Share2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { buildShareUrl } from '@/lib/shareUrl';
 
 interface ShareButtonProps {
   forecastId: string | null;
@@ -17,7 +18,11 @@ export const ShareButton = ({ forecastId, guestToken }: ShareButtonProps) => {
       return;
     }
 
-    const shareableUrl = `${window.location.origin}/#/results?forecastId=${encodeURIComponent(forecastId)}&guestToken=${encodeURIComponent(guestToken)}`;
+    const shareableUrl = buildShareUrl(
+      `/#/results?forecastId=${encodeURIComponent(forecastId)}&guestToken=${encodeURIComponent(guestToken)}`,
+      'cosmic_brief',
+      'copy_link',
+    );
     
     try {
       await navigator.clipboard.writeText(shareableUrl);

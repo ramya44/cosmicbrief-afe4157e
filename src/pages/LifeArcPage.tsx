@@ -630,8 +630,8 @@ export default function LifeArcPage() {
           <div className="rounded-xl border border-border/30 bg-midnight/30 backdrop-blur-sm p-6">
             <BirthDetailsForm
               onSubmit={handleSubmit}
-              isSubmitting={flowState === 'loading'}
-              submitLabel="Generate Life Arc"
+              isSubmitting={isQuickGenerating}
+              submitButtonText="Generate Life Arc"
             />
           </div>
         )}

@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { trackInitiateCheckout } from '@/lib/meta-pixel';
 import { shareOrDownloadChart, ShareResult } from '@/lib/chartExport';
 import { ChartSaveModal } from '@/components/ChartSaveModal';
+import { buildShareUrl, type ShareMedium } from '@/lib/shareUrl';
 import { ForecastTableOfContents } from '@/components/ForecastTableOfContents';
 import { BirthChartWheel } from '@/components/BirthChartWheel';
 import { NorthIndianChart } from '@/components/NorthIndianChart';
@@ -242,15 +243,16 @@ const VedicResultsPage = () => {
     }
   };
 
-  const getShareUrl = () => {
-    return kundliId
-      ? `${window.location.origin}/vedic/results?id=${kundliId}`
-      : window.location.href;
+  const getShareUrl = (medium: ShareMedium = 'copy_link') => {
+    const basePath = kundliId
+      ? `/vedic/results?id=${kundliId}`
+      : window.location.pathname + window.location.search;
+    return buildShareUrl(basePath, 'vedic_forecast', medium);
   };
 
   const handleShare = async () => {
     try {
-      await navigator.clipboard.writeText(getShareUrl());
+      await navigator.clipboard.writeText(getShareUrl('copy_link'));
       toast.success('Link copied to clipboard!');
     } catch {
       toast.error('Failed to copy link');
@@ -258,7 +260,7 @@ const VedicResultsPage = () => {
   };
 
   const handleWhatsAppShare = () => {
-    const url = getShareUrl();
+    const url = getShareUrl('whatsapp');
     const text = `Check out my 2026 Cosmic Brief — a personalized Vedic astrology forecast!\n${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
